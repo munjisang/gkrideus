@@ -433,7 +433,7 @@ function SeatPicker({
   firstPrice: number;
 }) {
   return (
-    <div className="grid grid-cols-2 gap-2 mt-3">
+    <div className="grid grid-cols-1 gap-2 mt-3">
       <SeatChip
         active={value === "standard"}
         onClick={() => onChange("standard")}
@@ -471,20 +471,24 @@ function SeatChip({
           : "border-slate-200 bg-white hover:border-slate-400"
       }`}
     >
-      <span className="flex items-center gap-2">
+      <span className="flex items-center gap-2 min-w-0">
         <span
-          className={`w-4 h-4 rounded-full border-2 grid place-items-center ${
+          className={`w-4 h-4 shrink-0 rounded-full border-2 grid place-items-center ${
             active ? "border-sky-600" : "border-slate-300"
           }`}
         >
           {active && <span className="w-1.5 h-1.5 rounded-full bg-sky-600" />}
         </span>
-        <span className={`font-semibold ${active ? "text-sky-700" : "text-slate-700"}`}>
+        <span
+          className={`font-semibold whitespace-nowrap ${
+            active ? "text-sky-700" : "text-slate-700"
+          }`}
+        >
           {title}
         </span>
       </span>
-      <span className="text-xs font-semibold tabular-nums text-slate-700">
-        ₩ {price.toLocaleString("ko-KR")}
+      <span className="text-xs font-semibold tabular-nums text-slate-700 whitespace-nowrap shrink-0">
+        ₩{price.toLocaleString("ko-KR")}
         <span className="ml-1 font-normal text-slate-400">/ 1인</span>
       </span>
     </button>
