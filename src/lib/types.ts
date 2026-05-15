@@ -48,6 +48,8 @@ export type Order = {
   passengerCount: number;
   passengers: Passenger[];
   totalPrice: number;
-  /** Result of clicking [예매하기] in admin — independent from the TAGO search above. */
+  /** Result of clicking [예매하기] in admin — outbound leg. */
   reservation?: Reservation;
+  /** Reservation for the inbound leg (only roundtrip orders). */
+  inboundReservation?: Reservation;
 };

@@ -62,100 +62,217 @@ export default function AdminPage() {
     refresh();
   }
 
-  async function onBook(order: Order) {
-    if (live) {
-      const ok = confirm(
-        `[실 예약 LIVE]\n\n${order.outbound.depPlaceName} → ${order.outbound.arrPlaceName}\n${fmtTime(order.outbound.depPlandTime)} 출발, ${order.passengerCount}명, ${order.seatType === "first" ? "특실" : "일반실"}\n\n마스터 코레일 계정으로 실제 좌석을 점유합니다. 결제 기한이 카운트다운 됩니다.\n진행할까요?`,
-      );
-      if (!ok) return;
+  /** Build the POST body for one leg of an order. */
+  function legPayload(
+    t: Order["outbound"],
+    seat: Order["seatType"],
+    passengerCount: number,
+  ) {
+    return {
+      depName: t.depPlaceName,
+      arrName: t.arrPlaceName,
+      date: t.depPlandTime.slice(0, 8),
+      time: t.depPlandTime.slice(8, 12),
+      trainNo: t.trainNo,
+      passengers: passengerCount,
+      seatType: seat,
+      live,
+    };
+  }
+
+  function buildReservation(j: BookingResult): Reservation | null {
+    if (!j.ok) return null;
+    if (j.mode === "live" && j.reservation) {
+      const r = j.reservation as Record<string, unknown>;
+      return {
+        rsvId: String(r.rsv_id ?? r.rsv_no ?? ""),
+        reservedAt: new Date().toISOString(),
+        deadline:
+          r.buy_limit_date && r.buy_limit_time
+            ? `${r.buy_limit_date} ${r.buy_limit_time}`
+            : undefined,
+        totalPrice: typeof r.price === "number" ? r.price : undefined,
+        mode: "live",
+        raw: r,
+      };
     }
-    setBusyId(order.id);
+    if (j.mode === "dry") {
+      return {
+        rsvId: "(dry-run)",
+        reservedAt: new Date().toISOString(),
+        mode: "dry",
+        raw: j.train,
+      };
+    }
+    return null;
+  }
+
+  async function callReserve(payload: object): Promise<BookingResult> {
     try {
-      const t = order.outbound;
       const res = await fetch("/api/booking/reserve", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          depName: t.depPlaceName,
-          arrName: t.arrPlaceName,
-          date: t.depPlandTime.slice(0, 8),
-          time: t.depPlandTime.slice(8, 12),
-          trainNo: t.trainNo,
-          passengers: order.passengerCount,
-          seatType: order.seatType,
-          live,
-        }),
+        body: JSON.stringify(payload),
       });
-      const j: BookingResult = await res.json();
-      setResultBy((m) => ({ ...m, [order.id]: j }));
-
-      if (j.ok && j.mode === "live" && j.reservation) {
-        const r = j.reservation as Record<string, unknown>;
-        const rsv: Reservation = {
-          rsvId: String(r.rsv_id ?? r.rsv_no ?? ""),
-          reservedAt: new Date().toISOString(),
-          deadline:
-            r.buy_limit_date && r.buy_limit_time
-              ? `${r.buy_limit_date} ${r.buy_limit_time}`
-              : undefined,
-          totalPrice: typeof r.price === "number" ? r.price : undefined,
-          mode: "live",
-          raw: r,
-        };
-        await updateOrder(order.id, { reservation: rsv });
-        refresh();
-      } else if (j.ok && j.mode === "dry") {
-        const rsv: Reservation = {
-          rsvId: "(dry-run)",
-          reservedAt: new Date().toISOString(),
-          mode: "dry",
-          raw: j.train,
-        };
-        await updateOrder(order.id, { reservation: rsv });
-        refresh();
-      }
+      return (await res.json()) as BookingResult;
     } catch (e) {
-      setResultBy((m) => ({
-        ...m,
-        [order.id]: { ok: false, error: (e as Error).message },
-      }));
-    } finally {
-      setBusyId(null);
+      return { ok: false, error: (e as Error).message, stage: "network" };
     }
   }
 
-  async function onCancel(order: Order) {
-    if (!order.reservation || order.reservation.mode !== "live") return;
-    const rsvId = order.reservation.rsvId;
-    if (!rsvId) {
-      alert("예약번호를 찾을 수 없습니다.");
-      return;
-    }
-    if (
-      !confirm(
-        `예약을 취소합니다.\n\n${order.outbound.depPlaceName} → ${order.outbound.arrPlaceName}\n예약번호: ${rsvId}\n\n취소된 좌석은 즉시 다른 사람이 잡을 수 있게 됩니다.\n진행할까요?`,
-      )
-    )
-      return;
-
-    setBusyId(order.id);
+  async function callCancel(rsvId: string): Promise<BookingResult> {
     try {
       const res = await fetch("/api/booking/cancel", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ rsvId }),
       });
-      const j: BookingResult = await res.json();
-      setResultBy((m) => ({ ...m, [order.id]: j }));
-      if (j.ok) {
-        await updateOrder(order.id, { reservation: undefined });
-        refresh();
-      }
+      return (await res.json()) as BookingResult;
     } catch (e) {
-      setResultBy((m) => ({
-        ...m,
-        [order.id]: { ok: false, error: (e as Error).message },
-      }));
+      return { ok: false, error: (e as Error).message, stage: "network" };
+    }
+  }
+
+  function describeFailure(j: BookingResult, legLabel: string): string {
+    const stage = j.stage ?? "오류";
+    const msg = j.error ?? "알 수 없는 오류";
+    return `[${legLabel}] ${stage} 단계 실패\n${msg}`;
+  }
+
+  async function onBook(order: Order) {
+    if (live) {
+      const summary =
+        order.tripType === "roundtrip" && order.inbound
+          ? `${order.outbound.depPlaceName} → ${order.outbound.arrPlaceName} (가는편)\n${order.inbound.depPlaceName} → ${order.inbound.arrPlaceName} (오는편)`
+          : `${order.outbound.depPlaceName} → ${order.outbound.arrPlaceName}`;
+      const ok = confirm(
+        `[실 예약 LIVE]\n\n${summary}\n${order.passengerCount}명\n\n마스터 코레일 계정으로 실제 좌석을 점유합니다. 결제 기한이 카운트다운 됩니다.\n진행할까요?`,
+      );
+      if (!ok) return;
+    }
+    setBusyId(order.id);
+    try {
+      // ── Outbound leg
+      const outRes = await callReserve(
+        legPayload(order.outbound, order.seatType, order.passengerCount),
+      );
+      setResultBy((m) => ({ ...m, [order.id]: outRes }));
+
+      if (!outRes.ok) {
+        alert(describeFailure(outRes, "가는 편"));
+        return;
+      }
+      const outRsv = buildReservation(outRes);
+      if (!outRsv) {
+        alert("가는 편 예약 응답을 해석할 수 없습니다.");
+        return;
+      }
+
+      // For oneway → done.
+      if (order.tripType !== "roundtrip" || !order.inbound) {
+        await updateOrder(order.id, { reservation: outRsv });
+        refresh();
+        return;
+      }
+
+      // ── Inbound leg
+      const inSeat = order.inboundSeatType ?? order.seatType;
+      const inRes = await callReserve(
+        legPayload(order.inbound, inSeat, order.passengerCount),
+      );
+
+      if (!inRes.ok) {
+        // 2nd leg failed — roll back the 1st leg if it was a live reservation.
+        const rolledBackMsg =
+          outRsv.mode === "live"
+            ? `\n\n가는 편(${outRsv.rsvId}) 예약은 자동 취소를 시도합니다.`
+            : "";
+        setResultBy((m) => ({ ...m, [order.id]: inRes }));
+        if (outRsv.mode === "live" && outRsv.rsvId) {
+          const rb = await callCancel(outRsv.rsvId);
+          if (!rb.ok) {
+            alert(
+              describeFailure(inRes, "오는 편") +
+                rolledBackMsg +
+                `\n\n⚠ 가는 편 자동 취소도 실패: ${rb.stage ?? ""} ${rb.error ?? ""}\n코레일 앱에서 직접 취소해주세요.`,
+            );
+            // Don't save anything; user must clean up manually.
+            return;
+          }
+        }
+        alert(describeFailure(inRes, "오는 편") + rolledBackMsg);
+        return;
+      }
+
+      const inRsv = buildReservation(inRes);
+      if (!inRsv) {
+        alert("오는 편 예약 응답을 해석할 수 없습니다.");
+        return;
+      }
+
+      // Both legs OK — persist both reservations.
+      await updateOrder(order.id, {
+        reservation: outRsv,
+        inboundReservation: inRsv,
+      });
+      // Also keep the latest result for the badge — show outbound result.
+      setResultBy((m) => ({ ...m, [order.id]: outRes }));
+      refresh();
+    } finally {
+      setBusyId(null);
+    }
+  }
+
+  async function onCancel(order: Order) {
+    const outRsv = order.reservation;
+    const inRsv = order.inboundReservation;
+    const outLive = outRsv?.mode === "live" && !!outRsv.rsvId;
+    const inLive = inRsv?.mode === "live" && !!inRsv.rsvId;
+
+    if (!outLive && !inLive) return;
+
+    const summary =
+      inLive && outLive
+        ? `가는 편 ${outRsv!.rsvId} + 오는 편 ${inRsv!.rsvId}`
+        : outLive
+          ? `가는 편 ${outRsv!.rsvId}`
+          : `오는 편 ${inRsv!.rsvId}`;
+
+    if (
+      !confirm(
+        `예약을 취소합니다.\n\n${order.outbound.depPlaceName} → ${order.outbound.arrPlaceName}\n${summary}\n\n취소된 좌석은 즉시 다른 사람이 잡을 수 있게 됩니다.\n진행할까요?`,
+      )
+    )
+      return;
+
+    setBusyId(order.id);
+    try {
+      const failures: string[] = [];
+
+      if (outLive) {
+        const j = await callCancel(outRsv!.rsvId);
+        setResultBy((m) => ({ ...m, [order.id]: j }));
+        if (j.ok) {
+          await updateOrder(order.id, { reservation: undefined });
+        } else {
+          failures.push(describeFailure(j, "가는 편 취소"));
+        }
+      }
+
+      if (inLive) {
+        const j = await callCancel(inRsv!.rsvId);
+        setResultBy((m) => ({ ...m, [order.id]: j }));
+        if (j.ok) {
+          await updateOrder(order.id, { inboundReservation: undefined });
+        } else {
+          failures.push(describeFailure(j, "오는 편 취소"));
+        }
+      }
+
+      refresh();
+      if (failures.length > 0) {
+        alert(failures.join("\n\n"));
+      }
     } finally {
       setBusyId(null);
     }
@@ -327,7 +444,9 @@ function OrderCard({
   onDelete: () => void;
 }) {
   const hasLiveReservation =
-    order.reservation?.mode === "live" && !!order.reservation.rsvId;
+    (order.reservation?.mode === "live" && !!order.reservation.rsvId) ||
+    (order.inboundReservation?.mode === "live" && !!order.inboundReservation.rsvId);
+  const showFailure = !!result && result.ok === false;
   return (
     <li className="bg-white border border-slate-200 rounded-2xl overflow-hidden">
       {/* Top row */}
@@ -376,6 +495,25 @@ function OrderCard({
         </div>
       </div>
 
+      {/* Failure banner — visible until the user takes another action */}
+      {showFailure && (
+        <div className="mx-4 mb-4 -mt-1 border border-red-200 bg-red-50 rounded-lg px-3 py-2">
+          <div className="flex items-center justify-between gap-2">
+            <span className="text-[11px] font-semibold text-red-700 uppercase tracking-wide">
+              예매 실패 · {result?.stage ?? "오류"}
+            </span>
+            {result?.effectiveLive === false && result?.requestedLive ? (
+              <span className="text-[10px] text-amber-700">
+                서버 LIVE OFF — dry-run 처리됨
+              </span>
+            ) : null}
+          </div>
+          <div className="text-[12px] text-red-700 mt-1 break-words whitespace-pre-line">
+            {result?.error ?? "알 수 없는 오류"}
+          </div>
+        </div>
+      )}
+
       {/* Action row */}
       <div className="grid grid-cols-3 border-t border-slate-100">
         {hasLiveReservation ? (
@@ -423,26 +561,55 @@ function ReservationBadge({
   order: Order;
   result?: BookingResult;
 }) {
-  if (order.reservation) {
-    const r = order.reservation;
-    if (r.mode === "live") {
-      return (
-        <div className="text-right">
-          <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200 rounded-full px-2 py-0.5">
-            ● 예약 완료
-          </span>
-          {r.deadline && (
-            <div className="text-[10px] text-amber-700 mt-0.5">기한: {r.deadline}</div>
-          )}
-        </div>
-      );
-    }
+  const out = order.reservation;
+  const inb = order.inboundReservation;
+  const outLive = out?.mode === "live";
+  const inLive = inb?.mode === "live";
+  const isRT = order.tripType === "roundtrip";
+
+  if (outLive || inLive) {
+    const bothLive = isRT && outLive && inLive;
+    const partial = isRT && (outLive !== inLive);
+    return (
+      <div className="text-right space-y-0.5">
+        <span
+          className={`inline-flex items-center gap-1 text-[10px] font-semibold rounded-full px-2 py-0.5 ${
+            bothLive || (!isRT && outLive)
+              ? "text-emerald-700 bg-emerald-50 border border-emerald-200"
+              : "text-amber-700 bg-amber-50 border border-amber-200"
+          }`}
+        >
+          {bothLive
+            ? "● 왕복 예약 완료"
+            : !isRT && outLive
+              ? "● 예약 완료"
+              : partial
+                ? outLive
+                  ? "● 가는편만 예약됨"
+                  : "● 오는편만 예약됨"
+                : "● 예약 완료"}
+        </span>
+        {outLive && out?.deadline && (
+          <div className="text-[10px] text-amber-700">
+            {isRT ? "가는편 기한: " : "기한: "}
+            {out.deadline}
+          </div>
+        )}
+        {inLive && inb?.deadline && (
+          <div className="text-[10px] text-amber-700">오는편 기한: {inb.deadline}</div>
+        )}
+      </div>
+    );
+  }
+
+  if (out?.mode === "dry" || inb?.mode === "dry") {
     return (
       <span className="inline-flex text-[10px] font-medium text-slate-600 bg-slate-100 border border-slate-200 rounded-full px-2 py-0.5">
         ◌ dry-run
       </span>
     );
   }
+
   if (result && !result.ok) {
     return (
       <span
@@ -496,16 +663,72 @@ function OrderDetail({
         주문 시각: {fmtDateTime(toPlandTime(order.createdAt))}
       </div>
 
-      {(order.reservation || result) && (
+      {(order.reservation || order.inboundReservation) && (
+        <div className="bg-white border border-slate-200 rounded-xl p-3 space-y-2">
+          <div className="text-[11px] font-semibold text-slate-500 mb-1">예약 현황</div>
+          {order.reservation && (
+            <ResRow label="가는 편" r={order.reservation} />
+          )}
+          {order.inboundReservation && (
+            <ResRow label="오는 편" r={order.inboundReservation} />
+          )}
+        </div>
+      )}
+
+      {result && !result.ok && (
+        <div className="bg-red-50 border border-red-200 rounded-xl p-3">
+          <div className="text-[11px] font-semibold text-red-700 mb-1">
+            마지막 실행 실패 · {result.stage ?? "오류"}
+          </div>
+          <div className="text-xs text-red-700 whitespace-pre-line break-words">
+            {result.error}
+          </div>
+        </div>
+      )}
+
+      {(order.reservation || order.inboundReservation || result) && (
         <details className="bg-white border border-slate-200 rounded-xl p-3">
           <summary className="text-[11px] font-semibold text-slate-500 cursor-pointer">
-            예약 raw JSON
+            raw JSON
           </summary>
           <pre className="text-[10px] font-mono bg-slate-50 border border-slate-100 rounded p-2 overflow-auto max-h-48 mt-2">
-{JSON.stringify(result ?? order.reservation, null, 2)}
+{JSON.stringify(
+  {
+    reservation: order.reservation,
+    inboundReservation: order.inboundReservation,
+    lastResult: result,
+  },
+  null,
+  2,
+)}
           </pre>
         </details>
       )}
+    </div>
+  );
+}
+
+function ResRow({ label, r }: { label: string; r: Reservation }) {
+  return (
+    <div className="flex items-start justify-between gap-3 text-xs">
+      <div>
+        <div className="text-slate-500">{label}</div>
+        <div className="font-mono text-slate-800 mt-0.5">{r.rsvId || "(없음)"}</div>
+      </div>
+      <div className="text-right">
+        <div
+          className={`inline-block text-[10px] font-semibold rounded-full px-2 py-0.5 ${
+            r.mode === "live"
+              ? "bg-emerald-50 text-emerald-700 border border-emerald-200"
+              : "bg-slate-100 text-slate-600 border border-slate-200"
+          }`}
+        >
+          {r.mode === "live" ? "● 예약 완료" : "◌ dry-run"}
+        </div>
+        {r.deadline && (
+          <div className="text-[10px] text-amber-700 mt-1">기한: {r.deadline}</div>
+        )}
+      </div>
     </div>
   );
 }

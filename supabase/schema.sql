@@ -25,8 +25,14 @@ create table if not exists public.orders (
     passengers    jsonb not null default '[]'::jsonb,
 
     -- Result of the admin [예매하기] action; null until reserved.
-    reservation   jsonb
+    reservation         jsonb,
+    inbound_reservation jsonb
 );
+
+-- Idempotent migration for existing projects that created the table before
+-- this column existed.
+alter table public.orders
+    add column if not exists inbound_reservation jsonb;
 
 create index if not exists orders_created_at_idx
     on public.orders (created_at desc);
