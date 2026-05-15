@@ -266,9 +266,9 @@ function TrainCard({
         <GradeBadge name={t.trainGradeName} />
         <span className="text-sky-600 text-sm font-semibold">{Number(t.trainNo) || t.trainNo}</span>
       </div>
-      <div className="flex items-end justify-between gap-4">
-        <div>
-          <div className="text-xl font-bold tabular-nums text-slate-900 leading-tight">
+      <div className="flex items-center justify-between gap-3 flex-wrap">
+        <div className="min-w-0">
+          <div className="text-xl font-bold tabular-nums text-slate-900 leading-tight whitespace-nowrap">
             {fmtTime(t.depPlandTime)}
             <span className="text-slate-300 mx-1.5 text-xl">→</span>
             {fmtTime(t.arrPlandTime)}
@@ -320,19 +320,19 @@ function PriceBox({
 }) {
   return (
     <span
-      className={`block w-[88px] h-12 rounded-sm border text-center ${
+      className={`inline-flex flex-col items-center justify-center w-[80px] h-12 rounded-sm border leading-tight px-1 ${
         soldOut
           ? "border-slate-200 bg-white text-slate-300"
           : "border-slate-200 bg-white"
       }`}
     >
-      <div className="text-[12px] text-slate-500">{label}</div>
+      <span className="text-[11px] text-slate-500">{label}</span>
       {soldOut ? (
-        <div className="text-sm font-bold text-red-500 mt-0.5">매진</div>
+        <span className="text-[13px] font-bold text-red-500 mt-0.5">매진</span>
       ) : (
-        <div className="text-sm font-bold text-slate-900 tabular-nums mt-0.5">
-          ₩ {price.toLocaleString("ko-KR")}
-        </div>
+        <span className="text-[13px] font-bold text-slate-900 tabular-nums mt-0.5 whitespace-nowrap">
+          ₩{price.toLocaleString("ko-KR")}
+        </span>
       )}
     </span>
   );
