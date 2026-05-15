@@ -66,9 +66,18 @@ export default function DatePickerSheet({
   const [viewM, setViewM] = useState(initialFromValue.m);
   const [picked, setPicked] = useState<string | null>(value?.date ?? null);
   const [hour, setHour] = useState<number>(value?.hour ?? 0);
+  // Snapshot the current hour when the sheet opens so the floor stays stable
+  // while the user interacts; recomputed each open.
+  const [nowHour, setNowHour] = useState<number>(() => new Date().getHours());
+
+  const todayIso = useMemo(() => toIso(today.y, today.m, today.d), [today]);
+  const isToday = picked === todayIso;
+  // If the user picks today, force hour ≥ now+1 (capped at 23).
+  const hourFloor = isToday ? Math.min(23, nowHour + 1) : 0;
 
   useEffect(() => {
     if (open) {
+      setNowHour(new Date().getHours());
       // Reset view to value or today each time it opens.
       const v = value?.date;
       if (v) {
@@ -84,6 +93,11 @@ export default function DatePickerSheet({
       }
     }
   }, [open, value, today.y, today.m]);
+
+  // Whenever the picked date changes (or floor recomputes), keep hour ≥ floor.
+  useEffect(() => {
+    setHour((h) => (h < hourFloor ? hourFloor : h));
+  }, [hourFloor]);
 
   function prevMonth() {
     let y = viewY;
@@ -116,8 +130,6 @@ export default function DatePickerSheet({
   for (let i = 0; i < offset; i++) cells.push(null);
   for (let d = 1; d <= days; d++) cells.push({ d });
   while (cells.length % 7 !== 0) cells.push(null);
-
-  const todayIso = toIso(today.y, today.m, today.d);
 
   return (
     <BottomSheet
@@ -243,15 +255,19 @@ export default function DatePickerSheet({
         <div className="flex gap-2 overflow-x-auto no-scrollbar pb-2 -mx-1 px-1">
           {Array.from({ length: 24 }).map((_, h) => {
             const active = hour === h;
+            const disabled = h < hourFloor;
             return (
               <button
                 key={h}
                 type="button"
+                disabled={disabled}
                 onClick={() => setHour(h)}
                 className={`shrink-0 h-10 px-3 min-w-[58px] rounded-lg border text-sm font-medium transition ${
-                  active
-                    ? "border-sky-600 text-sky-700 bg-sky-50"
-                    : "border-slate-200 bg-white text-slate-600 hover:border-slate-300"
+                  disabled
+                    ? "border-slate-100 bg-slate-50 text-slate-300 cursor-not-allowed"
+                    : active
+                      ? "border-sky-600 text-sky-700 bg-sky-50"
+                      : "border-slate-200 bg-white text-slate-600 hover:border-slate-300"
                 }`}
               >
                 {pad2(h)}시
