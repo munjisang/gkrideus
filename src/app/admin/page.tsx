@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import {
   clearOrders,
@@ -31,6 +31,10 @@ export default function AdminPage() {
   const [busyId, setBusyId] = useState<string | null>(null);
   const [resultBy, setResultBy] = useState<Record<string, BookingResult>>({});
   const [live, setLive] = useState(false);
+  const [syncing, setSyncing] = useState(false);
+  const [lastSyncAt, setLastSyncAt] = useState<string | null>(null);
+  const [syncError, setSyncError] = useState<string | null>(null);
+  const initialSyncRef = useRef(false);
 
   function refresh() {
     loadOrders()
@@ -41,6 +45,71 @@ export default function AdminPage() {
       });
   }
 
+  /**
+   * Reconcile our DB with Korail: for every live reservation we know about,
+   * ask the server which IDs Korail still has. Any that have disappeared
+   * (cancelled in app, expired, paid+confirmed-out, etc.) get cleared here.
+   */
+  async function syncReservations(opts: { silent?: boolean } = {}) {
+    const all = await loadOrders();
+    const ids: { orderId: string; leg: "out" | "in"; rsvId: string }[] = [];
+    for (const o of all) {
+      if (o.reservation?.mode === "live" && o.reservation.rsvId)
+        ids.push({ orderId: o.id, leg: "out", rsvId: o.reservation.rsvId });
+      if (o.inboundReservation?.mode === "live" && o.inboundReservation.rsvId)
+        ids.push({ orderId: o.id, leg: "in", rsvId: o.inboundReservation.rsvId });
+    }
+    if (ids.length === 0) {
+      setLastSyncAt(new Date().toISOString());
+      setSyncError(null);
+      return;
+    }
+    if (!opts.silent) setSyncing(true);
+    try {
+      const res = await fetch("/api/booking/sync", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ rsvIds: ids.map((x) => x.rsvId) }),
+      });
+      const j = (await res.json()) as {
+        ok: boolean;
+        cancelled?: string[];
+        active?: string[];
+        error?: string;
+        stage?: string;
+      };
+      if (!j.ok) {
+        setSyncError(`${j.stage ?? "오류"}: ${j.error ?? "동기화 실패"}`);
+        return;
+      }
+      const cancelled = new Set(j.cancelled ?? []);
+      if (cancelled.size === 0) {
+        setSyncError(null);
+        setLastSyncAt(new Date().toISOString());
+        return;
+      }
+      // Group cleared legs by order.
+      const patches = new Map<string, Partial<Order>>();
+      for (const entry of ids) {
+        if (!cancelled.has(entry.rsvId)) continue;
+        const cur = patches.get(entry.orderId) ?? {};
+        if (entry.leg === "out") cur.reservation = undefined;
+        else cur.inboundReservation = undefined;
+        patches.set(entry.orderId, cur);
+      }
+      for (const [id, p] of patches) {
+        await updateOrder(id, p);
+      }
+      setSyncError(null);
+      setLastSyncAt(new Date().toISOString());
+      refresh();
+    } catch (e) {
+      setSyncError((e as Error).message);
+    } finally {
+      if (!opts.silent) setSyncing(false);
+    }
+  }
+
   useEffect(() => {
     refresh();
     function onStorage(e: StorageEvent) {
@@ -49,6 +118,15 @@ export default function AdminPage() {
     window.addEventListener("storage", onStorage);
     return () => window.removeEventListener("storage", onStorage);
   }, []);
+
+  // Auto-sync once after first load — quietly clears stale 'live' badges.
+  useEffect(() => {
+    if (initialSyncRef.current) return;
+    if (!orders) return;
+    initialSyncRef.current = true;
+    void syncReservations({ silent: true });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [orders]);
 
   async function onDelete(id: string) {
     if (!confirm(`주문 ${id}을(를) 삭제할까요?`)) return;
@@ -280,16 +358,33 @@ export default function AdminPage() {
 
   return (
     <div className="mx-auto max-w-5xl px-4 py-6 pb-10">
-      <div className="flex items-center justify-between mb-4">
+      <div className="flex items-center justify-between mb-4 gap-3 flex-wrap">
         <p className="text-sm text-slate-500">
-          이 브라우저에 저장된 주문 <span className="font-semibold text-slate-700">{orders?.length ?? 0}</span>건
+          주문 <span className="font-semibold text-slate-700">{orders?.length ?? 0}</span>건
+          {lastSyncAt && (
+            <span className="ml-2 text-xs text-slate-400">
+              · 최근 동기화 {fmtTime(toPlandTime(lastSyncAt))}
+            </span>
+          )}
+          {syncError && (
+            <span className="ml-2 text-xs text-red-600">· 동기화 오류: {syncError}</span>
+          )}
         </p>
-        <button
-          onClick={refresh}
-          className="text-xs text-slate-500 hover:text-slate-900"
-        >
-          새로고침
-        </button>
+        <div className="flex items-center gap-3">
+          <button
+            onClick={() => syncReservations()}
+            disabled={syncing}
+            className="text-xs text-slate-500 hover:text-slate-900 disabled:opacity-50"
+          >
+            {syncing ? "동기화 중…" : "코레일 동기화"}
+          </button>
+          <button
+            onClick={refresh}
+            className="text-xs text-slate-500 hover:text-slate-900"
+          >
+            새로고침
+          </button>
+        </div>
       </div>
 
       <label
