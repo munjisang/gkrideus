@@ -238,9 +238,44 @@ const GRADE_EN: Record<string, string> = {
   무궁화호: "Mugunghwa",
 };
 
+// ─── Revised Romanization fallback (for stations not in STATION_EN) ───
+const RR_CHO = [
+  "g", "kk", "n", "d", "tt", "r", "m", "b", "pp", "s", "ss", "", "j", "jj",
+  "ch", "k", "t", "p", "h",
+];
+const RR_JUNG = [
+  "a", "ae", "ya", "yae", "eo", "e", "yeo", "ye", "o", "wa", "wae", "oe",
+  "yo", "u", "wo", "we", "wi", "yu", "eu", "ui", "i",
+];
+const RR_JONG = [
+  "", "k", "k", "k", "n", "n", "n", "t", "l", "k", "m", "l", "l", "l", "p",
+  "l", "m", "p", "p", "t", "t", "ng", "t", "t", "k", "t", "p", "t",
+];
+
+/** Romanize a Korean string per Revised Romanization (no liaison rules —
+ *  good enough for station labels). Non-Hangul passes through. */
+function romanize(input: string): string {
+  let out = "";
+  for (const ch of input) {
+    const code = ch.charCodeAt(0);
+    if (code >= 0xac00 && code <= 0xd7a3) {
+      const s = code - 0xac00;
+      out += RR_CHO[Math.floor(s / 588)];
+      out += RR_JUNG[Math.floor((s % 588) / 28)];
+      out += RR_JONG[s % 28];
+    } else {
+      out += ch;
+    }
+  }
+  // Title-case each word/segment (split on space, hyphen, paren).
+  return out.replace(/(^|[\s\-(])([a-z])/g, (_, p, c) => p + c.toUpperCase());
+}
+
 export function stationLabel(korean: string, lang: Lang): string {
   if (lang === "ko") return korean;
-  return STATION_EN[korean] ?? korean;
+  if (STATION_EN[korean]) return STATION_EN[korean];
+  // Auto-romanize the long tail so EN mode never shows raw Hangul.
+  return romanize(korean);
 }
 export function regionLabel(korean: string, lang: Lang): string {
   if (lang === "ko") return korean;
