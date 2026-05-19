@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { pushRecent } from "../lib/recentStations";
+import { useI18n, stationLabel } from "../lib/i18n";
 import StationPicker from "../components/StationPicker";
 import DatePickerSheet, { type DateHour } from "../components/DatePickerSheet";
 import PassengersSheet, { type Passengers } from "../components/PassengersSheet";
@@ -14,19 +15,21 @@ type StationsResponse =
   | { ok: true; count: number; cities: CityGroup[] }
   | { ok: false; error: string };
 
-function fmtDateHourLabel(v: DateHour | null): string {
+type T = (k: string, p?: Record<string, string | number>) => string;
+
+function fmtDateHourLabel(v: DateHour | null, t: T): string {
   if (!v) return "";
   const [y, m, d] = v.date.split("-");
-  return `${y}.${m}.${d} · ${String(v.hour).padStart(2, "0")}시 이후`;
+  return `${y}.${m}.${d} · ${t("home.afterHour", { h: String(v.hour).padStart(2, "0") })}`;
 }
 
-function passengersLabel(p: Passengers): string {
+function passengersLabel(p: Passengers, t: T): string {
   const parts: string[] = [];
-  if (p.adults) parts.push(`어른 ${p.adults}`);
-  if (p.children) parts.push(`어린이 ${p.children}`);
-  if (p.toddlers) parts.push(`유아 ${p.toddlers}`);
-  if (p.seniors) parts.push(`경로 ${p.seniors}`);
-  return parts.length ? parts.join(" · ") : "성인 1명";
+  if (p.adults) parts.push(`${t("pax.adult")} ${p.adults}`);
+  if (p.children) parts.push(`${t("pax.child")} ${p.children}`);
+  if (p.toddlers) parts.push(`${t("pax.toddler")} ${p.toddlers}`);
+  if (p.seniors) parts.push(`${t("pax.senior")} ${p.seniors}`);
+  return parts.length ? parts.join(" · ") : t("pax.adultDefault");
 }
 
 function totalPassengers(p: Passengers): number {
@@ -35,6 +38,7 @@ function totalPassengers(p: Passengers): number {
 
 export default function HomePage() {
   const router = useRouter();
+  const { t, lang } = useI18n();
   const [groups, setGroups] = useState<CityGroup[] | null>(null);
 
   const [tripType, setTripType] = useState<TripType>("oneway");
@@ -70,7 +74,6 @@ export default function HomePage() {
     setTo(from);
   }
 
-  // All required fields filled → enable the submit button.
   const isValid =
     !!from &&
     !!to &&
@@ -82,27 +85,27 @@ export default function HomePage() {
   function onSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!from || !to) {
-      setError("출발역과 도착역을 선택해주세요.");
+      setError(t("home.err.noStations"));
       return;
     }
     if (from.id === to.id) {
-      setError("출발역과 도착역이 같습니다.");
+      setError(t("home.err.sameStation"));
       return;
     }
     if (!outbound) {
-      setError("가는 날을 선택해주세요.");
+      setError(t("home.err.noDep"));
       return;
     }
     if (tripType === "roundtrip" && !inbound) {
-      setError("오는 날을 선택해주세요.");
+      setError(t("home.err.noRet"));
       return;
     }
     if (tripType === "roundtrip" && inbound && inbound.date < outbound.date) {
-      setError("돌아오는 날짜가 가는 날짜보다 빠를 수 없습니다.");
+      setError(t("home.err.retBeforeDep"));
       return;
     }
     if (totalPassengers(passengers) < 1) {
-      setError("탑승객을 1명 이상 선택해주세요.");
+      setError(t("home.err.noPax"));
       return;
     }
     setError(null);
@@ -138,8 +141,8 @@ export default function HomePage() {
         {/* Trip type */}
         <div className="px-5 pt-5 pb-2 flex gap-2">
           {[
-            { v: "oneway", label: "편도" },
-            { v: "roundtrip", label: "왕복" },
+            { v: "oneway", label: t("home.oneway") },
+            { v: "roundtrip", label: t("home.roundtrip") },
           ].map((o) => (
             <button
               key={o.v}
@@ -165,13 +168,13 @@ export default function HomePage() {
           >
             <span aria-hidden className="w-2.5 h-2.5 rounded-full border-2 border-slate-700 shrink-0" />
             <span className="flex-1">
-              <span className="text-xs text-slate-400 block">출발</span>
+              <span className="text-xs text-slate-400 block">{t("home.dep")}</span>
               <span
                 className={`text-xl font-semibold ${
                   from ? "text-slate-900" : "text-slate-400"
                 }`}
               >
-                {from?.name ?? "출발역"}
+                {from ? stationLabel(from.name, lang) : t("home.depStation")}
               </span>
             </span>
           </button>
@@ -185,13 +188,13 @@ export default function HomePage() {
           >
             <span aria-hidden className="w-2.5 h-2.5 rounded-full bg-red-500 shrink-0" />
             <span className="flex-1">
-              <span className="text-xs text-slate-400 block">도착</span>
+              <span className="text-xs text-slate-400 block">{t("home.arr")}</span>
               <span
                 className={`text-xl font-semibold ${
                   to ? "text-slate-900" : "text-slate-400"
                 }`}
               >
-                {to?.name ?? "도착역"}
+                {to ? stationLabel(to.name, lang) : t("home.arrStation")}
               </span>
             </span>
           </button>
@@ -199,14 +202,12 @@ export default function HomePage() {
           <button
             type="button"
             onClick={swap}
-            aria-label="역 바꾸기"
+            aria-label={t("home.swap")}
             className="absolute right-5 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full border border-slate-200 bg-white grid place-items-center text-slate-500 hover:text-slate-900 hover:border-slate-300 transition shadow-sm"
           >
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-              {/* Up arrow */}
               <path d="M7 19V5" />
               <path d="M4 8l3-3 3 3" />
-              {/* Down arrow */}
               <path d="M17 5v14" />
               <path d="M14 16l3 3 3-3" />
             </svg>
@@ -215,36 +216,38 @@ export default function HomePage() {
 
         <div className="h-px bg-slate-100 mx-5" />
 
-        {/* Date rows — each on its own line, opens DatePickerSheet */}
+        {/* Date rows */}
         <div className="px-5">
           <DateRow
-            label="가는 날"
+            label={t("home.depDate")}
             value={outbound}
+            placeholder={t("home.pickDate")}
+            display={fmtDateHourLabel(outbound, t)}
             onOpen={() => setDatePicker("outbound")}
           />
           {tripType === "roundtrip" && (
-            <>
-              <DateRow
-                label="오는 날"
-                value={inbound}
-                onOpen={() => setDatePicker("inbound")}
-              />
-            </>
+            <DateRow
+              label={t("home.retDate")}
+              value={inbound}
+              placeholder={t("home.pickDate")}
+              display={fmtDateHourLabel(inbound, t)}
+              onOpen={() => setDatePicker("inbound")}
+            />
           )}
         </div>
 
         <div className="h-px bg-slate-100 mx-5" />
 
-        {/* Passengers row — opens PassengersSheet */}
+        {/* Passengers row */}
         <div className="px-5 py-3">
           <button
             type="button"
             onClick={() => setPassengerSheet(true)}
             className="w-full flex items-center justify-between py-3.5 text-left hover:bg-slate-50 rounded-xl px-2 -mx-2 transition"
           >
-            <span className="text-sm text-slate-500">인원</span>
+            <span className="text-sm text-slate-500">{t("home.pax")}</span>
             <span className="text-[15px] font-medium text-slate-900">
-              {passengersLabel(passengers)}
+              {passengersLabel(passengers, t)}
               <svg
                 className="inline-block ml-1 -mt-0.5 text-slate-400"
                 width="14"
@@ -278,7 +281,7 @@ export default function HomePage() {
                 : "bg-slate-200 text-slate-400 cursor-not-allowed"
             }`}
           >
-            열차 조회
+            {t("home.search")}
           </button>
         </div>
       </form>
@@ -297,12 +300,11 @@ export default function HomePage() {
 
       <DatePickerSheet
         open={datePicker === "outbound"}
-        title="가는 날 선택"
+        title={t("dp.titleDep")}
         value={outbound}
         onClose={() => setDatePicker(null)}
         onPick={(v) => {
           setOutbound(v);
-          // Auto-clamp inbound if it's now earlier
           if (inbound && inbound.date < v.date) setInbound(null);
           setDatePicker(null);
         }}
@@ -310,7 +312,7 @@ export default function HomePage() {
 
       <DatePickerSheet
         open={datePicker === "inbound"}
-        title="오는 날 선택"
+        title={t("dp.titleRet")}
         value={inbound}
         minDate={outbound?.date}
         onClose={() => setDatePicker(null)}
@@ -336,10 +338,14 @@ export default function HomePage() {
 function DateRow({
   label,
   value,
+  placeholder,
+  display,
   onOpen,
 }: {
   label: string;
   value: DateHour | null;
+  placeholder: string;
+  display: string;
   onOpen: () => void;
 }) {
   return (
@@ -354,7 +360,7 @@ function DateRow({
           value ? "text-slate-900" : "text-slate-400"
         }`}
       >
-        {value ? fmtDateHourLabel(value) : "탑승일"}
+        {value ? display : placeholder}
         <svg
           className="inline-block ml-1 -mt-0.5 text-slate-400"
           width="14"

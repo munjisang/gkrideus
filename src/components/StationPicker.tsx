@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { MAJOR_STATION_IDS, REGION_TAB_ORDER } from "../lib/majorStations";
 import { loadRecent } from "../lib/recentStations";
+import { useI18n, stationLabel, regionLabel } from "../lib/i18n";
 
 type Station = { id: string; name: string };
 type CityGroup = { cityCode: string; cityName: string; stations: Station[] };
@@ -18,6 +19,7 @@ type TabKey = "recent" | "major" | string;
 const EXIT_MS = 220;
 
 export default function StationPicker({ open, groups, onPick, onClose }: Props) {
+  const { t, lang } = useI18n();
   const [tab, setTab] = useState<TabKey>("major");
   const [recent, setRecent] = useState<Station[]>([]);
   const [query, setQuery] = useState("");
@@ -138,7 +140,7 @@ export default function StationPicker({ open, groups, onPick, onClose }: Props) 
             <input
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              placeholder="역명 또는 지역명 검색"
+              placeholder={t("sp.searchPlaceholder")}
               className="flex-1 bg-transparent text-base placeholder-slate-400 focus:outline-none"
             />
             {query && (
@@ -159,16 +161,16 @@ export default function StationPicker({ open, groups, onPick, onClose }: Props) 
           <div className="border-b border-slate-100">
             <div className="flex gap-2 overflow-x-auto no-scrollbar py-2 px-4">
               <Tab active={tab === "recent"} onClick={() => setTab("recent")}>
-                최근
+                {t("sp.tab.recent")}
               </Tab>
               <Tab active={tab === "major"} onClick={() => setTab("major")}>
-                주요역
+                {t("sp.tab.major")}
               </Tab>
               {REGION_TAB_ORDER.filter((r) =>
                 groups?.some((g) => g.cityCode === r.code),
               ).map((r) => (
                 <Tab key={r.code} active={tab === r.code} onClick={() => setTab(r.code)}>
-                  {r.label}
+                  {regionLabel(r.label, lang)}
                 </Tab>
               ))}
             </div>
@@ -179,16 +181,16 @@ export default function StationPicker({ open, groups, onPick, onClose }: Props) 
         <div className="flex-1 overflow-y-auto">
           {!groups && (
             <div className="px-6 py-10 text-center text-slate-400 text-sm">
-              역 목록을 불러오는 중…
+              {t("sp.loading")}
             </div>
           )}
           {groups && list.length === 0 && (
             <div className="px-6 py-10 text-center text-slate-400 text-sm">
               {query.trim()
-                ? `"${query.trim()}" 검색 결과가 없습니다.`
+                ? t("sp.noResult", { q: query.trim() })
                 : tab === "recent"
-                  ? "최근 선택한 역이 없습니다."
-                  : "표시할 역이 없습니다."}
+                  ? t("sp.noRecent")
+                  : t("sp.empty")}
             </div>
           )}
           <ul>
@@ -198,7 +200,10 @@ export default function StationPicker({ open, groups, onPick, onClose }: Props) 
                   onClick={() => onPick(s)}
                   className="w-full text-left flex items-center justify-between px-6 py-4 border-b border-slate-100 hover:bg-slate-50 active:bg-slate-100 transition"
                 >
-                  <Highlighted text={`${s.name}역`} query={query} />
+                  <Highlighted
+                    text={`${stationLabel(s.name, lang)}${t("sp.stationSuffix")}`}
+                    query={query}
+                  />
                 </button>
               </li>
             ))}

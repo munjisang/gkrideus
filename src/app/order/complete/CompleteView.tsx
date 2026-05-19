@@ -4,12 +4,20 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { loadOrders } from "../../../lib/storage";
-import { fmtDateTime, fmtKRW, fmtTime, fmtDate } from "../../../lib/format";
+import { fmtDateTime, fmtTime, fmtDate } from "../../../lib/format";
+import { useI18n, stationLabel, type Lang } from "../../../lib/i18n";
 import type { Order } from "../../../lib/types";
+
+function krwL(n: number, lang: Lang): string {
+  return lang === "ko"
+    ? `${n.toLocaleString("ko-KR")}원`
+    : `₩${n.toLocaleString("en-US")}`;
+}
 
 export default function CompleteView() {
   const sp = useSearchParams();
   const id = sp.get("id") ?? "";
+  const { t, lang } = useI18n();
   const [order, setOrder] = useState<Order | null | undefined>(undefined);
 
   useEffect(() => {
@@ -19,20 +27,40 @@ export default function CompleteView() {
   }, [id]);
 
   if (order === undefined) {
-    return <div className="mx-auto max-w-md px-4 py-8 text-slate-500">불러오는 중…</div>;
+    return (
+      <div className="mx-auto max-w-md px-4 py-8 text-slate-500">
+        {t("common.loading")}
+      </div>
+    );
   }
   if (order === null) {
     return (
       <div className="mx-auto max-w-md px-4 py-8">
         <div className="bg-red-50 border border-red-200 text-red-700 rounded-xl px-4 py-3 text-sm">
-          주문을 찾을 수 없습니다. (ID: {id || "(없음)"})
+          {t("cp.notFound", { id: id || "-" })}
         </div>
         <Link href="/" className="inline-block mt-4 text-sky-700 text-sm">
-          ← 처음으로
+          ← {t("ord.toHome")}
         </Link>
       </div>
     );
   }
+
+  const seatName = (s: "standard" | "first") =>
+    s === "first" ? t("sr.first") : t("sr.standard");
+
+  const seatValue =
+    order.tripType === "roundtrip" && order.inboundSeatType
+      ? `${t("ord.legOut")} ${seatName(order.seatType)} · ${t("ord.legIn")} ${seatName(
+          order.inboundSeatType,
+        )}`
+      : seatName(order.seatType);
+
+  const legText = (leg: NonNullable<Order["inbound"]>) =>
+    `${fmtDate(leg.depPlandTime.slice(0, 8))} ${fmtTime(leg.depPlandTime)} ${stationLabel(
+      leg.depPlaceName,
+      lang,
+    )} → ${fmtTime(leg.arrPlandTime)} ${stationLabel(leg.arrPlaceName, lang)} (#${leg.trainNo})`;
 
   return (
     <div className="mx-auto max-w-md px-4 py-6">
@@ -40,47 +68,33 @@ export default function CompleteView() {
         <div className="w-12 h-12 rounded-full bg-emerald-500 text-white grid place-items-center mx-auto text-xl">
           ✓
         </div>
-        <h1 className="text-lg font-bold mt-3">예매가 완료되었습니다</h1>
-        <p className="text-slate-500 text-xs mt-1">예매 번호 · {order.id}</p>
+        <h1 className="text-lg font-bold mt-3">{t("cp.done")}</h1>
+        <p className="text-slate-500 text-xs mt-1">
+          {t("cp.bookingNo")} · {order.id}
+        </p>
       </div>
 
       <div className="bg-white border border-slate-200 p-5 space-y-3">
-        <Row k="결제 금액" v={<span className="text-sky-700 font-bold">{fmtKRW(order.totalPrice)}</span>} />
         <Row
-          k="좌석 등급"
+          k={t("cp.amount")}
           v={
-            order.tripType === "roundtrip" && order.inboundSeatType
-              ? `가는 편 ${order.seatType === "first" ? "특실" : "일반실"} · 오는 편 ${
-                  order.inboundSeatType === "first" ? "특실" : "일반실"
-                }`
-              : order.seatType === "first"
-                ? "특실"
-                : "일반실"
-          }
-        />
-        <Row k="여정" v={order.tripType === "roundtrip" ? "왕복" : "편도"} />
-        <Row k="예매 시각" v={fmtDateTime(toPlandTime(order.createdAt))} />
-        <Row k="가는 편"
-          v={
-            <span>
-              {fmtDate(order.outbound.depPlandTime.slice(0, 8))}{" "}
-              {fmtTime(order.outbound.depPlandTime)} {order.outbound.depPlaceName} →{" "}
-              {fmtTime(order.outbound.arrPlandTime)} {order.outbound.arrPlaceName} (#{order.outbound.trainNo})
+            <span className="text-sky-700 font-bold">
+              {krwL(order.totalPrice, lang)}
             </span>
           }
         />
+        <Row k={t("cp.seat")} v={seatValue} />
+        <Row
+          k={t("cp.trip")}
+          v={order.tripType === "roundtrip" ? t("home.roundtrip") : t("home.oneway")}
+        />
+        <Row k={t("cp.bookedAt")} v={fmtDateTime(toPlandTime(order.createdAt))} />
+        <Row k={t("ord.legOut")} v={<span>{legText(order.outbound)}</span>} />
         {order.inbound && (
-          <Row k="오는 편"
-            v={
-              <span>
-                {fmtDate(order.inbound.depPlandTime.slice(0, 8))}{" "}
-                {fmtTime(order.inbound.depPlandTime)} {order.inbound.depPlaceName} →{" "}
-                {fmtTime(order.inbound.arrPlandTime)} {order.inbound.arrPlaceName} (#{order.inbound.trainNo})
-              </span>
-            }
-          />
+          <Row k={t("ord.legIn")} v={<span>{legText(order.inbound)}</span>} />
         )}
-        <Row k="탑승객"
+        <Row
+          k={t("cp.pax")}
           v={
             <ul className="space-y-1">
               {order.passengers.map((p, i) => (
@@ -98,7 +112,7 @@ export default function CompleteView() {
           href="/"
           className="block h-12 border border-slate-200 bg-white grid place-items-center text-slate-700 hover:border-sky-300"
         >
-          처음으로
+          {t("ord.toHome")}
         </Link>
       </div>
     </div>

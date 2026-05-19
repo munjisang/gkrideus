@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import BottomSheet from "./BottomSheet";
+import { useI18n } from "../lib/i18n";
 
 export type DateHour = {
   /** YYYY-MM-DD */
@@ -52,6 +53,11 @@ export default function DatePickerSheet({
   onPick,
   onClose,
 }: Props) {
+  const { t, lang } = useI18n();
+  const weekdays =
+    lang === "ko"
+      ? ["일", "월", "화", "수", "목", "금", "토"]
+      : ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"];
   const today = useMemo(todayLocal, []);
   const minIso = minDate ?? toIso(today.y, today.m, today.d);
 
@@ -143,7 +149,7 @@ export default function DatePickerSheet({
             onClick={onClose}
             className="flex-1 h-12 rounded-xl border border-slate-200 bg-white text-slate-700 font-semibold"
           >
-            취소
+            {t("common.cancel")}
           </button>
           <button
             type="button"
@@ -151,7 +157,7 @@ export default function DatePickerSheet({
             onClick={() => picked && onPick({ date: picked, hour })}
             className="flex-1 h-12 rounded-xl bg-sky-600 text-white font-semibold disabled:opacity-40 disabled:cursor-not-allowed"
           >
-            선택
+            {t("common.select")}
           </button>
         </div>
       }
@@ -185,7 +191,7 @@ export default function DatePickerSheet({
 
       {/* Weekday header */}
       <div className="grid grid-cols-7 px-2 text-center text-sm font-medium text-slate-500">
-        {["일", "월", "화", "수", "목", "금", "토"].map((w, i) => (
+        {weekdays.map((w, i) => (
           <div
             key={w}
             className={`py-2 ${i === 0 ? "text-red-500" : ""}`}
@@ -240,7 +246,7 @@ export default function DatePickerSheet({
                       : "text-transparent"
                 }`}
               >
-                {isSelected ? "선택" : isToday ? "오늘" : "·"}
+                {isSelected ? t("dp.selected") : isToday ? t("dp.today") : "·"}
               </span>
             </button>
           );
@@ -250,7 +256,7 @@ export default function DatePickerSheet({
       {/* Hour selector */}
       <div className="mt-2 pt-3 border-t border-slate-100 px-5">
         <div className="text-sm font-semibold text-slate-900 mb-2">
-          {hour}시 이후 출발
+          {t("dp.afterDepart", { h: pad2(hour) })}
         </div>
         <div className="flex gap-2 overflow-x-auto no-scrollbar pb-2 -mx-1 px-1">
           {Array.from({ length: 24 }).map((_, h) => {
@@ -270,7 +276,7 @@ export default function DatePickerSheet({
                       : "border-slate-200 bg-white text-slate-600 hover:border-slate-300"
                 }`}
               >
-                {pad2(h)}시
+                {t("dp.hourPill", { h: pad2(h) })}
               </button>
             );
           })}

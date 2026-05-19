@@ -3,9 +3,22 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { fmtTime, fmtDuration, fmtKRW, durationMinutes } from "../../lib/format";
+import { fmtTime, durationMinutes } from "../../lib/format";
 import SearchLoading from "../../components/SearchLoading";
+import { useI18n, stationLabel, gradeLabel, type Lang } from "../../lib/i18n";
 import type { TrainSchedule, TripType } from "../../lib/types";
+
+function durationL(min: number, lang: Lang): string {
+  const h = Math.floor(min / 60);
+  const m = min % 60;
+  if (lang === "ko") return h > 0 ? `${h}시간 ${m}분` : `${m}분`;
+  return h > 0 ? `${h}h ${m}m` : `${m}m`;
+}
+function krwL(n: number, lang: Lang): string {
+  return lang === "ko"
+    ? `${n.toLocaleString("ko-KR")}원`
+    : `₩${n.toLocaleString("en-US")}`;
+}
 
 type ApiResponse =
   | {
@@ -20,13 +33,13 @@ type ApiResponse =
   | { ok: false; error: string };
 
 type FilterKey = "all" | "KTX" | "SRT" | "새마을" | "무궁화" | "ITX-청춘";
-const FILTER_TABS: { key: FilterKey; label: string }[] = [
-  { key: "all", label: "전체" },
-  { key: "KTX", label: "KTX" },
-  { key: "SRT", label: "SRT" },
-  { key: "새마을", label: "새마을" },
-  { key: "무궁화", label: "무궁화" },
-  { key: "ITX-청춘", label: "ITX-청춘" },
+const FILTER_TABS: { key: FilterKey; tkey: string }[] = [
+  { key: "all", tkey: "sr.filter.all" },
+  { key: "KTX", tkey: "sr.filter.ktx" },
+  { key: "SRT", tkey: "sr.filter.srt" },
+  { key: "새마을", tkey: "sr.filter.saemaul" },
+  { key: "무궁화", tkey: "sr.filter.mugunghwa" },
+  { key: "ITX-청춘", tkey: "sr.filter.itx" },
 ];
 
 const FIRST_CLASS_MULT = 1.4;
@@ -49,6 +62,7 @@ function matchesFilter(t: TrainSchedule, f: FilterKey): boolean {
 export default function SearchView() {
   const router = useRouter();
   const sp = useSearchParams();
+  const { t, lang } = useI18n();
 
   const tripType = (sp.get("tripType") ?? "oneway") as TripType;
   const passengers = Number(sp.get("passengers") ?? "1");
@@ -83,7 +97,7 @@ export default function SearchView() {
   useEffect(() => {
     if (!fromId || !toId || !date) {
       setLoading(false);
-      setData({ ok: false, error: "검색 조건이 부족합니다." });
+      setData({ ok: false, error: t("sr.searchAgain") });
       return;
     }
     setLoading(true);
@@ -92,6 +106,7 @@ export default function SearchView() {
       .then((j: ApiResponse) => setData(j))
       .catch((e: Error) => setData({ ok: false, error: e.message }))
       .finally(() => setLoading(false));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [fromId, toId, date]);
 
   const fromName = data?.ok ? data.from.name : fromNameParam || fromId;
@@ -136,8 +151,16 @@ export default function SearchView() {
     router.push(`/order?${params.toString()}`);
   }
 
+  const fromLabel = stationLabel(fromName, lang);
+  const toLabel = stationLabel(toName, lang);
+
   if (loading) {
-    return <SearchLoading from={fromName || "출발"} to={toName || "도착"} />;
+    return (
+      <SearchLoading
+        from={fromLabel || t("home.dep")}
+        to={toLabel || t("home.arr")}
+      />
+    );
   }
 
   return (
@@ -148,14 +171,18 @@ export default function SearchView() {
           <Link
             href="/"
             className="h-10 w-10 grid place-items-center text-slate-800 -ml-1"
-            aria-label="뒤로"
+            aria-label={t("back")}
           >
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M15 18l-6-6 6-6" />
             </svg>
           </Link>
           <h1 className="flex-1 text-center text-base font-bold text-slate-900">
-            {fromName}역 <span className="mx-0.5 text-slate-400">→</span> {toName}역
+            {fromLabel}
+            {t("sp.stationSuffix")}
+            <span className="mx-0.5 text-slate-400">→</span>
+            {toLabel}
+            {t("sp.stationSuffix")}
           </h1>
           <span className="w-10" />
         </div>
@@ -164,20 +191,20 @@ export default function SearchView() {
           ref={tabsRef}
           className="mx-4 sm:mx-6 lg:mx-[470px] flex gap-2 overflow-x-auto no-scrollbar pb-3 scroll-smooth"
         >
-          {FILTER_TABS.map((t) => {
-            const active = filter === t.key;
+          {FILTER_TABS.map((tab) => {
+            const active = filter === tab.key;
             return (
               <button
-                key={t.key}
+                key={tab.key}
                 data-active={active}
-                onClick={() => setFilter(t.key)}
+                onClick={() => setFilter(tab.key)}
                 className={`shrink-0 text-[15px] px-4 pb-2 -mb-2 transition ${
                   active
                     ? "text-slate-900 font-bold border-b-2 border-slate-900"
                     : "text-slate-400 font-medium border-b-2 border-transparent"
                 }`}
               >
-                {t.label}
+                {t(tab.tkey)}
               </button>
             );
           })}
@@ -206,7 +233,7 @@ export default function SearchView() {
 
         {data?.ok && data.source === "mock" && (
           <div className="bg-amber-50 border border-amber-200 text-amber-800 rounded-lg px-3 py-2 text-xs">
-            ⚠ 실시간 TAGO 응답을 받지 못해 데모용 모의 시간표를 표시합니다.
+            ⚠ {t("sr.mockWarn")}
             {data.reason ? ` (${data.reason})` : ""}
           </div>
         )}
@@ -230,15 +257,17 @@ export default function SearchView() {
               <circle cx="24" cy="38" r="1.6" fill="currentColor" />
               <circle cx="40" cy="38" r="1.6" fill="currentColor" />
             </svg>
-            <p className="mt-4 text-sm text-slate-500">예매할 수 있는 열차가 없습니다.</p>
+            <p className="mt-4 text-sm text-slate-500">{t("sr.none")}</p>
           </div>
         )}
 
-        {filtered.map((t, idx) => (
+        {filtered.map((tr, idx) => (
           <TrainCard
-            key={`${t.trainGradeName}-${t.trainNo}-${t.depPlandTime}-${idx}`}
+            key={`${tr.trainGradeName}-${tr.trainNo}-${tr.depPlandTime}-${idx}`}
+            train={tr}
+            lang={lang}
             t={t}
-            onPick={() => onPick(t)}
+            onPick={() => onPick(tr)}
           />
         ))}
       </div>
@@ -247,15 +276,19 @@ export default function SearchView() {
 }
 
 function TrainCard({
+  train,
+  lang,
   t,
   onPick,
 }: {
-  t: TrainSchedule;
+  train: TrainSchedule;
+  lang: Lang;
+  t: (k: string) => string;
   onPick: () => void;
 }) {
-  const mins = durationMinutes(t.depPlandTime, t.arrPlandTime);
-  const standardPrice = t.adultCharge;
-  const firstPrice = Math.round((t.adultCharge * FIRST_CLASS_MULT) / 100) * 100;
+  const mins = durationMinutes(train.depPlandTime, train.arrPlandTime);
+  const standardPrice = train.adultCharge;
+  const firstPrice = Math.round((train.adultCharge * FIRST_CLASS_MULT) / 100) * 100;
   return (
     <button
       type="button"
@@ -263,29 +296,30 @@ function TrainCard({
       className="block w-full text-left bg-white border border-slate-200 p-4 hover:border-slate-400 transition"
     >
       <div className="flex items-center gap-2 mb-3">
-        <GradeBadge name={t.trainGradeName} />
-        <span className="text-sky-600 text-sm font-semibold">{Number(t.trainNo) || t.trainNo}</span>
+        <GradeBadge name={train.trainGradeName} lang={lang} />
+        <span className="text-sky-600 text-sm font-semibold">
+          {Number(train.trainNo) || train.trainNo}
+        </span>
       </div>
       <div className="flex items-center justify-between gap-3 flex-wrap">
         <div className="min-w-0">
           <div className="text-xl font-bold tabular-nums text-slate-900 leading-tight whitespace-nowrap">
-            {fmtTime(t.depPlandTime)}
+            {fmtTime(train.depPlandTime)}
             <span className="text-slate-300 mx-1.5 text-xl">→</span>
-            {fmtTime(t.arrPlandTime)}
+            {fmtTime(train.arrPlandTime)}
           </div>
-          <div className="text-xs text-slate-500 mt-1">{fmtDuration(mins)}</div>
+          <div className="text-xs text-slate-500 mt-1">{durationL(mins, lang)}</div>
         </div>
         <div className="flex gap-2 shrink-0">
-          <PriceBox label="일반실" price={standardPrice} />
-          <PriceBox label="특실" price={firstPrice} />
+          <PriceBox label={t("sr.standard")} price={standardPrice} lang={lang} />
+          <PriceBox label={t("sr.first")} price={firstPrice} lang={lang} />
         </div>
       </div>
     </button>
   );
 }
 
-function GradeBadge({ name }: { name: string }) {
-  // Different color hints per family
+function GradeBadge({ name, lang }: { name: string; lang: Lang }) {
   const cls =
     name.startsWith("KTX-산천")
       ? "bg-sky-700"
@@ -304,7 +338,7 @@ function GradeBadge({ name }: { name: string }) {
                   : "bg-slate-700";
   return (
     <span className={`inline-block ${cls} text-white text-[11px] font-bold px-2 py-1 rounded-md leading-none`}>
-      {name}
+      {gradeLabel(name, lang)}
     </span>
   );
 }
@@ -312,10 +346,12 @@ function GradeBadge({ name }: { name: string }) {
 function PriceBox({
   label,
   price,
+  lang,
   soldOut,
 }: {
   label: string;
   price: number;
+  lang: Lang;
   soldOut?: boolean;
 }) {
   return (
@@ -328,10 +364,12 @@ function PriceBox({
     >
       <span className="text-[11px] text-slate-500">{label}</span>
       {soldOut ? (
-        <span className="text-[13px] font-bold text-red-500 mt-0.5">매진</span>
+        <span className="text-[13px] font-bold text-red-500 mt-0.5">
+          {lang === "ko" ? "매진" : "Sold out"}
+        </span>
       ) : (
         <span className="text-[13px] font-bold text-slate-900 tabular-nums mt-0.5 whitespace-nowrap">
-          ₩{price.toLocaleString("ko-KR")}
+          {krwL(price, lang)}
         </span>
       )}
     </span>
@@ -345,8 +383,9 @@ function OutboundRecap({
   outboundJson: string;
   onChange: () => void;
 }) {
+  const { t, lang } = useI18n();
   try {
-    const t = JSON.parse(decodeURIComponent(outboundJson)) as TrainSchedule;
+    const tr = JSON.parse(decodeURIComponent(outboundJson)) as TrainSchedule;
     return (
       <div className="pb-2">
         <button
@@ -354,9 +393,10 @@ function OutboundRecap({
           onClick={onChange}
           className="inline-flex items-center gap-2 text-sm bg-sky-50 border border-sky-100 text-sky-800 rounded-full px-3 py-1.5 hover:bg-sky-100 transition"
         >
-          <span className="font-semibold">가는 편</span>
+          <span className="font-semibold">{t("sr.outbound")}</span>
           <span>
-            {t.depPlaceName} {fmtTime(t.depPlandTime)} → {t.arrPlaceName} {fmtTime(t.arrPlandTime)}
+            {stationLabel(tr.depPlaceName, lang)} {fmtTime(tr.depPlandTime)} →{" "}
+            {stationLabel(tr.arrPlaceName, lang)} {fmtTime(tr.arrPlandTime)}
           </span>
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
             <path d="M9 18l6-6-6-6" />

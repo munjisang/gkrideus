@@ -4,14 +4,9 @@ import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { COUNTRY_CODES } from "../../lib/countries";
-import {
-  fmtDate,
-  fmtTime,
-  fmtDuration,
-  fmtKRW,
-  durationMinutes,
-} from "../../lib/format";
+import { fmtDate, fmtTime, durationMinutes } from "../../lib/format";
 import { newOrderId, saveOrder } from "../../lib/storage";
+import { useI18n, stationLabel, gradeLabel, type Lang } from "../../lib/i18n";
 import type {
   Order,
   Passenger,
@@ -21,6 +16,18 @@ import type {
 } from "../../lib/types";
 
 const FIRST_CLASS_MULT = 1.4;
+
+function durationL(min: number, lang: Lang): string {
+  const h = Math.floor(min / 60);
+  const m = min % 60;
+  if (lang === "ko") return h > 0 ? `${h}시간 ${m}분` : `${m}분`;
+  return h > 0 ? `${h}h ${m}m` : `${m}m`;
+}
+function krwL(n: number, lang: Lang): string {
+  return lang === "ko"
+    ? `${n.toLocaleString("ko-KR")}원`
+    : `₩${n.toLocaleString("en-US")}`;
+}
 
 function decodeTrain(p: string | null): TrainSchedule | null {
   if (!p) return null;
@@ -36,25 +43,26 @@ function emptyPassenger(): Passenger {
 }
 
 type PayMethod = "card" | "paypal" | "intlcard" | "toss" | "kakao" | "naver";
-const PAY_METHODS: { id: PayMethod; label: string }[] = [
-  { id: "card", label: "신용카드" },
-  { id: "paypal", label: "Paypal" },
-  { id: "intlcard", label: "해외카드" },
-  { id: "toss", label: "토스" },
-  { id: "kakao", label: "카카오" },
-  { id: "naver", label: "네이버" },
+const PAY_METHODS: { id: PayMethod; ko: string; en: string }[] = [
+  { id: "card", ko: "신용카드", en: "Credit card" },
+  { id: "paypal", ko: "Paypal", en: "Paypal" },
+  { id: "intlcard", ko: "해외카드", en: "Intl. card" },
+  { id: "toss", ko: "토스", en: "Toss" },
+  { id: "kakao", ko: "카카오", en: "KakaoPay" },
+  { id: "naver", ko: "네이버", en: "NaverPay" },
 ];
 
 const AGREEMENTS = [
-  { id: "fare", label: "요금규정" },
-  { id: "tos", label: "이용약관" },
-  { id: "privacy", label: "개인정보 처리방침" },
+  { id: "fare", tkey: "ord.agree.fare" },
+  { id: "tos", tkey: "ord.agree.tos" },
+  { id: "privacy", tkey: "ord.agree.privacy" },
 ] as const;
 type AgreementId = (typeof AGREEMENTS)[number]["id"];
 
 export default function OrderView() {
   const router = useRouter();
   const sp = useSearchParams();
+  const { t, lang } = useI18n();
 
   const tripType = (sp.get("tripType") ?? "oneway") as TripType;
   const passengerCount = Math.max(1, Number(sp.get("passengers") ?? "1"));
@@ -68,12 +76,12 @@ export default function OrderView() {
     const rows: { label: string; count: number }[] = [];
     const sum = paxAdults + paxChildren + paxToddlers + paxSeniors;
     if (sum === 0) {
-      rows.push({ label: "성인", count: passengerCount });
+      rows.push({ label: t("pax.adult"), count: passengerCount });
     } else {
-      if (paxAdults) rows.push({ label: "성인", count: paxAdults });
-      if (paxChildren) rows.push({ label: "어린이", count: paxChildren });
-      if (paxToddlers) rows.push({ label: "유아", count: paxToddlers });
-      if (paxSeniors) rows.push({ label: "경로", count: paxSeniors });
+      if (paxAdults) rows.push({ label: t("pax.adult"), count: paxAdults });
+      if (paxChildren) rows.push({ label: t("pax.child"), count: paxChildren });
+      if (paxToddlers) rows.push({ label: t("pax.toddler"), count: paxToddlers });
+      if (paxSeniors) rows.push({ label: t("pax.senior"), count: paxSeniors });
     }
     return rows;
   })();
@@ -93,8 +101,8 @@ export default function OrderView() {
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
-  const legPrice = (t: TrainSchedule | null, seat: SeatType) =>
-    t ? Math.round((t.adultCharge * (seat === "first" ? FIRST_CLASS_MULT : 1)) / 100) * 100 : 0;
+  const legPrice = (tr: TrainSchedule | null, seat: SeatType) =>
+    tr ? Math.round((tr.adultCharge * (seat === "first" ? FIRST_CLASS_MULT : 1)) / 100) * 100 : 0;
 
   const outboundPrice = legPrice(outbound, outboundSeat);
   const inboundPrice = legPrice(inbound, inboundSeat);
@@ -125,15 +133,14 @@ export default function OrderView() {
     allAgreed;
 
   function validate(): string | null {
-    if (!outbound) return "가는 편 정보가 없습니다.";
-    if (tripType === "roundtrip" && !inbound) return "오는 편 정보가 없습니다.";
-    if (!reservant.name.trim()) return "예약자 이름을 입력해주세요.";
+    if (!outbound) return t("ord.err.legOut");
+    if (tripType === "roundtrip" && !inbound) return t("ord.err.legIn");
+    if (!reservant.name.trim()) return t("ord.err.name");
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(reservant.email))
-      return "예약자 이메일이 올바르지 않습니다.";
-    if (!/^[0-9\-\s]{6,15}$/.test(reservant.phone))
-      return "예약자 연락처를 확인해주세요.";
-    if (!payMethod) return "결제수단을 선택해주세요.";
-    if (!allAgreed) return "약관에 모두 동의해주세요.";
+      return t("ord.err.email");
+    if (!/^[0-9\-\s]{6,15}$/.test(reservant.phone)) return t("ord.err.phone");
+    if (!payMethod) return t("ord.err.pay");
+    if (!allAgreed) return t("ord.err.agree");
     return null;
   }
 
@@ -168,20 +175,20 @@ export default function OrderView() {
       .then(() => router.push(`/order/complete?id=${encodeURIComponent(order.id)}`))
       .catch((e: Error) => {
         setSubmitting(false);
-        setError(`주문 저장 실패: ${e.message}`);
+        setError(t("ord.err.saveFail", { m: e.message }));
       });
   }
 
   if (!outbound) {
     return (
       <div>
-        <SubHeader title="예매정보 입력" />
+        <SubHeader title={t("ord.title")} />
         <div className="mx-4 sm:mx-6 lg:mx-[470px] py-6">
           <div className="bg-red-50 border border-red-200 text-red-700 rounded-xl px-4 py-3 text-sm">
-            선택된 열차 정보가 없습니다.
+            {t("ord.noTrain")}
           </div>
           <Link href="/" className="inline-block mt-4 text-sky-700 text-sm">
-            ← 처음으로
+            ← {t("ord.toHome")}
           </Link>
         </div>
       </div>
@@ -190,34 +197,38 @@ export default function OrderView() {
 
   return (
     <div>
-      <SubHeader title="예매정보 입력" />
+      <SubHeader title={t("ord.title")} />
       <div className="mx-4 sm:mx-6 lg:mx-[470px] py-6 pb-32">
         <form id="order-form" onSubmit={onSubmit} className="space-y-2">
         <section className="bg-white border border-slate-200 p-5">
-          <h2 className="font-semibold mb-3 text-slate-800">선택한 열차</h2>
-          <LegSummary label="가는 편" t={outbound} />
+          <h2 className="font-semibold mb-3 text-slate-800">{t("ord.selectedTrain")}</h2>
+          <LegSummary label={t("ord.legOut")} t={outbound} lang={lang} />
           <SeatPicker
             value={outboundSeat}
             onChange={setOutboundSeat}
             standardPrice={legPrice(outbound, "standard")}
             firstPrice={legPrice(outbound, "first")}
+            tt={t}
+            lang={lang}
           />
           {tripType === "roundtrip" && inbound && (
             <>
               <div className="my-4 border-t border-dashed border-slate-200" />
-              <LegSummary label="오는 편" t={inbound} />
+              <LegSummary label={t("ord.legIn")} t={inbound} lang={lang} />
               <SeatPicker
                 value={inboundSeat}
                 onChange={setInboundSeat}
                 standardPrice={legPrice(inbound, "standard")}
                 firstPrice={legPrice(inbound, "first")}
+                tt={t}
+                lang={lang}
               />
             </>
           )}
         </section>
 
         <section className="bg-white border border-slate-200 p-5">
-          <h2 className="font-semibold mb-3 text-slate-800">인원정보</h2>
+          <h2 className="font-semibold mb-3 text-slate-800">{t("ord.paxInfo")}</h2>
           <ul className="divide-y divide-slate-100">
             {paxRows.map((r) => (
               <li
@@ -226,7 +237,7 @@ export default function OrderView() {
               >
                 <span className="text-slate-600">{r.label}</span>
                 <span className="font-semibold text-slate-900 tabular-nums">
-                  {r.count}명
+                  {t("pax.count", { n: r.count })}
                 </span>
               </li>
             ))}
@@ -234,7 +245,7 @@ export default function OrderView() {
         </section>
 
         <section className="bg-white border border-slate-200 p-5">
-          <h2 className="font-semibold mb-3 text-slate-800">결제정보</h2>
+          <h2 className="font-semibold mb-3 text-slate-800">{t("ord.payInfo")}</h2>
           <ul className="divide-y divide-slate-100">
             {breakdownRows.map((r, i) => (
               <li
@@ -243,23 +254,23 @@ export default function OrderView() {
               >
                 <span className="text-slate-600">{r.label}</span>
                 <span className="font-semibold text-slate-900 tabular-nums">
-                  {fmtKRW(r.price)}
+                  {krwL(r.price, lang)}
                 </span>
               </li>
             ))}
             <li className="flex items-center justify-between py-3 mt-1">
-              <span className="text-sm font-semibold text-slate-800">합계</span>
+              <span className="text-sm font-semibold text-slate-800">{t("ord.total")}</span>
               <span className="text-base font-bold text-sky-700 tabular-nums">
-                {fmtKRW(totalPrice)}
+                {krwL(totalPrice, lang)}
               </span>
             </li>
           </ul>
         </section>
 
         <section className="bg-white border border-slate-200 p-5">
-          <h2 className="font-semibold mb-3 text-slate-800">예약자 정보</h2>
+          <h2 className="font-semibold mb-3 text-slate-800">{t("ord.booker")}</h2>
           <div className="space-y-3">
-            <Field label="이름">
+            <Field label={t("ord.name")}>
               <input
                 value={reservant.name}
                 onChange={(e) => setReservant((p) => ({ ...p, name: e.target.value }))}
@@ -268,7 +279,7 @@ export default function OrderView() {
                 required
               />
             </Field>
-            <Field label="이메일">
+            <Field label={t("ord.email")}>
               <input
                 type="email"
                 value={reservant.email}
@@ -278,7 +289,7 @@ export default function OrderView() {
                 required
               />
             </Field>
-            <Field label="전화번호">
+            <Field label={t("ord.phone")}>
               <div className="flex gap-2">
                 <select
                   value={reservant.countryCode}
@@ -306,7 +317,7 @@ export default function OrderView() {
         </section>
 
         <section className="bg-white border border-slate-200 p-5">
-          <h2 className="font-semibold mb-3 text-slate-800">결제수단 선택</h2>
+          <h2 className="font-semibold mb-3 text-slate-800">{t("ord.payMethod")}</h2>
           <div className="grid grid-cols-3 gap-2">
             {PAY_METHODS.map((m) => {
               const active = payMethod === m.id;
@@ -321,14 +332,14 @@ export default function OrderView() {
                       : "border-slate-200 bg-white text-slate-700 hover:border-slate-400"
                   }`}
                 >
-                  {m.label}
+                  {lang === "ko" ? m.ko : m.en}
                 </button>
               );
             })}
           </div>
           <div className="mt-4 pt-4 border-t border-slate-100 space-y-2">
             <label className="flex items-center justify-between cursor-pointer py-1">
-              <span className="text-sm font-semibold text-slate-800">전체 동의</span>
+              <span className="text-sm font-semibold text-slate-800">{t("ord.agreeAll")}</span>
               <input
                 type="checkbox"
                 checked={allAgreed}
@@ -344,7 +355,7 @@ export default function OrderView() {
                 key={a.id}
                 className="flex items-center justify-between cursor-pointer py-1"
               >
-                <span className="text-sm text-slate-600">{a.label}</span>
+                <span className="text-sm text-slate-600">{t(a.tkey)}</span>
                 <input
                   type="checkbox"
                   checked={agreed[a.id]}
@@ -370,9 +381,9 @@ export default function OrderView() {
       <div className="fixed bottom-0 left-0 right-0 z-20 bg-white border-t border-slate-200">
         <div className="mx-4 sm:mx-6 lg:mx-[470px] py-3 flex items-center justify-between gap-3">
           <div>
-            <div className="text-xs text-slate-500">총 결제 금액</div>
+            <div className="text-xs text-slate-500">{t("ord.totalAmount")}</div>
             <div className="text-lg font-bold text-sky-700 tabular-nums">
-              {fmtKRW(totalPrice)}
+              {krwL(totalPrice, lang)}
             </div>
           </div>
           <button
@@ -385,7 +396,7 @@ export default function OrderView() {
                 : "bg-slate-200 text-slate-400 cursor-not-allowed"
             }`}
           >
-            {submitting ? "처리 중…" : "결제하기"}
+            {submitting ? t("ord.paying") : t("ord.pay")}
           </button>
         </div>
       </div>
@@ -395,13 +406,14 @@ export default function OrderView() {
 
 function SubHeader({ title }: { title: string }) {
   const router = useRouter();
+  const { t } = useI18n();
   return (
     <div className="sticky top-0 z-10 bg-white border-b border-slate-200">
       <div className="mx-4 sm:mx-6 lg:mx-[470px] flex items-center py-3">
         <button
           type="button"
           onClick={() => router.back()}
-          aria-label="뒤로"
+          aria-label={t("back")}
           className="h-10 w-10 grid place-items-center text-slate-800 -ml-1"
         >
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -413,7 +425,7 @@ function SubHeader({ title }: { title: string }) {
         </h1>
         <Link
           href="/"
-          aria-label="홈"
+          aria-label={t("home")}
           className="h-10 w-10 grid place-items-center text-slate-800 -mr-1"
         >
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
@@ -432,25 +444,33 @@ function SeatPicker({
   onChange,
   standardPrice,
   firstPrice,
+  tt,
+  lang,
 }: {
   value: SeatType;
   onChange: (v: SeatType) => void;
   standardPrice: number;
   firstPrice: number;
+  tt: (k: string) => string;
+  lang: Lang;
 }) {
   return (
     <div className="grid grid-cols-1 gap-2 mt-3">
       <SeatChip
         active={value === "standard"}
         onClick={() => onChange("standard")}
-        title="일반실"
+        title={tt("sr.standard")}
         price={standardPrice}
+        perPerson={tt("ord.perPerson")}
+        lang={lang}
       />
       <SeatChip
         active={value === "first"}
         onClick={() => onChange("first")}
-        title="특실"
+        title={tt("sr.first")}
         price={firstPrice}
+        perPerson={tt("ord.perPerson")}
+        lang={lang}
       />
     </div>
   );
@@ -461,11 +481,15 @@ function SeatChip({
   onClick,
   title,
   price,
+  perPerson,
+  lang,
 }: {
   active: boolean;
   onClick: () => void;
   title: string;
   price: number;
+  perPerson: string;
+  lang: Lang;
 }) {
   return (
     <button
@@ -494,51 +518,60 @@ function SeatChip({
         </span>
       </span>
       <span className="text-xs font-semibold tabular-nums text-slate-700 whitespace-nowrap shrink-0">
-        ₩{price.toLocaleString("ko-KR")}
-        <span className="ml-1 font-normal text-slate-400">/ 1인</span>
+        {krwL(price, lang)}
+        <span className="ml-1 font-normal text-slate-400">{perPerson}</span>
       </span>
     </button>
   );
 }
 
-function LegSummary({ label, t }: { label: string; t: TrainSchedule }) {
-  const min = durationMinutes(t.depPlandTime, t.arrPlandTime);
+function LegSummary({
+  label,
+  t: train,
+  lang,
+}: {
+  label: string;
+  t: TrainSchedule;
+  lang: Lang;
+}) {
+  const min = durationMinutes(train.depPlandTime, train.arrPlandTime);
   return (
     <div className="space-y-2">
-      {/* Row 1: [라벨] 열차종류 번호 ················ 날짜 */}
+      {/* Row 1: [label] grade no ················ date */}
       <div className="flex items-center justify-between gap-2">
         <div className="flex items-center gap-2 min-w-0">
           <span className="text-xs font-bold text-sky-700 bg-sky-50 border border-sky-100 rounded px-2 py-1">
             {label}
           </span>
           <span className="text-sm font-semibold text-slate-900 truncate">
-            {t.trainGradeName} {Number(t.trainNo) || t.trainNo}
+            {gradeLabel(train.trainGradeName, lang)}{" "}
+            {Number(train.trainNo) || train.trainNo}
           </span>
         </div>
         <span className="text-sm text-slate-500 shrink-0">
-          {fmtDate(t.depPlandTime.slice(0, 8))}
+          {fmtDate(train.depPlandTime.slice(0, 8))}
         </span>
       </div>
 
-      {/* Row 2: 출발역 ━━━━━━→━━━━━━ 도착역 */}
+      {/* Row 2: dep ━━━→━━━ arr */}
       <div className="flex items-center gap-3 text-lg font-bold text-slate-900">
-        <span>{t.depPlaceName}</span>
+        <span>{stationLabel(train.depPlaceName, lang)}</span>
         <span aria-hidden className="flex-1 flex items-center gap-1 text-slate-300">
           <span className="flex-1 h-px bg-slate-200" />
           <span className="text-base leading-none">→</span>
           <span className="flex-1 h-px bg-slate-200" />
         </span>
-        <span>{t.arrPlaceName}</span>
+        <span>{stationLabel(train.arrPlaceName, lang)}</span>
       </div>
 
-      {/* Row 3: 출발시각  소요시간  도착시각 */}
+      {/* Row 3: dep time  duration  arr time */}
       <div className="flex items-center justify-between text-sm">
         <span className="font-semibold tabular-nums text-slate-700">
-          {fmtTime(t.depPlandTime)}
+          {fmtTime(train.depPlandTime)}
         </span>
-        <span className="text-slate-400">{fmtDuration(min)}</span>
+        <span className="text-slate-400">{durationL(min, lang)}</span>
         <span className="font-semibold tabular-nums text-slate-700">
-          {fmtTime(t.arrPlandTime)}
+          {fmtTime(train.arrPlandTime)}
         </span>
       </div>
     </div>

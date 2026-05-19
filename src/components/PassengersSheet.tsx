@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import BottomSheet from "./BottomSheet";
+import { useI18n } from "../lib/i18n";
 
 export type Passengers = {
   adults: number;
@@ -21,6 +22,7 @@ const MIN_TOTAL = 1;
 const MAX_TOTAL = 9; // common rail limit
 
 export default function PassengersSheet({ open, value, onPick, onClose }: Props) {
+  const { t } = useI18n();
   const [draft, setDraft] = useState<Passengers>(value);
 
   useEffect(() => {
@@ -42,7 +44,7 @@ export default function PassengersSheet({ open, value, onPick, onClose }: Props)
     <BottomSheet
       open={open}
       onClose={onClose}
-      title="인원 선택"
+      title={t("pax.selectTitle")}
       footer={
         <div className="flex gap-2">
           <button
@@ -50,22 +52,22 @@ export default function PassengersSheet({ open, value, onPick, onClose }: Props)
             onClick={onClose}
             className="flex-1 h-12 rounded-xl border border-slate-200 bg-white text-slate-700 font-semibold"
           >
-            취소
+            {t("common.cancel")}
           </button>
           <button
             type="button"
             onClick={() => onPick(draft)}
             className="flex-1 h-12 rounded-xl bg-sky-600 text-white font-semibold"
           >
-            선택
+            {t("common.select")}
           </button>
         </div>
       }
     >
       <div className="px-5 py-2 space-y-1">
         <Row
-          label="어른"
-          sub="만 13세 이상"
+          label={t("pax.adult")}
+          sub={t("pax.adultSub")}
           value={draft.adults}
           onMinus={() => update("adults", -1)}
           onPlus={() => update("adults", 1)}
@@ -73,9 +75,9 @@ export default function PassengersSheet({ open, value, onPick, onClose }: Props)
           plusDisabled={total >= MAX_TOTAL}
         />
         <Row
-          label="어린이"
-          sub="만 6-12세"
-          info="6세 미만 유아는 무료입니다."
+          label={t("pax.child")}
+          sub={t("pax.childSub")}
+          info={t("pax.toddlerFree")}
           value={draft.children}
           onMinus={() => update("children", -1)}
           onPlus={() => update("children", 1)}

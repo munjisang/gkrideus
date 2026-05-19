@@ -2,12 +2,14 @@
 
 import { useEffect, useState } from "react";
 import Lottie from "lottie-react";
+import { useI18n } from "../lib/i18n";
 
 type AnimationData = Record<string, unknown>;
 
 let cached: AnimationData | null = null;
 
 export default function SearchLoading({ from, to }: { from: string; to: string }) {
+  const { t } = useI18n();
   const [data, setData] = useState<AnimationData | null>(cached);
 
   useEffect(() => {
@@ -39,7 +41,7 @@ export default function SearchLoading({ from, to }: { from: string; to: string }
         <span className="mx-1.5 text-slate-400">→</span>
         <span className="font-semibold text-slate-900">{to}</span>
         <br />
-        스케줄을 조회중입니다.
+        {t("sr.searching")}
       </p>
     </div>
   );
