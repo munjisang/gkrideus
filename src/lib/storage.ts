@@ -36,6 +36,7 @@ type Row = {
   seat_type: Order["seatType"];
   inbound_seat_type: Order["seatType"] | null;
   passenger_count: number;
+  pax_breakdown: Order["paxBreakdown"] | null;
   total_price: number;
   outbound: Order["outbound"];
   inbound: Order["inbound"] | null;
@@ -52,6 +53,7 @@ function rowToOrder(r: Row): Order {
     seatType: r.seat_type,
     inboundSeatType: r.inbound_seat_type ?? undefined,
     passengerCount: r.passenger_count,
+    paxBreakdown: r.pax_breakdown ?? undefined,
     totalPrice: r.total_price,
     outbound: r.outbound,
     inbound: r.inbound ?? undefined,
@@ -68,6 +70,7 @@ function orderToRow(o: Order): Row {
     seat_type: o.seatType,
     inbound_seat_type: o.inboundSeatType ?? null,
     passenger_count: o.passengerCount,
+    pax_breakdown: o.paxBreakdown ?? null,
     total_price: o.totalPrice,
     outbound: o.outbound,
     inbound: o.inbound ?? null,
@@ -152,6 +155,8 @@ export async function updateOrder(
   if (patch.inboundSeatType !== undefined)
     dbPatch.inbound_seat_type = patch.inboundSeatType ?? null;
   if (patch.passengerCount !== undefined) dbPatch.passenger_count = patch.passengerCount;
+  if (patch.paxBreakdown !== undefined)
+    dbPatch.pax_breakdown = patch.paxBreakdown ?? null;
   if (patch.totalPrice !== undefined) dbPatch.total_price = patch.totalPrice;
   if (patch.outbound !== undefined) dbPatch.outbound = patch.outbound;
   if (patch.inbound !== undefined) dbPatch.inbound = patch.inbound ?? null;

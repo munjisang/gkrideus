@@ -18,6 +18,7 @@ create table if not exists public.orders (
     inbound_seat_type text check (inbound_seat_type in ('standard','first')),
 
     passenger_count int  not null check (passenger_count >= 1),
+    pax_breakdown   jsonb,
     total_price     int  not null check (total_price >= 0),
 
     outbound      jsonb not null,
@@ -33,6 +34,8 @@ create table if not exists public.orders (
 -- this column existed.
 alter table public.orders
     add column if not exists inbound_reservation jsonb;
+alter table public.orders
+    add column if not exists pax_breakdown jsonb;
 
 create index if not exists orders_created_at_idx
     on public.orders (created_at desc);

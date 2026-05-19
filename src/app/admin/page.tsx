@@ -30,7 +30,6 @@ export default function AdminPage() {
   const [openId, setOpenId] = useState<string | null>(null);
   const [busyId, setBusyId] = useState<string | null>(null);
   const [resultBy, setResultBy] = useState<Record<string, BookingResult>>({});
-  const [live, setLive] = useState(false);
   const [syncing, setSyncing] = useState(false);
   const [lastSyncAt, setLastSyncAt] = useState<string | null>(null);
   const [syncError, setSyncError] = useState<string | null>(null);
@@ -141,20 +140,19 @@ export default function AdminPage() {
   }
 
   /** Build the POST body for one leg of an order. */
-  function legPayload(
-    t: Order["outbound"],
-    seat: Order["seatType"],
-    passengerCount: number,
-  ) {
+  function legPayload(order: Order, t: Order["outbound"], seat: Order["seatType"]) {
     return {
       depName: t.depPlaceName,
       arrName: t.arrPlaceName,
       date: t.depPlandTime.slice(0, 8),
       time: t.depPlandTime.slice(8, 12),
       trainNo: t.trainNo,
-      passengers: passengerCount,
+      passengers: order.passengerCount,
+      paxBreakdown: order.paxBreakdown ?? null,
       seatType: seat,
-      live,
+      // Safe mode removed — always request a real reservation. The server
+      // still gates the actual call behind KORAIL_RESERVE_LIVE.
+      live: true,
     };
   }
 
@@ -218,21 +216,20 @@ export default function AdminPage() {
   }
 
   async function onBook(order: Order) {
-    if (live) {
-      const summary =
-        order.tripType === "roundtrip" && order.inbound
-          ? `${order.outbound.depPlaceName} → ${order.outbound.arrPlaceName} (가는편)\n${order.inbound.depPlaceName} → ${order.inbound.arrPlaceName} (오는편)`
-          : `${order.outbound.depPlaceName} → ${order.outbound.arrPlaceName}`;
-      const ok = confirm(
-        `[실 예약 LIVE]\n\n${summary}\n${order.passengerCount}명\n\n마스터 코레일 계정으로 실제 좌석을 점유합니다. 결제 기한이 카운트다운 됩니다.\n진행할까요?`,
-      );
-      if (!ok) return;
-    }
+    if (busyId) return; // guard against double-click / concurrent bookings
+    const summary =
+      order.tripType === "roundtrip" && order.inbound
+        ? `${order.outbound.depPlaceName} → ${order.outbound.arrPlaceName} (가는편)\n${order.inbound.depPlaceName} → ${order.inbound.arrPlaceName} (오는편)`
+        : `${order.outbound.depPlaceName} → ${order.outbound.arrPlaceName}`;
+    const ok = confirm(
+      `[실 예약]\n\n${summary}\n${order.passengerCount}명\n\n마스터 코레일 계정으로 실제 좌석을 점유합니다. 결제 기한이 카운트다운 됩니다.\n진행할까요?`,
+    );
+    if (!ok) return;
     setBusyId(order.id);
     try {
       // ── Outbound leg
       const outRes = await callReserve(
-        legPayload(order.outbound, order.seatType, order.passengerCount),
+        legPayload(order, order.outbound, order.seatType),
       );
       setResultBy((m) => ({ ...m, [order.id]: outRes }));
 
@@ -255,9 +252,7 @@ export default function AdminPage() {
 
       // ── Inbound leg
       const inSeat = order.inboundSeatType ?? order.seatType;
-      const inRes = await callReserve(
-        legPayload(order.inbound, inSeat, order.passengerCount),
-      );
+      const inRes = await callReserve(legPayload(order, order.inbound, inSeat));
 
       if (!inRes.ok) {
         // 2nd leg failed — roll back the 1st leg if it was a live reservation.
@@ -387,26 +382,12 @@ export default function AdminPage() {
         </div>
       </div>
 
-      <label
-        className={`flex items-center justify-between mb-5 px-4 py-3 rounded-xl border text-sm cursor-pointer select-none transition ${
-          live
-            ? "border-red-300 bg-red-50 text-red-700"
-            : "border-slate-200 bg-white text-slate-600"
-        }`}
-      >
-        <span className="flex items-center gap-2">
-          <span className="text-base">{live ? "🚨" : "🛡"}</span>
-          <span className="font-medium">
-            {live ? "실 예약 모드 (LIVE)" : "안전 모드 (dry-run)"}
-          </span>
+      <div className="flex items-center gap-2 mb-5 px-4 py-3 rounded-xl border border-red-200 bg-red-50 text-red-700 text-sm">
+        <span className="text-base">🚨</span>
+        <span className="font-medium">
+          실 예약 모드 — [예매하기] 클릭 시 실제 좌석이 점유됩니다.
         </span>
-        <input
-          type="checkbox"
-          checked={live}
-          onChange={(e) => setLive(e.target.checked)}
-          className="accent-red-600 scale-110"
-        />
-      </label>
+      </div>
 
       {orders === null && (
         <div className="py-16 text-center text-slate-500 text-sm">불러오는 중…</div>
@@ -430,7 +411,6 @@ export default function AdminPage() {
             key={o.id}
             order={o}
             busy={busyId === o.id}
-            live={live}
             result={resultBy[o.id]}
             onToggle={() => setOpenId(o.id)}
             onBook={() => onBook(o)}
@@ -522,7 +502,6 @@ function DetailModal({
 function OrderCard({
   order,
   busy,
-  live,
   result,
   onToggle,
   onBook,
@@ -531,7 +510,6 @@ function OrderCard({
 }: {
   order: Order;
   busy: boolean;
-  live: boolean;
   result?: BookingResult;
   onToggle: () => void;
   onBook: () => void;
@@ -541,6 +519,14 @@ function OrderCard({
   const hasLiveReservation =
     (order.reservation?.mode === "live" && !!order.reservation.rsvId) ||
     (order.inboundReservation?.mode === "live" && !!order.inboundReservation.rsvId);
+  const hasAnyReservation = !!order.reservation || !!order.inboundReservation;
+  // Unreserved order whose departure date has already passed → expired.
+  const todayYmd = (() => {
+    const d = new Date();
+    return `${d.getFullYear()}${String(d.getMonth() + 1).padStart(2, "0")}${String(d.getDate()).padStart(2, "0")}`;
+  })();
+  const isExpired =
+    !hasAnyReservation && order.outbound.depPlandTime.slice(0, 8) < todayYmd;
   const showFailure = !!result && result.ok === false;
   return (
     <li className="bg-white border border-slate-200 rounded-2xl overflow-hidden">
@@ -559,7 +545,7 @@ function OrderCard({
             </span>
             <span className="text-[10px] text-slate-400 font-mono">{order.id}</span>
           </div>
-          <ReservationBadge order={order} result={result} />
+          <ReservationBadge order={order} result={result} expired={isExpired} />
         </div>
 
         <div className="flex items-center gap-2 text-base font-bold text-slate-900">
@@ -615,21 +601,26 @@ function OrderCard({
           <button
             disabled={busy}
             onClick={onCancel}
-            className="h-11 text-sm font-medium text-red-700 bg-red-50 hover:bg-red-100 border-r border-slate-100 transition disabled:opacity-50"
+            className="h-11 text-sm font-medium text-red-700 bg-red-50 hover:bg-red-100 border-r border-slate-100 transition disabled:opacity-60 flex items-center justify-center gap-1.5"
           >
+            {busy && <Spinner />}
             {busy ? "처리중…" : "예매취소"}
+          </button>
+        ) : isExpired ? (
+          <button
+            disabled
+            className="h-11 text-sm font-medium text-slate-400 bg-slate-50 border-r border-slate-100 cursor-not-allowed"
+          >
+            기한만료
           </button>
         ) : (
           <button
             disabled={busy}
             onClick={onBook}
-            className={`h-11 text-sm font-medium border-r border-slate-100 transition disabled:opacity-50 ${
-              live
-                ? "text-red-700 bg-red-50 hover:bg-red-100"
-                : "text-sky-700 hover:bg-sky-50"
-            }`}
+            className="h-11 text-sm font-medium text-red-700 bg-red-50 hover:bg-red-100 border-r border-slate-100 transition disabled:opacity-60 flex items-center justify-center gap-1.5"
           >
-            {busy ? "처리중…" : live ? "🚨 예매" : "예매하기"}
+            {busy && <Spinner />}
+            {busy ? "예매중…" : "예매하기"}
           </button>
         )}
         <button
@@ -640,7 +631,8 @@ function OrderCard({
         </button>
         <button
           onClick={onDelete}
-          className="h-11 text-sm text-red-600 hover:bg-red-50"
+          disabled={busy}
+          className="h-11 text-sm text-red-600 hover:bg-red-50 disabled:opacity-50"
         >
           삭제
         </button>
@@ -649,18 +641,47 @@ function OrderCard({
   );
 }
 
+function Spinner() {
+  return (
+    <svg
+      className="animate-spin w-3.5 h-3.5"
+      viewBox="0 0 24 24"
+      fill="none"
+      aria-hidden
+    >
+      <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="3" opacity="0.25" />
+      <path
+        d="M21 12a9 9 0 0 0-9-9"
+        stroke="currentColor"
+        strokeWidth="3"
+        strokeLinecap="round"
+      />
+    </svg>
+  );
+}
+
 function ReservationBadge({
   order,
   result,
+  expired,
 }: {
   order: Order;
   result?: BookingResult;
+  expired?: boolean;
 }) {
   const out = order.reservation;
   const inb = order.inboundReservation;
   const outLive = out?.mode === "live";
   const inLive = inb?.mode === "live";
   const isRT = order.tripType === "roundtrip";
+
+  if (expired && !out && !inb) {
+    return (
+      <span className="inline-flex text-[10px] font-medium text-slate-500 bg-slate-100 border border-slate-200 rounded-full px-2 py-0.5">
+        기한만료
+      </span>
+    );
+  }
 
   if (outLive || inLive) {
     const bothLive = isRT && outLive && inLive;
@@ -728,7 +749,32 @@ function OrderDetail({
   return (
     <div className="bg-slate-50/70 border-t border-slate-100 p-4 space-y-3">
       <div className="bg-white border border-slate-200 rounded-xl p-3">
-        <div className="text-[11px] font-semibold text-slate-500 mb-2">여정 상세</div>
+        <div className="flex items-center justify-between mb-2">
+          <div className="text-[11px] font-semibold text-slate-500">여정 상세</div>
+          <div className="text-[11px] font-semibold text-slate-700">
+            예약 인원 {order.passengerCount}명
+            {order.paxBreakdown && (
+              <span className="ml-1 font-normal text-slate-400">
+                (
+                {[
+                  order.paxBreakdown.adults ? `어른 ${order.paxBreakdown.adults}` : "",
+                  order.paxBreakdown.children
+                    ? `어린이 ${order.paxBreakdown.children}`
+                    : "",
+                  order.paxBreakdown.toddlers
+                    ? `유아 ${order.paxBreakdown.toddlers}`
+                    : "",
+                  order.paxBreakdown.seniors
+                    ? `경로 ${order.paxBreakdown.seniors}`
+                    : "",
+                ]
+                  .filter(Boolean)
+                  .join(" · ")}
+                )
+              </span>
+            )}
+          </div>
+        </div>
         <Leg label="가는 편" t={order.outbound} />
         {order.inbound && (
           <>

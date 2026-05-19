@@ -46,6 +46,13 @@ export type Order = {
   /** Seat type for the inbound leg, only set when roundtrip + chosen. */
   inboundSeatType?: SeatType;
   passengerCount: number;
+  /** Age-type breakdown chosen on the home page. */
+  paxBreakdown?: {
+    adults: number;
+    children: number;
+    toddlers: number;
+    seniors: number;
+  };
   passengers: Passenger[];
   totalPrice: number;
   /** Result of clicking [예매하기] in admin — outbound leg. */

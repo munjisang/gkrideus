@@ -40,10 +40,50 @@ def _seat_option(seat_type: str):
     return ReserveOption.GENERAL_ONLY
 
 
-def _passengers(count: int):
+def _passengers(count: int, breakdown: dict[str, Any] | None):
+    """Build a typed korail2 passenger list from the age breakdown.
+
+    Falls back to a single AdultPassenger(count) when no breakdown is given.
+    """
     from korail2 import AdultPassenger  # type: ignore
 
-    return [AdultPassenger(count)]
+    if not breakdown:
+        return [AdultPassenger(count)]
+
+    adults = int(breakdown.get("adults") or 0)
+    children = int(breakdown.get("children") or 0)
+    toddlers = int(breakdown.get("toddlers") or 0)
+    seniors = int(breakdown.get("seniors") or 0)
+
+    ps: list[Any] = []
+    if adults:
+        ps.append(AdultPassenger(adults))
+    if children:
+        try:
+            from korail2 import ChildPassenger  # type: ignore
+
+            ps.append(ChildPassenger(children))
+        except Exception:  # noqa: BLE001
+            ps.append(AdultPassenger(children))
+    if seniors:
+        try:
+            from korail2 import SeniorPassenger  # type: ignore
+
+            ps.append(SeniorPassenger(seniors))
+        except Exception:  # noqa: BLE001
+            ps.append(AdultPassenger(seniors))
+    if toddlers:
+        try:
+            from korail2 import ToddlerPassenger  # type: ignore
+
+            ps.append(ToddlerPassenger(toddlers))
+        except Exception:  # noqa: BLE001
+            # Toddlers are typically free / no seat — skip if unsupported.
+            pass
+
+    if not ps:
+        ps = [AdultPassenger(max(1, count))]
+    return ps
 
 
 _TRAIN_KEYS = (
@@ -218,7 +258,7 @@ def _process(body: dict[str, Any]) -> dict[str, Any]:
     try:
         rsv = korail.reserve(
             train,
-            passengers=_passengers(int(body["passengers"])),
+            passengers=_passengers(int(body["passengers"]), body.get("paxBreakdown")),
             option=_seat_option(body["seatType"]),
         )
     except Exception as e:  # noqa: BLE001

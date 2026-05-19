@@ -155,6 +155,12 @@ export default function OrderView() {
       seatType: outboundSeat,
       inboundSeatType: tripType === "roundtrip" ? inboundSeat : undefined,
       passengerCount,
+      paxBreakdown: {
+        adults: paxAdults || (paxChildren + paxToddlers + paxSeniors === 0 ? passengerCount : 0),
+        children: paxChildren,
+        toddlers: paxToddlers,
+        seniors: paxSeniors,
+      },
       passengers: [reservant],
       totalPrice,
     };
