@@ -69,6 +69,12 @@ def _login_or_error() -> tuple[Any | None, dict[str, Any] | None]:
         }
     try:
         korail = PatchedKorail(korail_id, korail_pw, auto_login=False)
+        try:
+            from korail_tls import apply_legacy_tls  # type: ignore
+
+            apply_legacy_tls(korail._session)
+        except Exception:  # noqa: BLE001
+            pass
         if not korail.login():
             return None, {"ok": False, "stage": "login", "error": "login failed"}
     except Exception as e:  # noqa: BLE001

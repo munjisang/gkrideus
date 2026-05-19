@@ -166,6 +166,13 @@ def _login_or_error() -> tuple[Any | None, dict[str, Any] | None]:
     except Exception as e:  # noqa: BLE001
         return None, {"ok": False, "stage": "init", "error": str(e)}
 
+    try:
+        from korail_tls import apply_legacy_tls  # type: ignore
+
+        apply_legacy_tls(korail._session)
+    except Exception:  # noqa: BLE001
+        pass
+
     server_reply: dict[str, Any] | None = None
     try:
         last = {"json": None}
