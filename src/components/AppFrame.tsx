@@ -27,14 +27,14 @@ export default function AppFrame({ children }: { children: React.ReactNode }) {
               {onAdmin ? (
                 <Link
                   href="/"
-                  className="text-[13px] sm:text-sm font-medium text-slate-500 hover:text-slate-900 transition"
+                  className="text-[13px] sm:text-sm font-semibold text-white bg-slate-900 hover:bg-slate-800 rounded-lg px-3 h-8 inline-flex items-center transition"
                 >
                   {t("nav.book")}
                 </Link>
               ) : (
                 <Link
                   href="/admin"
-                  className="text-[13px] sm:text-sm font-medium text-slate-500 hover:text-slate-900 transition"
+                  className="text-[13px] sm:text-sm font-semibold text-white bg-slate-900 hover:bg-slate-800 rounded-lg px-3 h-8 inline-flex items-center transition"
                 >
                   {t("nav.admin")}
                 </Link>

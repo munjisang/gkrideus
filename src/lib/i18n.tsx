@@ -18,7 +18,7 @@ type Entry = { ko: string; en: string };
 
 const DICT: Record<string, Entry> = {
   // header / nav
-  "app.title": { ko: "KORAIL 승차권 예매", en: "KORAIL Ticketing" },
+  "app.title": { ko: "승차권 예매", en: "Ticketing" },
   "nav.admin": { ko: "관리자", en: "Admin" },
   "nav.book": { ko: "예매하기", en: "Booking" },
 
