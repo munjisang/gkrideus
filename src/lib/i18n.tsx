@@ -129,7 +129,7 @@ const DICT: Record<string, Entry> = {
   "ord.seatPref.aisle": { ko: "통로측", en: "Aisle" },
   "ord.payInfo": { ko: "결제정보", en: "Payment Summary" },
   "ord.fare.regular": { ko: "정상운임", en: "Regular fare" },
-  "ord.fare.discount": { ko: "할인", en: "Discount" },
+  "ord.fare.discount": { ko: "운임할인", en: "Fare discount" },
   "ord.fare.fee": { ko: "발권수수료(20%)", en: "Booking fee (20%)" },
   "ord.fare.legTotal": { ko: "총 운임", en: "Subtotal" },
   "ord.total": { ko: "합계", en: "Total" },

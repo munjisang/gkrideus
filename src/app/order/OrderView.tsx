@@ -131,8 +131,8 @@ export default function OrderView() {
   const ppRegular = outFares.regular + inFares.regular;
   const ppDiscounted = outFares.discounted + inFares.discounted;
   const ppDiscount = Math.max(0, ppRegular - ppDiscounted);
-  /** 발권수수료: (정상운임 − 할인) × 20%, 십원 단위 올림. */
-  const ppFee = Math.ceil((ppDiscounted * 0.2) / 10) * 10;
+  /** 발권수수료: (정상운임 − 할인) × 20%, 백원 단위 올림. */
+  const ppFee = Math.ceil((ppDiscounted * 0.2) / 100) * 100;
   /** 총 운임 per person = 할인운임 + 수수료. */
   const ppLegTotal = ppDiscounted + ppFee;
   const totalPrice = ppLegTotal * passengerCount;
@@ -687,7 +687,11 @@ function PaxFareBlock({
     <div className="py-3 first:pt-0">
       <div className="text-sm font-semibold text-slate-900 mb-1">{label}</div>
       <Row name={tt("ord.fare.regular")} value={krwL(regular, lang)} />
-      <Row name={tt("ord.fare.discount")} value={krwL(discount, lang)} />
+      <Row
+        name={tt("ord.fare.discount")}
+        // Negative sign to make it obvious the amount is being deducted.
+        value={discount > 0 ? `-${krwL(discount, lang)}` : krwL(0, lang)}
+      />
       <Row name={tt("ord.fare.fee")} value={krwL(fee, lang)} />
       <Row name={tt("ord.fare.legTotal")} value={krwL(legTotal, lang)} bold />
     </div>
