@@ -422,7 +422,7 @@ function TrainCard({
       }`}
     >
       {/* Header: logo + train number */}
-      <div className="flex items-center gap-2 px-5 pt-4">
+      <div className="flex items-center gap-1 px-5 pt-4">
         <TrainLogo name={train.trainGradeName} dim={dim} />
         <span className={`text-sm font-semibold ${muted("text-slate-500")}`}>
           {Number(train.trainNo) || train.trainNo}
@@ -430,7 +430,7 @@ function TrainCard({
       </div>
 
       {/* Times + duration row */}
-      <div className="flex items-center gap-3 px-5 pt-2 pb-4">
+      <div className="flex items-center gap-3 px-5 pt-4 pb-4">
         <span
           className={`text-base font-bold tabular-nums leading-none whitespace-nowrap ${muted(
             "text-slate-900",
@@ -509,9 +509,9 @@ function TrainLogo({ name, dim }: { name: string; dim?: boolean }) {
     <Image
       src={src}
       alt={name}
-      width={42}
-      height={10}
-      className={`h-2.5 w-auto select-none ${dim ? "opacity-40 grayscale" : ""}`}
+      width={59}
+      height={14}
+      className={`h-3.5 w-auto select-none ${dim ? "opacity-40 grayscale" : ""}`}
       priority={false}
       unoptimized
     />
@@ -536,9 +536,9 @@ function SeatColumn({
 }) {
   const labelMuted = soldOut || unavailable || dim;
   return (
-    <div className="flex flex-col items-center justify-center gap-1 py-1">
+    <div className="flex flex-col items-center justify-center py-1">
       <span
-        className={`text-sm ${
+        className={`text-xs ${
           labelMuted ? "text-slate-400" : "text-slate-700"
         }`}
       >
