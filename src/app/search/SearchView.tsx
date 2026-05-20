@@ -224,11 +224,23 @@ export default function SearchView() {
     });
   }, [data, filter, startHour]);
 
+  /** Merge the live Korail standard-class price (when known) into the
+   *  schedule so the order page can show the discount breakdown. */
+  function withLivePrice(tr: TrainSchedule): TrainSchedule {
+    const key = String(tr.trainNo).replace(/^0+/, "") || "0";
+    const live = availability.get(key)?.generalPrice;
+    if (live != null && live > 0 && live < tr.adultCharge) {
+      return { ...tr, discountedCharge: live };
+    }
+    return tr;
+  }
+
   function onPick(t: TrainSchedule) {
+    const enriched = withLivePrice(t);
     if (tripType === "roundtrip" && leg === "outbound") {
       const next = new URLSearchParams(sp.toString());
       next.set("leg", "inbound");
-      next.set("outbound", encodeTrain(t));
+      next.set("outbound", encodeTrain(enriched));
       router.push(`/search?${next.toString()}`);
       return;
     }
@@ -246,9 +258,9 @@ export default function SearchView() {
     }
     if (tripType === "roundtrip") {
       params.set("outbound", outboundParam ?? "");
-      params.set("inbound", encodeTrain(t));
+      params.set("inbound", encodeTrain(enriched));
     } else {
-      params.set("outbound", encodeTrain(t));
+      params.set("outbound", encodeTrain(enriched));
     }
     router.push(`/order?${params.toString()}`);
   }

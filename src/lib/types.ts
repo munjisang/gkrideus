@@ -1,5 +1,6 @@
 export type TripType = "oneway" | "roundtrip";
 export type SeatType = "standard" | "first";
+export type SeatPref = "none" | "window" | "aisle";
 export type Gender = "M" | "F";
 
 export type TrainSchedule = {
@@ -12,7 +13,11 @@ export type TrainSchedule = {
   arrPlaceName: string;
   depPlandTime: string;
   arrPlandTime: string;
+  /** TAGO regular adult fare for the standard seat. */
   adultCharge: number;
+  /** Korail live discounted fare for the standard seat, when announced
+   *  via reservePossibleName. Absent → no current discount. */
+  discountedCharge?: number;
 };
 
 export type Passenger = {
@@ -54,6 +59,9 @@ export type Order = {
     seniors: number;
   };
   passengers: Passenger[];
+  /** "none" (default), "window", or "aisle". UX-only — Korail seat-pref
+   *  flag is not honored by the booking endpoint yet. */
+  seatPref?: SeatPref;
   totalPrice: number;
   /** Result of clicking [예매하기] in admin — outbound leg. */
   reservation?: Reservation;

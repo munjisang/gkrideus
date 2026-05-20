@@ -11,6 +11,7 @@ import { useI18n, stationLabel, type Lang } from "../../lib/i18n";
 import type {
   Order,
   Passenger,
+  SeatPref,
   SeatType,
   TrainSchedule,
   TripType,
@@ -92,6 +93,7 @@ export default function OrderView() {
   const initialSeat = (sp.get("seatType") === "first" ? "first" : "standard") as SeatType;
   const [outboundSeat, setOutboundSeat] = useState<SeatType>(initialSeat);
   const [inboundSeat, setInboundSeat] = useState<SeatType>(initialSeat);
+  const [seatPref, setSeatPref] = useState<SeatPref>("none");
   const [reservant, setReservant] = useState<Passenger>(emptyPassenger);
   const [payMethod, setPayMethod] = useState<PayMethod | null>(null);
   const [agreed, setAgreed] = useState<Record<AgreementId, boolean>>({
@@ -102,20 +104,45 @@ export default function OrderView() {
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
-  const legPrice = (tr: TrainSchedule | null, seat: SeatType) =>
-    tr ? Math.round((tr.adultCharge * (seat === "first" ? FIRST_CLASS_MULT : 1)) / 100) * 100 : 0;
+  /** Regular fare = TAGO standard × class multiplier (rounded to 100원).
+   *  Discounted fare = same logic, but uses the Korail live general-seat
+   *  price for standard class when present. First class never has a
+   *  separately-announced discount, so discounted == regular for it. */
+  function legFares(
+    tr: TrainSchedule | null,
+    seat: SeatType,
+  ): { regular: number; discounted: number } {
+    if (!tr) return { regular: 0, discounted: 0 };
+    const mult = seat === "first" ? FIRST_CLASS_MULT : 1;
+    const regular = Math.round((tr.adultCharge * mult) / 100) * 100;
+    let discounted = regular;
+    if (seat === "standard" && tr.discountedCharge != null) {
+      discounted = Math.round(tr.discountedCharge / 100) * 100;
+      if (discounted > regular) discounted = regular;
+    }
+    return { regular, discounted };
+  }
 
-  const outboundPrice = legPrice(outbound, outboundSeat);
-  const inboundPrice = legPrice(inbound, inboundSeat);
-  const perPersonPrice = outboundPrice + inboundPrice;
-  const totalPrice = perPersonPrice * passengerCount;
+  const outFares = legFares(outbound, outboundSeat);
+  const inFares = legFares(inbound, inboundSeat);
 
-  // Per-person breakdown lines: 성인1, 성인2, 어린이1 …
-  const breakdownRows: { label: string; price: number }[] = (() => {
-    const rows: { label: string; price: number }[] = [];
+  /** Per-person totals across both legs. */
+  const ppRegular = outFares.regular + inFares.regular;
+  const ppDiscounted = outFares.discounted + inFares.discounted;
+  const ppDiscount = Math.max(0, ppRegular - ppDiscounted);
+  /** 발권수수료: (정상운임 − 할인) × 20%, 십원 단위 올림. */
+  const ppFee = Math.ceil((ppDiscounted * 0.2) / 10) * 10;
+  /** 총 운임 per person = 할인운임 + 수수료. */
+  const ppLegTotal = ppDiscounted + ppFee;
+  const totalPrice = ppLegTotal * passengerCount;
+
+  // One block per passenger (성인1, 성인2, 어린이1 …) — they all pay the
+  // same per-person amount today but keep separate lines for readability.
+  const breakdownRows: { label: string }[] = (() => {
+    const rows: { label: string }[] = [];
     for (const r of paxRows) {
       for (let i = 1; i <= r.count; i++) {
-        rows.push({ label: `${r.label}${i}`, price: perPersonPrice });
+        rows.push({ label: `${r.label}${i}` });
       }
     }
     return rows;
@@ -170,6 +197,7 @@ export default function OrderView() {
         seniors: paxSeniors,
       },
       passengers: [reservant],
+      seatPref,
       totalPrice,
     };
     saveOrder(order)
@@ -207,8 +235,8 @@ export default function OrderView() {
           <SeatPicker
             value={outboundSeat}
             onChange={setOutboundSeat}
-            standardPrice={legPrice(outbound, "standard")}
-            firstPrice={legPrice(outbound, "first")}
+            standardPrice={legFares(outbound, "standard").discounted}
+            firstPrice={legFares(outbound, "first").discounted}
             tt={t}
             lang={lang}
           />
@@ -219,13 +247,42 @@ export default function OrderView() {
               <SeatPicker
                 value={inboundSeat}
                 onChange={setInboundSeat}
-                standardPrice={legPrice(inbound, "standard")}
-                firstPrice={legPrice(inbound, "first")}
+                standardPrice={legFares(inbound, "standard").discounted}
+                firstPrice={legFares(inbound, "first").discounted}
                 tt={t}
                 lang={lang}
               />
             </>
           )}
+        </section>
+
+        <section className="bg-white border border-slate-200 p-5">
+          <h2 className="font-semibold mb-3 text-slate-800">{t("ord.seatPref")}</h2>
+          <div className="grid grid-cols-3 gap-2">
+            {(
+              [
+                { id: "none", tkey: "ord.seatPref.none" },
+                { id: "window", tkey: "ord.seatPref.window" },
+                { id: "aisle", tkey: "ord.seatPref.aisle" },
+              ] as const
+            ).map((opt) => {
+              const active = seatPref === opt.id;
+              return (
+                <button
+                  key={opt.id}
+                  type="button"
+                  onClick={() => setSeatPref(opt.id)}
+                  className={`h-11 rounded-sm border text-sm font-medium transition ${
+                    active
+                      ? "border-sky-600 bg-sky-50 text-sky-700 ring-1 ring-sky-200"
+                      : "border-slate-200 bg-white text-slate-700 hover:border-slate-400"
+                  }`}
+                >
+                  {t(opt.tkey)}
+                </button>
+              );
+            })}
+          </div>
         </section>
 
         <section className="bg-white border border-slate-200 p-5">
@@ -247,25 +304,26 @@ export default function OrderView() {
 
         <section className="bg-white border border-slate-200 p-5">
           <h2 className="font-semibold mb-3 text-slate-800">{t("ord.payInfo")}</h2>
-          <ul className="divide-y divide-slate-100">
+          <div className="divide-y divide-slate-100">
             {breakdownRows.map((r, i) => (
-              <li
+              <PaxFareBlock
                 key={`${r.label}-${i}`}
-                className="flex items-center justify-between py-2.5 text-sm"
-              >
-                <span className="text-slate-600">{r.label}</span>
-                <span className="font-semibold text-slate-900 tabular-nums">
-                  {krwL(r.price, lang)}
-                </span>
-              </li>
+                label={r.label}
+                regular={ppRegular}
+                discount={ppDiscount}
+                fee={ppFee}
+                legTotal={ppLegTotal}
+                lang={lang}
+                tt={t}
+              />
             ))}
-            <li className="flex items-center justify-between py-3 mt-1">
+            <div className="flex items-center justify-between py-3 mt-1">
               <span className="text-sm font-semibold text-slate-800">{t("ord.total")}</span>
               <span className="text-base font-bold text-sky-700 tabular-nums">
                 {krwL(totalPrice, lang)}
               </span>
-            </li>
-          </ul>
+            </div>
+          </div>
         </section>
 
         <section className="bg-white border border-slate-200 p-5">
@@ -581,6 +639,56 @@ function LegSummary({
           </span>
         </div>
       </div>
+    </div>
+  );
+}
+
+/** Per-passenger payment breakdown — 4 lines + a label header.
+ *  Matches the spec: 정상운임 / 할인 / 발권수수료(20%) / 총 운임. */
+function PaxFareBlock({
+  label,
+  regular,
+  discount,
+  fee,
+  legTotal,
+  lang,
+  tt,
+}: {
+  label: string;
+  regular: number;
+  discount: number;
+  fee: number;
+  legTotal: number;
+  lang: Lang;
+  tt: (k: string) => string;
+}) {
+  const Row = ({
+    name,
+    value,
+    bold,
+  }: {
+    name: string;
+    value: string;
+    bold?: boolean;
+  }) => (
+    <div className="flex items-center justify-between py-1.5 text-sm">
+      <span className="text-slate-600">{name}</span>
+      <span
+        className={`tabular-nums ${
+          bold ? "font-bold text-slate-900" : "font-semibold text-slate-800"
+        }`}
+      >
+        {value}
+      </span>
+    </div>
+  );
+  return (
+    <div className="py-3 first:pt-0">
+      <div className="text-sm font-semibold text-slate-900 mb-1">{label}</div>
+      <Row name={tt("ord.fare.regular")} value={krwL(regular, lang)} />
+      <Row name={tt("ord.fare.discount")} value={krwL(discount, lang)} />
+      <Row name={tt("ord.fare.fee")} value={krwL(fee, lang)} />
+      <Row name={tt("ord.fare.legTotal")} value={krwL(legTotal, lang)} bold />
     </div>
   );
 }
