@@ -13,11 +13,77 @@ import { useI18n, stationLabel, type Lang } from "../../lib/i18n";
 import type {
   Order,
   Passenger,
+  Reservation,
   SeatPref,
   SeatType,
   TrainSchedule,
   TripType,
 } from "../../lib/types";
+
+/** Response envelope returned by /api/booking/reserve and /api/booking/cancel. */
+type BookingResult = {
+  ok: boolean;
+  stage?: string;
+  error?: string;
+  mode?: "live" | "dry";
+  train?: Record<string, unknown>;
+  reservation?: Record<string, unknown>;
+};
+
+async function callReserve(payload: object): Promise<BookingResult> {
+  try {
+    const res = await fetch("/api/booking/reserve", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
+    return (await res.json()) as BookingResult;
+  } catch (e) {
+    return { ok: false, error: (e as Error).message, stage: "network" };
+  }
+}
+
+async function callCancel(rsvId: string): Promise<BookingResult> {
+  try {
+    const res = await fetch("/api/booking/cancel", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ rsvId }),
+    });
+    return (await res.json()) as BookingResult;
+  } catch (e) {
+    return { ok: false, error: (e as Error).message, stage: "network" };
+  }
+}
+
+/** Convert /api/booking/reserve's response into the order's Reservation
+ *  shape. Returns null for unparseable / error responses. */
+function buildReservation(j: BookingResult): Reservation | null {
+  if (!j.ok) return null;
+  if (j.mode === "live" && j.reservation) {
+    const r = j.reservation as Record<string, unknown>;
+    return {
+      rsvId: String(r.rsv_id ?? r.rsv_no ?? ""),
+      reservedAt: new Date().toISOString(),
+      deadline:
+        r.buy_limit_date && r.buy_limit_time
+          ? `${r.buy_limit_date} ${r.buy_limit_time}`
+          : undefined,
+      totalPrice: typeof r.price === "number" ? r.price : undefined,
+      mode: "live",
+      raw: r,
+    };
+  }
+  if (j.mode === "dry") {
+    return {
+      rsvId: "(dry-run)",
+      reservedAt: new Date().toISOString(),
+      mode: "dry",
+      raw: j.train,
+    };
+  }
+  return null;
+}
 
 function durationL(min: number, lang: Lang): string {
   const h = Math.floor(min / 60);
@@ -174,7 +240,30 @@ export default function OrderView() {
     return null;
   }
 
-  function onSubmit(e: React.FormEvent) {
+  /** Build the POST body the reserve endpoint expects for a single leg. */
+  function legPayload(tr: TrainSchedule, seat: SeatType) {
+    return {
+      depName: tr.depPlaceName,
+      arrName: tr.arrPlaceName,
+      date: tr.depPlandTime.slice(0, 8),
+      time: tr.depPlandTime.slice(8, 12),
+      trainNo: tr.trainNo,
+      passengers: passengerCount,
+      paxBreakdown: {
+        adults:
+          paxAdults || (paxChildren + paxToddlers + paxSeniors === 0
+            ? passengerCount
+            : 0),
+        children: paxChildren,
+        toddlers: paxToddlers,
+        seniors: paxSeniors,
+      },
+      seatType: seat,
+      live: true,
+    };
+  }
+
+  async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
     const err = validate();
     if (err) {
@@ -183,6 +272,54 @@ export default function OrderView() {
     }
     setError(null);
     setSubmitting(true);
+
+    // ── 1. Reserve outbound leg
+    const outRes = await callReserve(legPayload(outbound!, outboundSeat));
+    if (!outRes.ok) {
+      setError(t("ord.err.reserveOut", { m: outRes.error ?? outRes.stage ?? "" }));
+      setSubmitting(false);
+      return;
+    }
+    const outRsv = buildReservation(outRes);
+    if (!outRsv) {
+      setError(t("ord.err.reserveParse"));
+      setSubmitting(false);
+      return;
+    }
+
+    // ── 2. Reserve inbound leg (roundtrip only) with auto-rollback on failure
+    let inRsv: Reservation | undefined;
+    if (tripType === "roundtrip" && inbound) {
+      const inRes = await callReserve(legPayload(inbound, inboundSeat));
+      if (!inRes.ok) {
+        let suffix = "";
+        if (outRsv.mode === "live" && outRsv.rsvId) {
+          const rb = await callCancel(outRsv.rsvId);
+          suffix = rb.ok
+            ? "\n" + t("ord.err.rollbackOk", { id: outRsv.rsvId })
+            : "\n" +
+              t("ord.err.rollbackFail", {
+                id: outRsv.rsvId,
+                m: rb.error ?? rb.stage ?? "",
+              });
+        }
+        setError(
+          t("ord.err.reserveIn", { m: inRes.error ?? inRes.stage ?? "" }) +
+            suffix,
+        );
+        setSubmitting(false);
+        return;
+      }
+      const parsed = buildReservation(inRes);
+      if (!parsed) {
+        setError(t("ord.err.reserveParse"));
+        setSubmitting(false);
+        return;
+      }
+      inRsv = parsed;
+    }
+
+    // ── 3. Save order with reservation(s) attached, then redirect
     const order: Order = {
       id: newOrderId(),
       createdAt: new Date().toISOString(),
@@ -193,7 +330,10 @@ export default function OrderView() {
       inboundSeatType: tripType === "roundtrip" ? inboundSeat : undefined,
       passengerCount,
       paxBreakdown: {
-        adults: paxAdults || (paxChildren + paxToddlers + paxSeniors === 0 ? passengerCount : 0),
+        adults:
+          paxAdults || (paxChildren + paxToddlers + paxSeniors === 0
+            ? passengerCount
+            : 0),
         children: paxChildren,
         toddlers: paxToddlers,
         seniors: paxSeniors,
@@ -201,13 +341,16 @@ export default function OrderView() {
       passengers: [reservant],
       seatPref,
       totalPrice,
+      reservation: outRsv,
+      inboundReservation: inRsv,
     };
-    saveOrder(order)
-      .then(() => router.push(`/order/complete?id=${encodeURIComponent(order.id)}`))
-      .catch((e: Error) => {
-        setSubmitting(false);
-        setError(t("ord.err.saveFail", { m: e.message }));
-      });
+    try {
+      await saveOrder(order);
+      router.push(`/order/complete?id=${encodeURIComponent(order.id)}`);
+    } catch (err) {
+      setError(t("ord.err.saveFail", { m: (err as Error).message }));
+      setSubmitting(false);
+    }
   }
 
   if (!outbound) {

@@ -164,6 +164,26 @@ const DICT: Record<string, Entry> = {
   "ord.err.saveFail": { ko: "주문 저장 실패: {m}", en: "Failed to save order: {m}" },
   "ord.err.legOut": { ko: "가는 편 정보가 없습니다.", en: "Missing outbound train." },
   "ord.err.legIn": { ko: "오는 편 정보가 없습니다.", en: "Missing return train." },
+  "ord.err.reserveOut": {
+    ko: "가는 편 예약 실패: {m}",
+    en: "Outbound reservation failed: {m}",
+  },
+  "ord.err.reserveIn": {
+    ko: "오는 편 예약 실패: {m}",
+    en: "Inbound reservation failed: {m}",
+  },
+  "ord.err.reserveParse": {
+    ko: "예약 응답을 해석할 수 없습니다.",
+    en: "Could not parse reservation response.",
+  },
+  "ord.err.rollbackOk": {
+    ko: "가는 편 예약은 자동 취소되었습니다. ({id})",
+    en: "Outbound reservation auto-cancelled. ({id})",
+  },
+  "ord.err.rollbackFail": {
+    ko: "⚠ 가는 편({id}) 자동 취소 실패: {m}\n코레일 앱에서 직접 취소해주세요.",
+    en: "⚠ Outbound rollback failed ({id}): {m}\nPlease cancel it manually in the Korail app.",
+  },
 
   // complete
   "cp.done": { ko: "예매가 완료되었습니다", en: "Booking Complete" },
