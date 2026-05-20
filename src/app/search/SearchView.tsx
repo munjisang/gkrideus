@@ -8,6 +8,7 @@ import SearchLoading from "../../components/SearchLoading";
 import DatePickerSheet, { type DateHour } from "../../components/DatePickerSheet";
 import PassengersSheet, { type Passengers } from "../../components/PassengersSheet";
 import { TrainLogo } from "../../components/TrainLogo";
+import { firstClassMult } from "../../lib/fare";
 import { useI18n, stationLabel, type Lang } from "../../lib/i18n";
 import type { TrainSchedule, TripType } from "../../lib/types";
 
@@ -41,8 +42,6 @@ const FILTER_TABS: { key: FilterKey; tkey: string }[] = [
   { key: "KTX", tkey: "sr.filter.ktx" },
   { key: "SRT", tkey: "sr.filter.srt" },
 ];
-
-const FIRST_CLASS_MULT = 1.4;
 
 function encodeTrain(t: TrainSchedule): string {
   return encodeURIComponent(JSON.stringify(t));
@@ -559,16 +558,15 @@ function TrainCard({
   const tagoStd = train.adultCharge;
   const standardPrice = standardLivePrice ?? tagoStd;
   // Korail's search endpoint only returns a live price for 일반실. For 특실
-  // we infer the discount by reusing the standard-class discount ratio
-  // (live/TAGO) — matches how Korail applies promo % uniformly across
-  // classes on letskorail.com.
-  const firstRegular =
-    Math.round((train.adultCharge * FIRST_CLASS_MULT) / 100) * 100;
+  // we (1) use a grade-specific multiplier to estimate the regular fare,
+  // and (2) re-apply the standard-class discount ratio (live/TAGO) to it.
+  // Korail applies promo % uniformly across classes on letskorail.com.
+  const mult = firstClassMult(train.trainGradeName);
+  const firstRegular = Math.round((train.adultCharge * mult) / 100) * 100;
   const firstPrice =
     standardLivePrice != null && tagoStd > 0
       ? Math.round(
-          (train.adultCharge * FIRST_CLASS_MULT * (standardLivePrice / tagoStd)) /
-            100,
+          (train.adultCharge * mult * (standardLivePrice / tagoStd)) / 100,
         ) * 100
       : firstRegular;
   // Whole train unbookable when standard is sold out AND special is either

@@ -7,6 +7,7 @@ import { COUNTRY_CODES } from "../../lib/countries";
 import { fmtTime, durationMinutes } from "../../lib/format";
 import { newOrderId, saveOrder } from "../../lib/storage";
 import { TrainLogo } from "../../components/TrainLogo";
+import { firstClassMult } from "../../lib/fare";
 import { useI18n, stationLabel, type Lang } from "../../lib/i18n";
 import type {
   Order,
@@ -16,8 +17,6 @@ import type {
   TrainSchedule,
   TripType,
 } from "../../lib/types";
-
-const FIRST_CLASS_MULT = 1.4;
 
 function durationL(min: number, lang: Lang): string {
   const h = Math.floor(min / 60);
@@ -114,7 +113,7 @@ export default function OrderView() {
     seat: SeatType,
   ): { regular: number; discounted: number } {
     if (!tr) return { regular: 0, discounted: 0 };
-    const mult = seat === "first" ? FIRST_CLASS_MULT : 1;
+    const mult = seat === "first" ? firstClassMult(tr.trainGradeName) : 1;
     const regular = Math.round((tr.adultCharge * mult) / 100) * 100;
     let discounted = regular;
     if (tr.discountedCharge != null && tr.adultCharge > 0) {
