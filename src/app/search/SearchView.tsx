@@ -6,6 +6,8 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { fmtTime, durationMinutes } from "../../lib/format";
 import SearchLoading from "../../components/SearchLoading";
+import DatePickerSheet, { type DateHour } from "../../components/DatePickerSheet";
+import PassengersSheet, { type Passengers } from "../../components/PassengersSheet";
 import { useI18n, stationLabel, type Lang } from "../../lib/i18n";
 import type { TrainSchedule, TripType } from "../../lib/types";
 
@@ -78,6 +80,39 @@ export default function SearchView() {
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<FilterKey>("all");
   const tabsRef = useRef<HTMLDivElement>(null);
+  const [dateSheetOpen, setDateSheetOpen] = useState(false);
+  const [paxSheetOpen, setPaxSheetOpen] = useState(false);
+
+  // Booking window matches the home page (D+2 ~ D+30).
+  const { minBookDate, maxBookDate } = useMemo(() => {
+    const pad = (n: number) => n.toString().padStart(2, "0");
+    const fmt = (d: Date) =>
+      `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+    const minD = new Date();
+    minD.setDate(minD.getDate() + 2);
+    const maxD = new Date();
+    maxD.setDate(maxD.getDate() + 30);
+    return { minBookDate: fmt(minD), maxBookDate: fmt(maxD) };
+  }, []);
+
+  // YYYYMMDD → YYYY-MM-DD for the date picker.
+  const currentDateHour: DateHour | null = useMemo(() => {
+    if (!date || date.length < 8) return null;
+    return {
+      date: `${date.slice(0, 4)}-${date.slice(4, 6)}-${date.slice(6, 8)}`,
+      hour: startHour,
+    };
+  }, [date, startHour]);
+
+  const currentPax: Passengers = useMemo(
+    () => ({
+      adults: Number(sp.get("adults") ?? sp.get("passengers") ?? "1") || 1,
+      children: Number(sp.get("children") ?? "0") || 0,
+      toddlers: Number(sp.get("toddlers") ?? "0") || 0,
+      seniors: Number(sp.get("seniors") ?? "0") || 0,
+    }),
+    [sp],
+  );
 
   /** Map keyed by zero-stripped train_no. */
   type SeatAvail = {
@@ -278,6 +313,56 @@ export default function SearchView() {
         </div>
       </div>
 
+      {/* Filter pills: date+hour and passenger count */}
+      <div className="mx-4 sm:mx-6 lg:mx-[470px] pt-3 pb-1 flex flex-wrap gap-2">
+        <button
+          type="button"
+          onClick={() => setDateSheetOpen(true)}
+          className="inline-flex items-center gap-1.5 h-9 px-3.5 rounded-full bg-white border border-slate-200 text-sm font-medium text-slate-700 hover:border-slate-300 transition"
+        >
+          <span className="tabular-nums">
+            {currentDateHour ? fmtDateHourPill(currentDateHour, t) : t("home.pickDate")}
+          </span>
+          <svg
+            className="text-slate-400"
+            width="14"
+            height="14"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            aria-hidden
+          >
+            <path d="M6 9l6 6 6-6" />
+          </svg>
+        </button>
+        <button
+          type="button"
+          onClick={() => setPaxSheetOpen(true)}
+          className="inline-flex items-center gap-1.5 h-9 px-3.5 rounded-full bg-white border border-slate-200 text-sm font-medium text-slate-700 hover:border-slate-300 transition"
+        >
+          <span className="tabular-nums">
+            {t("sr.totalPax", { n: totalPax(currentPax) })}
+          </span>
+          <svg
+            className="text-slate-400"
+            width="14"
+            height="14"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            aria-hidden
+          >
+            <path d="M6 9l6 6 6-6" />
+          </svg>
+        </button>
+      </div>
+
       {/* Content */}
       <div className="mx-4 sm:mx-6 lg:mx-[470px] py-3 pb-10 space-y-2">
         {tripType === "roundtrip" && leg === "inbound" && outboundParam && (
@@ -346,8 +431,62 @@ export default function SearchView() {
           );
         })}
       </div>
+
+      <DatePickerSheet
+        open={dateSheetOpen}
+        title={leg === "inbound" ? t("dp.titleRet") : t("dp.titleDep")}
+        value={currentDateHour}
+        minDate={minBookDate}
+        maxDate={maxBookDate}
+        onClose={() => setDateSheetOpen(false)}
+        onPick={(v) => {
+          const next = new URLSearchParams(sp.toString());
+          // Outbound leg owns ?date/?hour; inbound leg owns ?returnDate/?returnHour.
+          if (leg === "inbound") {
+            next.set("returnDate", v.date.replace(/-/g, ""));
+            next.set("returnHour", String(v.hour));
+          } else {
+            next.set("date", v.date.replace(/-/g, ""));
+            next.set("hour", String(v.hour));
+          }
+          setDateSheetOpen(false);
+          router.replace(`/search?${next.toString()}`);
+        }}
+      />
+
+      <PassengersSheet
+        open={paxSheetOpen}
+        value={currentPax}
+        onClose={() => setPaxSheetOpen(false)}
+        onPick={(v) => {
+          const next = new URLSearchParams(sp.toString());
+          next.set("adults", String(v.adults));
+          next.set("children", String(v.children));
+          next.set("toddlers", String(v.toddlers));
+          next.set("seniors", String(v.seniors));
+          next.set(
+            "passengers",
+            String(v.adults + v.children + v.toddlers + v.seniors),
+          );
+          setPaxSheetOpen(false);
+          router.replace(`/search?${next.toString()}`);
+        }}
+      />
     </div>
   );
+}
+
+function totalPax(p: Passengers): number {
+  return p.adults + p.children + p.toddlers + p.seniors;
+}
+
+/** "2026.05.29 · 00시 이후" — matches the home-page format. */
+function fmtDateHourPill(
+  v: DateHour,
+  t: (k: string, p?: Record<string, string | number>) => string,
+): string {
+  const [y, m, d] = v.date.split("-");
+  return `${y}.${m}.${d} · ${t("home.afterHour", { h: String(v.hour).padStart(2, "0") })}`;
 }
 
 /** Per-class sold-out detection. Korail's per-class codes observed in the
