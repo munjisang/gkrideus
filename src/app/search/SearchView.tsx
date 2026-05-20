@@ -88,6 +88,8 @@ export default function SearchView() {
   type SeatAvail = {
     generalSeat: string;
     specialSeat: string;
+    /** "Y"|"N" — whole-train reservability. "N" means every class is closed. */
+    reservePossible: string;
     /** Korail-side fare for the 일반실, parsed from reservePossibleName.
      *  Often matches TAGO; lower when a discount applies. */
     generalPrice: number | null;
@@ -147,6 +149,7 @@ export default function SearchView() {
               trainNo: string;
               generalSeat: string;
               specialSeat: string;
+              reservePossible?: string;
               reservePossibleName?: string;
             }[];
           }) => {
@@ -154,10 +157,16 @@ export default function SearchView() {
             const m = new Map<string, SeatAvail>();
             for (const x of j.trains) {
               const key = String(x.trainNo).replace(/^0+/, "") || "0";
-              const { price, promo } = parsePromo(x.reservePossibleName ?? "");
+              const reservable = (x.reservePossible ?? "").toUpperCase() === "Y";
+              // Korail keeps showing a fare in reservePossibleName even when
+              // sold out — only trust it for promo display when reservable.
+              const { price, promo } = reservable
+                ? parsePromo(x.reservePossibleName ?? "")
+                : { price: null, promo: null };
               m.set(key, {
                 generalSeat: x.generalSeat,
                 specialSeat: x.specialSeat,
+                reservePossible: x.reservePossible ?? "",
                 generalPrice: price,
                 promo,
               });
@@ -333,8 +342,9 @@ export default function SearchView() {
               train={tr}
               lang={lang}
               t={t}
-              standardSoldOut={isSoldOut(avail?.generalSeat)}
-              firstSoldOut={isSoldOut(avail?.specialSeat)}
+              standardSoldOut={isSoldOut(avail?.generalSeat, avail?.reservePossible)}
+              firstSoldOut={isSoldOut(avail?.specialSeat, avail?.reservePossible)}
+              firstUnavailable={isClassUnavailable(avail?.specialSeat)}
               standardLivePrice={avail?.generalPrice ?? null}
               promo={avail?.promo ?? null}
               onPick={() => onPick(tr)}
@@ -346,11 +356,20 @@ export default function SearchView() {
   );
 }
 
-/** Korail seat-state codes: "11"=예약가능, "12"=매진, "13"=좌석선택,
- *  "14"=예약대기, "15"=입석, "00"=해당 없음. Mark sold-out only on "12";
- *  unknown/missing → assume available (we don't want false negatives). */
-function isSoldOut(code: string | undefined): boolean {
-  return code === "12";
+/** Per-class sold-out detection. Korail's per-class codes observed in the
+ *  wild: "11"=예약가능, "12"/"13"=매진/예약불가, "14"=예약대기, "00"=해당
+ *  클래스 없음. Combined with the train-wide `reservePossible` flag — when
+ *  it's "N" the whole train is closed regardless of per-class code.
+ *  Unknown / "11" → assume available. */
+function isSoldOut(
+  code: string | undefined,
+  reservePossible: string | undefined,
+): boolean {
+  if ((reservePossible ?? "").toUpperCase() === "N") return true;
+  return code === "12" || code === "13";
+}
+function isClassUnavailable(code: string | undefined): boolean {
+  return code === "00";
 }
 
 /** Parse Korail's reservePossibleName like "59,800원\n5%적립" or
@@ -374,6 +393,7 @@ function TrainCard({
   t,
   standardSoldOut,
   firstSoldOut,
+  firstUnavailable,
   standardLivePrice,
   promo,
   onPick,
@@ -383,6 +403,7 @@ function TrainCard({
   t: (k: string) => string;
   standardSoldOut: boolean;
   firstSoldOut: boolean;
+  firstUnavailable: boolean;
   standardLivePrice: number | null;
   promo: string | null;
   onPick: () => void;
@@ -430,6 +451,7 @@ function TrainCard({
             promo={null}
             lang={lang}
             soldOut={firstSoldOut}
+            unavailable={firstUnavailable}
           />
         </div>
       </div>
@@ -468,6 +490,7 @@ function PriceBox({
   promo,
   lang,
   soldOut,
+  unavailable,
 }: {
   label: string;
   price: number;
@@ -475,6 +498,7 @@ function PriceBox({
   promo?: string | null;
   lang: Lang;
   soldOut?: boolean;
+  unavailable?: boolean;
 }) {
   const showDiscount = !!originalPrice && originalPrice > price;
   const hasPromo = !!promo;
@@ -483,13 +507,15 @@ function PriceBox({
       className={`inline-flex flex-col items-center justify-center w-[88px] ${
         hasPromo || showDiscount ? "h-14" : "h-12"
       } rounded-sm border leading-tight px-1 ${
-        soldOut
+        soldOut || unavailable
           ? "border-slate-200 bg-white text-slate-300"
           : "border-slate-200 bg-white"
       }`}
     >
       <span className="text-[11px] text-slate-500">{label}</span>
-      {soldOut ? (
+      {unavailable ? (
+        <span className="text-[13px] font-bold text-slate-400 mt-0.5">—</span>
+      ) : soldOut ? (
         <span className="text-[13px] font-bold text-red-500 mt-0.5">
           {lang === "ko" ? "매진" : "Sold out"}
         </span>
