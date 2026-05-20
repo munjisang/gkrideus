@@ -21,6 +21,9 @@ const DICT: Record<string, Entry> = {
   "app.title": { ko: "승차권 예매", en: "Ticketing" },
   "nav.admin": { ko: "관리자", en: "Admin" },
   "nav.book": { ko: "예매하기", en: "Booking" },
+  "nav.myBookings": { ko: "예매내역", en: "My bookings" },
+  "nav.profileMenu": { ko: "프로필 메뉴", en: "Profile menu" },
+  "nav.langMenu": { ko: "언어 선택", en: "Select language" },
 
   // home
   "home.oneway": { ko: "편도", en: "One-way" },

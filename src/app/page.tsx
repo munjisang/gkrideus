@@ -180,7 +180,6 @@ export default function HomePage() {
           >
             <span aria-hidden className="w-2.5 h-2.5 rounded-full border-2 border-slate-700 shrink-0" />
             <span className="flex-1">
-              <span className="text-xs text-slate-400 block">{t("home.dep")}</span>
               <span
                 className={`text-xl font-semibold ${
                   from ? "text-slate-900" : "text-slate-400"
@@ -200,7 +199,6 @@ export default function HomePage() {
           >
             <span aria-hidden className="w-2.5 h-2.5 rounded-full bg-red-500 shrink-0" />
             <span className="flex-1">
-              <span className="text-xs text-slate-400 block">{t("home.arr")}</span>
               <span
                 className={`text-xl font-semibold ${
                   to ? "text-slate-900" : "text-slate-400"
