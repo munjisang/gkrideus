@@ -121,7 +121,7 @@ const DICT: Record<string, Entry> = {
   "ord.title": { ko: "예매정보 입력", en: "Booking Details" },
   "ord.selectedTrain": { ko: "선택한 열차", en: "Selected Train" },
   "ord.legOut": { ko: "가는 편", en: "Outbound" },
-  "ord.legIn": { ko: "오는 편", en: "Return" },
+  "ord.legIn": { ko: "오는 편", en: "Inbound" },
   "ord.paxInfo": { ko: "인원정보", en: "Passengers" },
   "ord.payInfo": { ko: "결제정보", en: "Payment Summary" },
   "ord.total": { ko: "합계", en: "Total" },

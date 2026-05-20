@@ -1,13 +1,13 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import Image from "next/image";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { fmtTime, durationMinutes } from "../../lib/format";
 import SearchLoading from "../../components/SearchLoading";
 import DatePickerSheet, { type DateHour } from "../../components/DatePickerSheet";
 import PassengersSheet, { type Passengers } from "../../components/PassengersSheet";
+import { TrainLogo } from "../../components/TrainLogo";
 import { useI18n, stationLabel, type Lang } from "../../lib/i18n";
 import type { TrainSchedule, TripType } from "../../lib/types";
 
@@ -637,39 +637,6 @@ function TrainCard({
         </div>
       </div>
     </button>
-  );
-}
-
-/** Resolve a train name to its logo asset under /public/trains. */
-function logoSrcFor(name: string): string | null {
-  if (name.startsWith("KTX-산천")) return "/trains/ktx-sancheon.png";
-  if (name.startsWith("KTX-이음")) return "/trains/ktx-eum.png";
-  if (name.startsWith("KTX-청룡")) return "/trains/ktx-cheongryong.png";
-  if (name.startsWith("KTX")) return "/trains/ktx.png";
-  if (name === "SRT") return "/trains/srt.png";
-  return null;
-}
-
-function TrainLogo({ name, dim }: { name: string; dim?: boolean }) {
-  const src = logoSrcFor(name);
-  if (!src) {
-    // Fallback: bare text if the name isn't one of the 5 known logos.
-    return (
-      <span className={`text-sm font-bold ${dim ? "text-slate-400" : "text-slate-900"}`}>
-        {name}
-      </span>
-    );
-  }
-  return (
-    <Image
-      src={src}
-      alt={name}
-      width={59}
-      height={14}
-      className={`h-3.5 w-auto select-none ${dim ? "opacity-40 grayscale" : ""}`}
-      priority={false}
-      unoptimized
-    />
   );
 }
 

@@ -4,9 +4,10 @@ import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { COUNTRY_CODES } from "../../lib/countries";
-import { fmtDate, fmtTime, durationMinutes } from "../../lib/format";
+import { fmtTime, durationMinutes } from "../../lib/format";
 import { newOrderId, saveOrder } from "../../lib/storage";
-import { useI18n, stationLabel, gradeLabel, type Lang } from "../../lib/i18n";
+import { TrainLogo } from "../../components/TrainLogo";
+import { useI18n, stationLabel, type Lang } from "../../lib/i18n";
 import type {
   Order,
   Passenger,
@@ -535,44 +536,50 @@ function LegSummary({
   lang: Lang;
 }) {
   const min = durationMinutes(train.depPlandTime, train.arrPlandTime);
+  // YYYYMMDD → YYYY.MM.DD (spec uses dots, not dashes).
+  const yyyymmdd = train.depPlandTime.slice(0, 8);
+  const dateLabel = `${yyyymmdd.slice(0, 4)}.${yyyymmdd.slice(4, 6)}.${yyyymmdd.slice(6, 8)}`;
   return (
-    <div className="space-y-2">
-      {/* Row 1: [label] grade no ················ date */}
-      <div className="flex items-center justify-between gap-2">
-        <div className="flex items-center gap-2 min-w-0">
-          <span className="text-xs font-bold text-sky-700 bg-sky-50 border border-sky-100 rounded px-2 py-1">
+    <div>
+      {/* Row 1: [leg badge] logo train-no ········ date */}
+      <div className="flex items-baseline justify-between gap-2">
+        <div className="flex items-baseline gap-2 min-w-0">
+          <span className="text-xs font-bold text-sky-700 bg-sky-50 border border-sky-100 rounded px-2 py-0.5 leading-tight">
             {label}
           </span>
-          <span className="text-sm font-semibold text-slate-900 truncate">
-            {gradeLabel(train.trainGradeName, lang)}{" "}
+          <TrainLogo name={train.trainGradeName} />
+          <span className="text-sm font-semibold text-slate-500">
             {Number(train.trainNo) || train.trainNo}
           </span>
         </div>
-        <span className="text-sm text-slate-500 shrink-0">
-          {fmtDate(train.depPlandTime.slice(0, 8))}
+        <span className="text-sm text-slate-500 shrink-0 tabular-nums">
+          {dateLabel}
         </span>
       </div>
 
-      {/* Row 2: dep ━━━→━━━ arr */}
-      <div className="flex items-center gap-3 text-lg font-bold text-slate-900">
-        <span>{stationLabel(train.depPlaceName, lang)}</span>
-        <span aria-hidden className="flex-1 flex items-center gap-1 text-slate-300">
-          <span className="flex-1 h-px bg-slate-200" />
-          <span className="text-base leading-none">→</span>
-          <span className="flex-1 h-px bg-slate-200" />
+      {/* Row 2: dep_time + dep_station ─── duration ─── arr_time + arr_station */}
+      <div className="flex items-center gap-3 pt-4">
+        <div className="flex flex-col items-start min-w-0">
+          <span className="text-base font-bold tabular-nums leading-none whitespace-nowrap text-slate-900">
+            {fmtTime(train.depPlandTime)}
+          </span>
+          <span className="text-sm mt-1 whitespace-nowrap text-slate-600">
+            {stationLabel(train.depPlaceName, lang)}
+          </span>
+        </div>
+        <span className="h-px flex-1 bg-slate-200 self-start mt-2.5" aria-hidden />
+        <span className="text-xs whitespace-nowrap self-start mt-1 text-slate-400">
+          {durationL(min, lang)}
         </span>
-        <span>{stationLabel(train.arrPlaceName, lang)}</span>
-      </div>
-
-      {/* Row 3: dep time  duration  arr time */}
-      <div className="flex items-center justify-between text-sm">
-        <span className="font-semibold tabular-nums text-slate-700">
-          {fmtTime(train.depPlandTime)}
-        </span>
-        <span className="text-slate-400">{durationL(min, lang)}</span>
-        <span className="font-semibold tabular-nums text-slate-700">
-          {fmtTime(train.arrPlandTime)}
-        </span>
+        <span className="h-px flex-1 bg-slate-200 self-start mt-2.5" aria-hidden />
+        <div className="flex flex-col items-end min-w-0">
+          <span className="text-base font-bold tabular-nums leading-none whitespace-nowrap text-slate-900">
+            {fmtTime(train.arrPlandTime)}
+          </span>
+          <span className="text-sm mt-1 whitespace-nowrap text-slate-600">
+            {stationLabel(train.arrPlaceName, lang)}
+          </span>
+        </div>
       </div>
     </div>
   );
