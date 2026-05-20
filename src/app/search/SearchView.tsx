@@ -432,7 +432,7 @@ function TrainCard({
       {/* Times + duration row */}
       <div className="flex items-center gap-3 px-5 pt-2 pb-4">
         <span
-          className={`text-2xl font-bold tabular-nums leading-none whitespace-nowrap ${muted(
+          className={`text-base font-bold tabular-nums leading-none whitespace-nowrap ${muted(
             "text-slate-900",
           )}`}
         >
@@ -450,7 +450,7 @@ function TrainCard({
           aria-hidden
         />
         <span
-          className={`text-2xl font-bold tabular-nums leading-none whitespace-nowrap ${muted(
+          className={`text-base font-bold tabular-nums leading-none whitespace-nowrap ${muted(
             "text-slate-900",
           )}`}
         >
@@ -462,7 +462,7 @@ function TrainCard({
       <div className="mx-5 border-t border-slate-200" />
 
       {/* Per-class prices */}
-      <div className="grid grid-cols-2 px-5 py-3">
+      <div className="grid grid-cols-2 px-5 py-1">
         <SeatColumn
           label={t("sr.standard")}
           price={standardPrice}
@@ -509,9 +509,9 @@ function TrainLogo({ name, dim }: { name: string; dim?: boolean }) {
     <Image
       src={src}
       alt={name}
-      width={84}
-      height={20}
-      className={`h-5 w-auto select-none ${dim ? "opacity-40 grayscale" : ""}`}
+      width={42}
+      height={10}
+      className={`h-2.5 w-auto select-none ${dim ? "opacity-40 grayscale" : ""}`}
       priority={false}
       unoptimized
     />
