@@ -558,7 +558,19 @@ function TrainCard({
   const mins = durationMinutes(train.depPlandTime, train.arrPlandTime);
   const tagoStd = train.adultCharge;
   const standardPrice = standardLivePrice ?? tagoStd;
-  const firstPrice = Math.round((train.adultCharge * FIRST_CLASS_MULT) / 100) * 100;
+  // Korail's search endpoint only returns a live price for 일반실. For 특실
+  // we infer the discount by reusing the standard-class discount ratio
+  // (live/TAGO) — matches how Korail applies promo % uniformly across
+  // classes on letskorail.com.
+  const firstRegular =
+    Math.round((train.adultCharge * FIRST_CLASS_MULT) / 100) * 100;
+  const firstPrice =
+    standardLivePrice != null && tagoStd > 0
+      ? Math.round(
+          (train.adultCharge * FIRST_CLASS_MULT * (standardLivePrice / tagoStd)) /
+            100,
+        ) * 100
+      : firstRegular;
   // Whole train unbookable when standard is sold out AND special is either
   // sold out or doesn't exist on this rolling stock.
   const wholeBlocked = standardSoldOut && (firstSoldOut || firstUnavailable);

@@ -105,9 +105,10 @@ export default function OrderView() {
   const [submitting, setSubmitting] = useState(false);
 
   /** Regular fare = TAGO standard × class multiplier (rounded to 100원).
-   *  Discounted fare = same logic, but uses the Korail live general-seat
-   *  price for standard class when present. First class never has a
-   *  separately-announced discount, so discounted == regular for it. */
+   *  Discounted fare = same logic with the standard-class discount ratio
+   *  (live / TAGO) applied uniformly to both classes — Korail applies
+   *  N-card / event discounts at the same percentage across 일반실 and
+   *  특실 on letskorail.com, so we mirror that for 특실. */
   function legFares(
     tr: TrainSchedule | null,
     seat: SeatType,
@@ -116,8 +117,9 @@ export default function OrderView() {
     const mult = seat === "first" ? FIRST_CLASS_MULT : 1;
     const regular = Math.round((tr.adultCharge * mult) / 100) * 100;
     let discounted = regular;
-    if (seat === "standard" && tr.discountedCharge != null) {
-      discounted = Math.round(tr.discountedCharge / 100) * 100;
+    if (tr.discountedCharge != null && tr.adultCharge > 0) {
+      const ratio = tr.discountedCharge / tr.adultCharge;
+      discounted = Math.round((tr.adultCharge * mult * ratio) / 100) * 100;
       if (discounted > regular) discounted = regular;
     }
     return { regular, discounted };
