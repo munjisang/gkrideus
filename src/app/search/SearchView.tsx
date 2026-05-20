@@ -1,11 +1,12 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { fmtTime, durationMinutes } from "../../lib/format";
 import SearchLoading from "../../components/SearchLoading";
-import { useI18n, stationLabel, gradeLabel, type Lang } from "../../lib/i18n";
+import { useI18n, stationLabel, type Lang } from "../../lib/i18n";
 import type { TrainSchedule, TripType } from "../../lib/types";
 
 function durationL(min: number, lang: Lang): string {
@@ -406,45 +407,77 @@ function TrainCard({
   // Whole train unbookable when standard is sold out AND special is either
   // sold out or doesn't exist on this rolling stock.
   const wholeBlocked = standardSoldOut && (firstSoldOut || firstUnavailable);
+  // Dimmed-card states for text/logo when the whole train is unbookable.
+  const dim = wholeBlocked;
+  const muted = (cls: string) => (dim ? "text-slate-400" : cls);
   return (
     <button
       type="button"
       onClick={wholeBlocked ? undefined : onPick}
       disabled={wholeBlocked}
-      className={`block w-full text-left p-4 border border-slate-200 transition ${
+      className={`block w-full text-left rounded-xl border transition ${
         wholeBlocked
-          ? "bg-slate-100 opacity-70 cursor-not-allowed"
-          : "bg-white hover:border-slate-400"
+          ? "bg-slate-100 border-slate-200 cursor-not-allowed"
+          : "bg-white border-slate-200 hover:border-slate-400"
       }`}
     >
-      <div className="flex items-center gap-2 mb-3">
-        <GradeBadge name={train.trainGradeName} lang={lang} />
-        <span className="text-sky-600 text-sm font-semibold">
+      {/* Header: logo + train number */}
+      <div className="flex items-center gap-2 px-5 pt-4">
+        <TrainLogo name={train.trainGradeName} dim={dim} />
+        <span className={`text-sm font-semibold ${muted("text-slate-500")}`}>
           {Number(train.trainNo) || train.trainNo}
         </span>
       </div>
-      <div className="flex items-center justify-between gap-3 flex-wrap">
-        <div className="min-w-0">
-          <div className="text-xl font-bold tabular-nums text-slate-900 leading-tight whitespace-nowrap">
-            {fmtTime(train.depPlandTime)}
-            <span className="text-slate-300 mx-1.5 text-xl">→</span>
-            {fmtTime(train.arrPlandTime)}
-          </div>
-          <div className="text-xs text-slate-500 mt-1">{durationL(mins, lang)}</div>
-        </div>
-        <div className="flex gap-2 shrink-0">
-          <PriceBox
-            label={t("sr.standard")}
-            price={standardPrice}
-            lang={lang}
-            soldOut={standardSoldOut}
-          />
-          <PriceBox
+
+      {/* Times + duration row */}
+      <div className="flex items-center gap-3 px-5 pt-2 pb-4">
+        <span
+          className={`text-2xl font-bold tabular-nums leading-none whitespace-nowrap ${muted(
+            "text-slate-900",
+          )}`}
+        >
+          {fmtTime(train.depPlandTime)}
+        </span>
+        <span
+          className={`h-px flex-1 ${dim ? "bg-slate-200" : "bg-slate-200"}`}
+          aria-hidden
+        />
+        <span className={`text-xs whitespace-nowrap ${muted("text-slate-400")}`}>
+          {durationL(mins, lang)}
+        </span>
+        <span
+          className={`h-px flex-1 ${dim ? "bg-slate-200" : "bg-slate-200"}`}
+          aria-hidden
+        />
+        <span
+          className={`text-2xl font-bold tabular-nums leading-none whitespace-nowrap ${muted(
+            "text-slate-900",
+          )}`}
+        >
+          {fmtTime(train.arrPlandTime)}
+        </span>
+      </div>
+
+      {/* Divider */}
+      <div className="mx-5 border-t border-slate-200" />
+
+      {/* Per-class prices */}
+      <div className="grid grid-cols-2 px-5 py-3">
+        <SeatColumn
+          label={t("sr.standard")}
+          price={standardPrice}
+          lang={lang}
+          soldOut={standardSoldOut}
+          dim={dim}
+        />
+        <div className="border-l border-slate-200">
+          <SeatColumn
             label={t("sr.first")}
             price={firstPrice}
             lang={lang}
             soldOut={firstSoldOut}
             unavailable={firstUnavailable}
+            dim={dim}
           />
         </div>
       </div>
@@ -452,64 +485,81 @@ function TrainCard({
   );
 }
 
-function GradeBadge({ name, lang }: { name: string; lang: Lang }) {
-  const cls =
-    name.startsWith("KTX-산천")
-      ? "bg-sky-700"
-      : name.startsWith("KTX-이음")
-        ? "bg-sky-700"
-        : name.startsWith("KTX-청룡")
-          ? "bg-indigo-700"
-          : name.startsWith("KTX")
-            ? "bg-sky-600"
-            : name === "SRT"
-              ? "bg-fuchsia-700"
-              : name.includes("새마을")
-                ? "bg-emerald-700"
-                : name.includes("무궁화")
-                  ? "bg-rose-600"
-                  : "bg-slate-700";
+/** Resolve a train name to its logo asset under /public/trains. */
+function logoSrcFor(name: string): string | null {
+  if (name.startsWith("KTX-산천")) return "/trains/ktx-sancheon.png";
+  if (name.startsWith("KTX-이음")) return "/trains/ktx-eum.png";
+  if (name.startsWith("KTX-청룡")) return "/trains/ktx-cheongryong.png";
+  if (name.startsWith("KTX")) return "/trains/ktx.png";
+  if (name === "SRT") return "/trains/srt.png";
+  return null;
+}
+
+function TrainLogo({ name, dim }: { name: string; dim?: boolean }) {
+  const src = logoSrcFor(name);
+  if (!src) {
+    // Fallback: bare text if the name isn't one of the 5 known logos.
+    return (
+      <span className={`text-sm font-bold ${dim ? "text-slate-400" : "text-slate-900"}`}>
+        {name}
+      </span>
+    );
+  }
   return (
-    <span className={`inline-block ${cls} text-white text-[11px] font-bold px-2 py-1 rounded-md leading-none`}>
-      {gradeLabel(name, lang)}
-    </span>
+    <Image
+      src={src}
+      alt={name}
+      width={84}
+      height={20}
+      className={`h-5 w-auto select-none ${dim ? "opacity-40 grayscale" : ""}`}
+      priority={false}
+      unoptimized
+    />
   );
 }
 
-function PriceBox({
+function SeatColumn({
   label,
   price,
   lang,
   soldOut,
   unavailable,
+  dim,
 }: {
   label: string;
   price: number;
   lang: Lang;
   soldOut?: boolean;
   unavailable?: boolean;
+  /** Whole-card dim (train fully sold out). */
+  dim?: boolean;
 }) {
+  const labelMuted = soldOut || unavailable || dim;
   return (
-    <span
-      className={`inline-flex flex-col items-center justify-center w-[88px] h-12 rounded-sm border leading-tight px-1 ${
-        soldOut || unavailable
-          ? "border-slate-200 bg-white text-slate-300"
-          : "border-slate-200 bg-white"
-      }`}
-    >
-      <span className="text-[11px] text-slate-500">{label}</span>
+    <div className="flex flex-col items-center justify-center gap-1 py-1">
+      <span
+        className={`text-sm ${
+          labelMuted ? "text-slate-400" : "text-slate-700"
+        }`}
+      >
+        {label}
+      </span>
       {unavailable ? (
-        <span className="text-[13px] font-bold text-slate-400 mt-0.5">—</span>
+        <span className="text-base font-bold text-slate-300">—</span>
       ) : soldOut ? (
-        <span className="text-[13px] font-bold text-red-500 mt-0.5">
+        <span className="text-base font-bold text-red-500">
           {lang === "ko" ? "매진" : "Sold out"}
         </span>
       ) : (
-        <span className="text-[13px] font-bold tabular-nums whitespace-nowrap text-slate-900 mt-0.5">
+        <span
+          className={`text-base font-bold tabular-nums whitespace-nowrap ${
+            dim ? "text-slate-400" : "text-slate-900"
+          }`}
+        >
           {krwL(price, lang)}
         </span>
       )}
-    </span>
+    </div>
   );
 }
 
