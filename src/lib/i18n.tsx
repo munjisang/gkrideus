@@ -185,6 +185,32 @@ const DICT: Record<string, Entry> = {
     en: "⚠ Outbound rollback failed ({id}): {m}\nPlease cancel it manually in the Korail app.",
   },
 
+  // bookings (user-facing list + detail)
+  "bk.title": { ko: "예매내역", en: "My bookings" },
+  "bk.empty": { ko: "예매 내역이 없습니다.", en: "No bookings yet." },
+  "bk.empty.cta": { ko: "예매하러 가기", en: "Book a ticket" },
+  "bk.detail.title": { ko: "예매 상세", en: "Booking detail" },
+  "bk.notFound": {
+    ko: "예매 내역을 찾을 수 없습니다. (ID: {id})",
+    en: "Booking not found. (ID: {id})",
+  },
+  "bk.status.live": { ko: "예매 완료", en: "Reserved" },
+  "bk.status.dry": { ko: "테스트 예매", en: "Test booking" },
+  "bk.status.cancelled": { ko: "예매 취소", en: "Cancelled" },
+  "bk.rsvInfo": { ko: "예약 정보", en: "Reservation" },
+  "bk.rsvId": { ko: "예약 번호", en: "Reservation No." },
+  "bk.deadline": { ko: "결제 기한", en: "Payment deadline" },
+  "bk.bookedAt": { ko: "예매 시각", en: "Booked at" },
+  "bk.cancel": { ko: "예매 취소", en: "Cancel booking" },
+  "bk.cancelConfirm": {
+    ko: "예매를 취소합니다.\n취소된 좌석은 즉시 다른 사람이 잡을 수 있게 됩니다.\n진행할까요?",
+    en: "Cancel this booking?\nThe seat will immediately be available to others.\nProceed?",
+  },
+  "bk.cancelDone": { ko: "예매가 취소되었습니다.", en: "Booking cancelled." },
+  "bk.cancelFail": { ko: "취소 실패: {m}", en: "Cancel failed: {m}" },
+  "bk.cancelling": { ko: "취소 중…", en: "Cancelling…" },
+  "bk.totalShort": { ko: "총 {m}", en: "Total {m}" },
+
   // complete
   "cp.done": { ko: "예매가 완료되었습니다", en: "Booking Complete" },
   "cp.bookingNo": { ko: "예매 번호", en: "Booking No." },

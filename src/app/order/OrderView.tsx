@@ -5,11 +5,11 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { countryLabel } from "../../lib/countries";
 import CountryPicker from "../../components/CountryPicker";
-import { fmtTime, durationMinutes } from "../../lib/format";
+import LegSummary from "../../components/LegSummary";
 import { newOrderId, saveOrder } from "../../lib/storage";
-import { TrainLogo } from "../../components/TrainLogo";
-import { firstClassMult } from "../../lib/fare";
-import { useI18n, stationLabel, type Lang } from "../../lib/i18n";
+import { durationL, krwL } from "../../lib/format-i18n";
+import { legFares } from "../../lib/fareCalc";
+import { useI18n, type Lang } from "../../lib/i18n";
 import type {
   Order,
   Passenger,
@@ -85,18 +85,6 @@ function buildReservation(j: BookingResult): Reservation | null {
   return null;
 }
 
-function durationL(min: number, lang: Lang): string {
-  const h = Math.floor(min / 60);
-  const m = min % 60;
-  if (lang === "ko") return h > 0 ? `${h}시간 ${m}분` : `${m}분`;
-  return h > 0 ? `${h}h ${m}m` : `${m}m`;
-}
-function krwL(n: number, lang: Lang): string {
-  return lang === "ko"
-    ? `${n.toLocaleString("ko-KR")}원`
-    : `₩${n.toLocaleString("en-US")}`;
-}
-
 function decodeTrain(p: string | null): TrainSchedule | null {
   if (!p) return null;
   try {
@@ -169,27 +157,6 @@ export default function OrderView() {
   });
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
-
-  /** Regular fare = TAGO standard × class multiplier (rounded to 100원).
-   *  Discounted fare = same logic with the standard-class discount ratio
-   *  (live / TAGO) applied uniformly to both classes — Korail applies
-   *  N-card / event discounts at the same percentage across 일반실 and
-   *  특실 on letskorail.com, so we mirror that for 특실. */
-  function legFares(
-    tr: TrainSchedule | null,
-    seat: SeatType,
-  ): { regular: number; discounted: number } {
-    if (!tr) return { regular: 0, discounted: 0 };
-    const mult = seat === "first" ? firstClassMult(tr.trainGradeName) : 1;
-    const regular = Math.round((tr.adultCharge * mult) / 100) * 100;
-    let discounted = regular;
-    if (tr.discountedCharge != null && tr.adultCharge > 0) {
-      const ratio = tr.discountedCharge / tr.adultCharge;
-      discounted = Math.round((tr.adultCharge * mult * ratio) / 100) * 100;
-      if (discounted > regular) discounted = regular;
-    }
-    return { regular, discounted };
-  }
 
   const outFares = legFares(outbound, outboundSeat);
   const inFares = legFares(inbound, inboundSeat);
@@ -376,7 +343,7 @@ export default function OrderView() {
         <form id="order-form" onSubmit={onSubmit} className="space-y-2">
         <section className="bg-white border border-slate-200 p-5">
           <h2 className="font-semibold mb-3 text-slate-800">{t("ord.selectedTrain")}</h2>
-          <LegSummary label={t("ord.legOut")} t={outbound} lang={lang} />
+          <LegSummary label={t("ord.legOut")} train={outbound} lang={lang} />
           <SeatPicker
             value={outboundSeat}
             onChange={setOutboundSeat}
@@ -388,7 +355,7 @@ export default function OrderView() {
           {tripType === "roundtrip" && inbound && (
             <>
               <div className="my-4 border-t border-dashed border-slate-200" />
-              <LegSummary label={t("ord.legIn")} t={inbound} lang={lang} />
+              <LegSummary label={t("ord.legIn")} train={inbound} lang={lang} />
               <SeatPicker
                 value={inboundSeat}
                 onChange={setInboundSeat}
@@ -784,64 +751,6 @@ function SeatChip({
   );
 }
 
-function LegSummary({
-  label,
-  t: train,
-  lang,
-}: {
-  label: string;
-  t: TrainSchedule;
-  lang: Lang;
-}) {
-  const min = durationMinutes(train.depPlandTime, train.arrPlandTime);
-  // YYYYMMDD → YYYY.MM.DD (spec uses dots, not dashes).
-  const yyyymmdd = train.depPlandTime.slice(0, 8);
-  const dateLabel = `${yyyymmdd.slice(0, 4)}.${yyyymmdd.slice(4, 6)}.${yyyymmdd.slice(6, 8)}`;
-  return (
-    <div>
-      {/* Row 1: [leg badge] logo train-no ········ date */}
-      <div className="flex items-baseline justify-between gap-2">
-        <div className="flex items-baseline gap-2 min-w-0">
-          <span className="text-xs font-bold text-sky-700 bg-sky-50 border border-sky-100 rounded px-2 py-0.5 leading-tight">
-            {label}
-          </span>
-          <TrainLogo name={train.trainGradeName} />
-          <span className="text-sm font-semibold text-slate-500">
-            {Number(train.trainNo) || train.trainNo}
-          </span>
-        </div>
-        <span className="text-sm text-slate-500 shrink-0 tabular-nums">
-          {dateLabel}
-        </span>
-      </div>
-
-      {/* Row 2: dep_time + dep_station ─── duration ─── arr_time + arr_station */}
-      <div className="flex items-center gap-3 pt-4">
-        <div className="flex flex-col items-start min-w-0">
-          <span className="text-base font-bold tabular-nums leading-none whitespace-nowrap text-slate-900">
-            {fmtTime(train.depPlandTime)}
-          </span>
-          <span className="text-sm mt-1 whitespace-nowrap text-slate-600">
-            {stationLabel(train.depPlaceName, lang)}
-          </span>
-        </div>
-        <span className="h-px flex-1 bg-slate-200 self-start mt-2.5" aria-hidden />
-        <span className="text-xs whitespace-nowrap self-start mt-1 text-slate-400">
-          {durationL(min, lang)}
-        </span>
-        <span className="h-px flex-1 bg-slate-200 self-start mt-2.5" aria-hidden />
-        <div className="flex flex-col items-end min-w-0">
-          <span className="text-base font-bold tabular-nums leading-none whitespace-nowrap text-slate-900">
-            {fmtTime(train.arrPlandTime)}
-          </span>
-          <span className="text-sm mt-1 whitespace-nowrap text-slate-600">
-            {stationLabel(train.arrPlaceName, lang)}
-          </span>
-        </div>
-      </div>
-    </div>
-  );
-}
 
 /** Per-passenger payment breakdown — 4 lines + a label header.
  *  Matches the spec: 정상운임 / 할인 / 발권수수료(20%) / 총 운임. */

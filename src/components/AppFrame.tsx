@@ -190,10 +190,9 @@ function ProfileMenu({
           >
             {mainLabel}
           </a>
-          {/* TODO: replace href once the 예매내역 page is built. */}
           <Link
             role="menuitem"
-            href="#"
+            href="/bookings"
             onClick={() => setOpen(false)}
             className="block px-3 py-2 text-[13px] font-medium text-slate-700 hover:bg-slate-50 transition"
           >
