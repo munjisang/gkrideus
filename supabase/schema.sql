@@ -88,3 +88,42 @@ create policy "no_anon"
     to anon
     using (false)
     with check (false);
+
+
+-- ─────────────────────────────────────────────────────────────────
+-- service_accounts — multi-row credentials table. Replaces the older
+-- single-row `korail_credentials` table. Holds Korail and (future) SRT
+-- accounts, with an enabled flag so the admin can toggle without
+-- deleting. The Python serverless functions pick the first enabled row
+-- for the requested service.
+create table if not exists public.service_accounts (
+    id               uuid primary key default gen_random_uuid(),
+    service          text not null check (service in ('korail', 'srt')),
+    account_id       text not null,
+    account_password text not null,
+    enabled          boolean not null default true,
+    created_at       timestamptz not null default now(),
+    updated_at       timestamptz not null default now(),
+    unique (service, account_id)
+);
+
+create index if not exists service_accounts_service_enabled_idx
+    on public.service_accounts (service, enabled);
+
+alter table public.service_accounts enable row level security;
+
+drop policy if exists "no_anon" on public.service_accounts;
+create policy "no_anon"
+    on public.service_accounts
+    for all
+    to anon
+    using (false)
+    with check (false);
+
+-- One-shot migration from the older single-row table — copies any
+-- existing Korail credentials into the new structure. Safe to re-run.
+insert into public.service_accounts (service, account_id, account_password, enabled)
+select 'korail', korail_id, korail_password, true
+from public.korail_credentials
+where korail_id is not null and korail_password is not null
+on conflict (service, account_id) do nothing;

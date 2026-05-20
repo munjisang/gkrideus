@@ -10,6 +10,14 @@ import {
 } from "../../lib/storage";
 import { fmtDate, fmtDateTime, fmtKRW, fmtTime } from "../../lib/format";
 import type { Order, Reservation, TrainSchedule } from "../../lib/types";
+import AccountsTab from "./AccountsTab";
+
+type AdminTab = "bookings" | "accounts";
+
+const TABS: { id: AdminTab; label: string }[] = [
+  { id: "bookings", label: "예매내역" },
+  { id: "accounts", label: "계정설정" },
+];
 
 type BookingResult = {
   ok: boolean;
@@ -26,6 +34,7 @@ type BookingResult = {
 };
 
 export default function AdminPage() {
+  const [tab, setTab] = useState<AdminTab>("bookings");
   const [orders, setOrders] = useState<Order[] | null>(null);
   const [openId, setOpenId] = useState<string | null>(null);
   const [busyId, setBusyId] = useState<string | null>(null);
@@ -353,100 +362,129 @@ export default function AdminPage() {
 
   return (
     <div className="mx-auto max-w-5xl px-4 py-6 pb-10">
-      <KorailCredentialsCard />
+      {/* Top tab nav + logout */}
+      <div className="flex items-end justify-between gap-3 mb-5 border-b border-slate-200">
+        <nav className="flex gap-1">
+          {TABS.map((tb) => {
+            const active = tab === tb.id;
+            return (
+              <button
+                key={tb.id}
+                onClick={() => setTab(tb.id)}
+                className={`relative h-10 px-4 text-sm font-semibold transition ${
+                  active
+                    ? "text-slate-900"
+                    : "text-slate-400 hover:text-slate-700"
+                }`}
+              >
+                {tb.label}
+                {active && (
+                  <span className="absolute left-2 right-2 -bottom-px h-0.5 bg-slate-900 rounded-full" />
+                )}
+              </button>
+            );
+          })}
+        </nav>
+        <button
+          onClick={async () => {
+            await fetch("/api/admin/auth", { method: "DELETE" });
+            window.location.reload();
+          }}
+          className="mb-2 text-xs text-slate-500 hover:text-slate-900"
+        >
+          로그아웃
+        </button>
+      </div>
 
-      <div className="flex items-center justify-between mb-4 gap-3 flex-wrap">
-        <p className="text-sm text-slate-500">
-          주문 <span className="font-semibold text-slate-700">{orders?.length ?? 0}</span>건
-          {lastSyncAt && (
-            <span className="ml-2 text-xs text-slate-400">
-              · 최근 동기화 {fmtTime(toPlandTime(lastSyncAt))}
+      {tab === "accounts" && <AccountsTab />}
+
+      {tab === "bookings" && (
+        <>
+          <div className="flex items-center justify-between mb-4 gap-3 flex-wrap">
+            <p className="text-sm text-slate-500">
+              주문 <span className="font-semibold text-slate-700">{orders?.length ?? 0}</span>건
+              {lastSyncAt && (
+                <span className="ml-2 text-xs text-slate-400">
+                  · 최근 동기화 {fmtTime(toPlandTime(lastSyncAt))}
+                </span>
+              )}
+              {syncError && (
+                <span className="ml-2 text-xs text-red-600">· 동기화 오류: {syncError}</span>
+              )}
+            </p>
+            <div className="flex items-center gap-3">
+              <button
+                onClick={() => syncReservations()}
+                disabled={syncing}
+                className="text-xs text-slate-500 hover:text-slate-900 disabled:opacity-50"
+              >
+                {syncing ? "동기화 중…" : "코레일 동기화"}
+              </button>
+              <button
+                onClick={refresh}
+                className="text-xs text-slate-500 hover:text-slate-900"
+              >
+                새로고침
+              </button>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2 mb-5 px-4 py-3 rounded-xl border border-red-200 bg-red-50 text-red-700 text-sm">
+            <span className="text-base">🚨</span>
+            <span className="font-medium">
+              실 예약 모드 — [예매하기] 클릭 시 실제 좌석이 점유됩니다.
             </span>
+          </div>
+
+          {orders === null && (
+            <div className="py-16 text-center text-slate-500 text-sm">불러오는 중…</div>
           )}
-          {syncError && (
-            <span className="ml-2 text-xs text-red-600">· 동기화 오류: {syncError}</span>
+
+          {orders && orders.length === 0 && (
+            <div className="bg-white border border-dashed border-slate-200 rounded-2xl py-12 text-center">
+              <p className="text-sm text-slate-500 mb-4">아직 주문 내역이 없습니다.</p>
+              <Link
+                href="/"
+                className="inline-block h-10 px-4 rounded-lg bg-slate-900 text-white text-sm leading-10"
+              >
+                예매 페이지로 이동
+              </Link>
+            </div>
           )}
-        </p>
-        <div className="flex items-center gap-3">
-          <button
-            onClick={() => syncReservations()}
-            disabled={syncing}
-            className="text-xs text-slate-500 hover:text-slate-900 disabled:opacity-50"
-          >
-            {syncing ? "동기화 중…" : "코레일 동기화"}
-          </button>
-          <button
-            onClick={refresh}
-            className="text-xs text-slate-500 hover:text-slate-900"
-          >
-            새로고침
-          </button>
-          <button
-            onClick={async () => {
-              await fetch("/api/admin/auth", { method: "DELETE" });
-              window.location.reload();
-            }}
-            className="text-xs text-slate-500 hover:text-slate-900"
-          >
-            로그아웃
-          </button>
-        </div>
-      </div>
 
-      <div className="flex items-center gap-2 mb-5 px-4 py-3 rounded-xl border border-red-200 bg-red-50 text-red-700 text-sm">
-        <span className="text-base">🚨</span>
-        <span className="font-medium">
-          실 예약 모드 — [예매하기] 클릭 시 실제 좌석이 점유됩니다.
-        </span>
-      </div>
+          <ul className="grid gap-4 grid-cols-1 md:grid-cols-2 xl:grid-cols-3">
+            {orders?.map((o) => (
+              <OrderCard
+                key={o.id}
+                order={o}
+                busy={busyId === o.id}
+                result={resultBy[o.id]}
+                onToggle={() => setOpenId(o.id)}
+                onBook={() => onBook(o)}
+                onCancel={() => onCancel(o)}
+                onDelete={() => onDelete(o.id)}
+              />
+            ))}
+          </ul>
 
-      {orders === null && (
-        <div className="py-16 text-center text-slate-500 text-sm">불러오는 중…</div>
-      )}
+          {orders && orders.length > 0 && (
+            <div className="mt-6 flex justify-center">
+              <button
+                onClick={onClear}
+                className="text-xs text-red-500 hover:text-red-700"
+              >
+                모든 주문 삭제
+              </button>
+            </div>
+          )}
 
-      {orders && orders.length === 0 && (
-        <div className="bg-white border border-dashed border-slate-200 rounded-2xl py-12 text-center">
-          <p className="text-sm text-slate-500 mb-4">아직 주문 내역이 없습니다.</p>
-          <Link
-            href="/"
-            className="inline-block h-10 px-4 rounded-lg bg-slate-900 text-white text-sm leading-10"
-          >
-            예매 페이지로 이동
-          </Link>
-        </div>
-      )}
-
-      <ul className="grid gap-4 grid-cols-1 md:grid-cols-2 xl:grid-cols-3">
-        {orders?.map((o) => (
-          <OrderCard
-            key={o.id}
-            order={o}
-            busy={busyId === o.id}
-            result={resultBy[o.id]}
-            onToggle={() => setOpenId(o.id)}
-            onBook={() => onBook(o)}
-            onCancel={() => onCancel(o)}
-            onDelete={() => onDelete(o.id)}
+          <DetailModal
+            order={openId ? (orders?.find((o) => o.id === openId) ?? null) : null}
+            result={openId ? resultBy[openId] : undefined}
+            onClose={() => setOpenId(null)}
           />
-        ))}
-      </ul>
-
-      {orders && orders.length > 0 && (
-        <div className="mt-6 flex justify-center">
-          <button
-            onClick={onClear}
-            className="text-xs text-red-500 hover:text-red-700"
-          >
-            모든 주문 삭제
-          </button>
-        </div>
+        </>
       )}
-
-      <DetailModal
-        order={openId ? (orders?.find((o) => o.id === openId) ?? null) : null}
-        result={openId ? resultBy[openId] : undefined}
-        onClose={() => setOpenId(null)}
-      />
     </div>
   );
 }
@@ -919,143 +957,3 @@ function toPlandTime(iso: string): string {
   return `${d.getFullYear()}${p(d.getMonth() + 1)}${p(d.getDate())}${p(d.getHours())}${p(d.getMinutes())}`;
 }
 
-/* ─────────────────────────────────────────── Korail credentials settings */
-
-function KorailCredentialsCard() {
-  const [korailId, setKorailId] = useState("");
-  const [korailPassword, setKorailPassword] = useState("");
-  const [currentId, setCurrentId] = useState<string | null>(null);
-  const [hasPassword, setHasPassword] = useState(false);
-  const [updatedAt, setUpdatedAt] = useState<string | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
-  const [msg, setMsg] = useState<string | null>(null);
-  const [err, setErr] = useState<string | null>(null);
-
-  async function load() {
-    setLoading(true);
-    try {
-      const res = await fetch("/api/admin/credentials", { cache: "no-store" });
-      const j = (await res.json()) as {
-        ok: boolean;
-        korailId?: string | null;
-        hasPassword?: boolean;
-        updatedAt?: string | null;
-        error?: string;
-      };
-      if (!res.ok || !j.ok) {
-        setErr(j.error ?? `HTTP ${res.status}`);
-      } else {
-        setCurrentId(j.korailId ?? null);
-        setHasPassword(!!j.hasPassword);
-        setUpdatedAt(j.updatedAt ?? null);
-        if (j.korailId) setKorailId(j.korailId);
-        setErr(null);
-      }
-    } catch (e) {
-      setErr((e as Error).message);
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  useEffect(() => {
-    void load();
-  }, []);
-
-  async function save() {
-    setErr(null);
-    setMsg(null);
-    setSaving(true);
-    try {
-      const res = await fetch("/api/admin/credentials", {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ korailId, korailPassword }),
-      });
-      const j = (await res.json()) as { ok: boolean; error?: string };
-      if (!res.ok || !j.ok) {
-        setErr(j.error ?? `HTTP ${res.status}`);
-      } else {
-        setMsg("저장되었습니다.");
-        setKorailPassword("");
-        await load();
-      }
-    } catch (e) {
-      setErr((e as Error).message);
-    } finally {
-      setSaving(false);
-    }
-  }
-
-  const canSave = !!korailId.trim() && !!korailPassword.trim() && !saving;
-
-  return (
-    <section className="bg-white border border-slate-200 rounded-xl p-5 mb-4">
-      <div className="flex items-center justify-between mb-3">
-        <h2 className="font-semibold text-slate-800">코레일 계정</h2>
-        <span className="text-xs text-slate-400">
-          {loading
-            ? "불러오는 중…"
-            : currentId
-              ? `현재: ${currentId}${hasPassword ? " · 비밀번호 설정됨" : ""}${
-                  updatedAt
-                    ? ` · ${new Date(updatedAt).toLocaleString("ko-KR")}`
-                    : ""
-                }`
-              : "현재: 환경변수 fallback 사용 중"}
-        </span>
-      </div>
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-        <label className="block">
-          <span className="text-xs font-medium text-slate-500 mb-1 block">
-            회원번호 / ID
-          </span>
-          <input
-            value={korailId}
-            onChange={(e) => setKorailId(e.target.value)}
-            placeholder="0160346790"
-            autoComplete="off"
-            className="h-11 px-3 rounded-lg border border-slate-200 bg-white w-full focus:outline-none focus:ring-2 focus:ring-sky-300"
-          />
-        </label>
-        <label className="block">
-          <span className="text-xs font-medium text-slate-500 mb-1 block">
-            비밀번호
-          </span>
-          <input
-            type="password"
-            value={korailPassword}
-            onChange={(e) => setKorailPassword(e.target.value)}
-            placeholder={hasPassword ? "(변경 시에만 입력)" : "비밀번호"}
-            autoComplete="off"
-            className="h-11 px-3 rounded-lg border border-slate-200 bg-white w-full focus:outline-none focus:ring-2 focus:ring-sky-300"
-          />
-        </label>
-      </div>
-      {err && (
-        <div className="mt-3 text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg px-3 py-2">
-          {err}
-        </div>
-      )}
-      {msg && (
-        <div className="mt-3 text-sm text-green-700 bg-green-50 border border-green-200 rounded-lg px-3 py-2">
-          {msg}
-        </div>
-      )}
-      <div className="mt-3 flex justify-end">
-        <button
-          onClick={save}
-          disabled={!canSave}
-          className={`h-10 px-4 rounded-lg text-sm font-semibold transition ${
-            canSave
-              ? "bg-slate-900 hover:bg-slate-800 text-white"
-              : "bg-slate-200 text-slate-400 cursor-not-allowed"
-          }`}
-        >
-          {saving ? "저장 중…" : "저장"}
-        </button>
-      </div>
-    </section>
-  );
-}
