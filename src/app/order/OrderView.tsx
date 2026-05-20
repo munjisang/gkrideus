@@ -3,7 +3,8 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { COUNTRIES } from "../../lib/countries";
+import { countryLabel } from "../../lib/countries";
+import CountryPicker from "../../components/CountryPicker";
 import { fmtTime, durationMinutes } from "../../lib/format";
 import { newOrderId, saveOrder } from "../../lib/storage";
 import { TrainLogo } from "../../components/TrainLogo";
@@ -93,6 +94,7 @@ export default function OrderView() {
   const [inboundSeat, setInboundSeat] = useState<SeatType>(initialSeat);
   const [seatPref, setSeatPref] = useState<SeatPref>("none");
   const [reservant, setReservant] = useState<Passenger>(emptyPassenger);
+  const [countrySheetOpen, setCountrySheetOpen] = useState(false);
   const [payMethod, setPayMethod] = useState<PayMethod | null>(null);
   const [agreed, setAgreed] = useState<Record<AgreementId, boolean>>({
     fare: false,
@@ -350,34 +352,42 @@ export default function OrderView() {
               />
             </Field>
             <Field label={t("ord.country")}>
-              <select
-                value={reservant.countryCode}
-                onChange={(e) =>
-                  setReservant((p) => ({ ...p, countryCode: e.target.value }))
-                }
-                className={`${INPUT} appearance-none bg-[length:16px] bg-no-repeat bg-[right_12px_center] pr-9`}
-                style={{
-                  backgroundImage:
-                    "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E\")",
-                }}
-                required
+              <button
+                type="button"
+                onClick={() => setCountrySheetOpen(true)}
+                className={`${INPUT} flex items-center justify-between text-left`}
               >
-                <option value="" disabled>
-                  {t("ord.countryPh")}
-                </option>
-                {COUNTRIES.map((c) => (
-                  <option key={c.iso} value={c.iso}>
-                    {c.flag} {lang === "ko" ? c.ko : c.en}
-                  </option>
-                ))}
-              </select>
+                <span
+                  className={
+                    reservant.countryCode ? "text-slate-900" : "text-slate-400"
+                  }
+                >
+                  {reservant.countryCode
+                    ? countryLabel(reservant.countryCode, lang)
+                    : t("ord.countryPh")}
+                </span>
+                <svg
+                  className="text-slate-400"
+                  width="14"
+                  height="14"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  aria-hidden
+                >
+                  <path d="M6 9l6 6 6-6" />
+                </svg>
+              </button>
             </Field>
           </div>
         </section>
 
         <section className="bg-white border border-slate-200 p-5">
           <h2 className="font-semibold mb-3 text-slate-800">{t("ord.payMethod")}</h2>
-          <div className="grid grid-cols-3 gap-2">
+          <div className="grid grid-cols-2 gap-2">
             {PAY_METHODS.map((m) => {
               const active = payMethod === m.id;
               return (
@@ -385,13 +395,14 @@ export default function OrderView() {
                   key={m.id}
                   type="button"
                   onClick={() => setPayMethod(m.id)}
-                  className={`h-11 rounded-sm border text-sm font-medium transition ${
+                  className={`h-11 px-3 rounded-sm border text-sm font-medium inline-flex items-center justify-center gap-2 transition ${
                     active
                       ? "border-sky-600 bg-sky-50 text-sky-700 ring-1 ring-sky-200"
                       : "border-slate-200 bg-white text-slate-700 hover:border-slate-400"
                   }`}
                 >
-                  {lang === "ko" ? m.ko : m.en}
+                  <PayMethodIcon id={m.id} />
+                  <span>{lang === "ko" ? m.ko : m.en}</span>
                 </button>
               );
             })}
@@ -459,7 +470,53 @@ export default function OrderView() {
           </button>
         </div>
       </div>
+
+      <CountryPicker
+        open={countrySheetOpen}
+        value={reservant.countryCode}
+        onClose={() => setCountrySheetOpen(false)}
+        onPick={(iso) => {
+          setReservant((p) => ({ ...p, countryCode: iso }));
+          setCountrySheetOpen(false);
+        }}
+      />
     </div>
+  );
+}
+
+/** Brand icon shown left of the payment-method button label. */
+function PayMethodIcon({ id }: { id: "card" | "paypal" }) {
+  if (id === "card") {
+    return (
+      <svg
+        width="20"
+        height="20"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.8"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        aria-hidden
+      >
+        <rect x="2" y="5" width="20" height="14" rx="2.5" />
+        <path d="M2 10h20" />
+        <path d="M6 15h4" />
+      </svg>
+    );
+  }
+  // PayPal — simplified two-leaf monogram in their brand blue.
+  return (
+    <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden>
+      <path
+        d="M8.5 19l1.2-7.5h2.6c2.3 0 3.9-1.1 4.3-3.3.4-2.1-.8-3.7-3.4-3.7H8.9c-.4 0-.7.3-.8.7L6.4 17.7c0 .3.2.5.4.5h1.3c.2 0 .3-.1.4-.3z"
+        fill="#003087"
+      />
+      <path
+        d="M11 21l1.2-7.5h2.6c2.3 0 3.9-1.1 4.3-3.3.4-2.1-.8-3.7-3.4-3.7h-4.3c-.4 0-.7.3-.8.7L8.9 19.7c0 .3.2.5.4.5h1.3c.2 0 .3-.1.4-.3z"
+        fill="#009CDE"
+      />
+    </svg>
   );
 }
 

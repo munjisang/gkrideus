@@ -141,6 +141,7 @@ const DICT: Record<string, Entry> = {
   "ord.emailPh": { ko: "example@mail.com", en: "Enter your email" },
   "ord.country": { ko: "국가", en: "Country" },
   "ord.countryPh": { ko: "국가를 선택하세요", en: "Select your country" },
+  "ord.country.searchPh": { ko: "국가명 검색", en: "Search country" },
   "ord.payMethod": { ko: "결제수단 선택", en: "Payment Method" },
   "ord.agreeAll": { ko: "전체 동의", en: "Agree to all" },
   "ord.agree.fare": { ko: "요금규정", en: "Fare policy" },
