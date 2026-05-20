@@ -80,7 +80,8 @@ const DICT: Record<string, Entry> = {
   "sp.noRecent": { ko: "최근 선택한 역이 없습니다.", en: "No recent stations." },
   "sp.empty": { ko: "표시할 역이 없습니다.", en: "No stations to show." },
   "sp.noResult": { ko: '"{q}" 검색 결과가 없습니다.', en: 'No results for "{q}".' },
-  "sp.stationSuffix": { ko: "역", en: " Station" },
+  // Empty so labels show only the region name ("서울" / "Seoul"), not "서울역".
+  "sp.stationSuffix": { ko: "", en: "" },
 
   // date picker
   "dp.titleDep": { ko: "가는 날 선택", en: "Select departure date" },

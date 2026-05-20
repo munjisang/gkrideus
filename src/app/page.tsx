@@ -41,6 +41,18 @@ export default function HomePage() {
   const { t, lang } = useI18n();
   const [groups, setGroups] = useState<CityGroup[] | null>(null);
 
+  // Booking window: D+2 ~ D+30 (Korail-style advance booking range).
+  const { minBookDate, maxBookDate } = (() => {
+    const pad = (n: number) => n.toString().padStart(2, "0");
+    const fmt = (d: Date) =>
+      `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+    const min = new Date();
+    min.setDate(min.getDate() + 2);
+    const max = new Date();
+    max.setDate(max.getDate() + 30);
+    return { minBookDate: fmt(min), maxBookDate: fmt(max) };
+  })();
+
   const [tripType, setTripType] = useState<TripType>("oneway");
   const [from, setFrom] = useState<Station | null>(null);
   const [to, setTo] = useState<Station | null>(null);
@@ -302,6 +314,8 @@ export default function HomePage() {
         open={datePicker === "outbound"}
         title={t("dp.titleDep")}
         value={outbound}
+        minDate={minBookDate}
+        maxDate={maxBookDate}
         onClose={() => setDatePicker(null)}
         onPick={(v) => {
           setOutbound(v);
@@ -314,7 +328,10 @@ export default function HomePage() {
         open={datePicker === "inbound"}
         title={t("dp.titleRet")}
         value={inbound}
-        minDate={outbound?.date}
+        minDate={
+          outbound?.date && outbound.date > minBookDate ? outbound.date : minBookDate
+        }
+        maxDate={maxBookDate}
         onClose={() => setDatePicker(null)}
         onPick={(v) => {
           setInbound(v);

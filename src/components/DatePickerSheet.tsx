@@ -17,6 +17,8 @@ type Props = {
   value?: DateHour | null;
   /** Earliest selectable date (YYYY-MM-DD). Default = today (local). */
   minDate?: string;
+  /** Latest selectable date (YYYY-MM-DD). Default = no upper limit. */
+  maxDate?: string;
   /** Sheet title — typically "가는 날" or "오는 날". */
   title: string;
   onPick: (v: DateHour) => void;
@@ -49,6 +51,7 @@ export default function DatePickerSheet({
   open,
   value,
   minDate,
+  maxDate,
   title,
   onPick,
   onClose,
@@ -125,6 +128,11 @@ export default function DatePickerSheet({
     if (m > 12) {
       m = 1;
       y++;
+    }
+    if (maxDate) {
+      const maxY = Number(maxDate.slice(0, 4));
+      const maxM = Number(maxDate.slice(5, 7));
+      if (y > maxY || (y === maxY && m > maxM)) return;
     }
     setViewY(y);
     setViewM(m);
@@ -207,6 +215,8 @@ export default function DatePickerSheet({
           if (!c) return <div key={`e${i}`} className="aspect-square" />;
           const iso = toIso(viewY, viewM, c.d);
           const isPast = iso < minIso;
+          const isFuture = !!maxDate && iso > maxDate;
+          const disabledCell = isPast || isFuture;
           const isToday = iso === todayIso;
           const isSelected = iso === picked;
           const isSunday = i % 7 === 0;
@@ -214,10 +224,10 @@ export default function DatePickerSheet({
             <button
               key={iso}
               type="button"
-              disabled={isPast}
+              disabled={disabledCell}
               onClick={() => setPicked(iso)}
               className={`aspect-square flex flex-col items-center justify-center text-base tabular-nums transition ${
-                isPast
+                disabledCell
                   ? "text-slate-300 cursor-not-allowed"
                   : isSelected
                     ? ""
