@@ -149,20 +149,23 @@ export async function updateOrder(
     return next;
   }
   // Only the patched fields go to the DB; mirror camelCase → snake_case.
+  // Use `"key" in patch` rather than `!== undefined` so callers can pass
+  // `{ reservation: undefined }` to explicitly clear a nullable JSONB
+  // field. Sync uses this to wipe expired/cancelled Korail reservations
+  // — the `!== undefined` form silently dropped those updates.
   const dbPatch: Record<string, unknown> = {};
-  if (patch.tripType !== undefined) dbPatch.trip_type = patch.tripType;
-  if (patch.seatType !== undefined) dbPatch.seat_type = patch.seatType;
-  if (patch.inboundSeatType !== undefined)
+  if ("tripType" in patch) dbPatch.trip_type = patch.tripType;
+  if ("seatType" in patch) dbPatch.seat_type = patch.seatType;
+  if ("inboundSeatType" in patch)
     dbPatch.inbound_seat_type = patch.inboundSeatType ?? null;
-  if (patch.passengerCount !== undefined) dbPatch.passenger_count = patch.passengerCount;
-  if (patch.paxBreakdown !== undefined)
-    dbPatch.pax_breakdown = patch.paxBreakdown ?? null;
-  if (patch.totalPrice !== undefined) dbPatch.total_price = patch.totalPrice;
-  if (patch.outbound !== undefined) dbPatch.outbound = patch.outbound;
-  if (patch.inbound !== undefined) dbPatch.inbound = patch.inbound ?? null;
-  if (patch.passengers !== undefined) dbPatch.passengers = patch.passengers;
-  if (patch.reservation !== undefined) dbPatch.reservation = patch.reservation ?? null;
-  if (patch.inboundReservation !== undefined)
+  if ("passengerCount" in patch) dbPatch.passenger_count = patch.passengerCount;
+  if ("paxBreakdown" in patch) dbPatch.pax_breakdown = patch.paxBreakdown ?? null;
+  if ("totalPrice" in patch) dbPatch.total_price = patch.totalPrice;
+  if ("outbound" in patch) dbPatch.outbound = patch.outbound;
+  if ("inbound" in patch) dbPatch.inbound = patch.inbound ?? null;
+  if ("passengers" in patch) dbPatch.passengers = patch.passengers;
+  if ("reservation" in patch) dbPatch.reservation = patch.reservation ?? null;
+  if ("inboundReservation" in patch)
     dbPatch.inbound_reservation = patch.inboundReservation ?? null;
 
   const { data, error } = await sb
