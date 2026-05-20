@@ -572,33 +572,45 @@ function TrainCard({
         </span>
       </div>
 
-      {/* Times + duration row */}
+      {/* Times + duration row (time on top, station name below) */}
       <div className="flex items-center gap-3 px-5 pt-4 pb-4">
+        <div className="flex flex-col items-start min-w-0">
+          <span
+            className={`text-base font-bold tabular-nums leading-none whitespace-nowrap ${muted(
+              "text-slate-900",
+            )}`}
+          >
+            {fmtTime(train.depPlandTime)}
+          </span>
+          <span
+            className={`text-sm mt-1 whitespace-nowrap ${muted("text-slate-600")}`}
+          >
+            {stationLabel(train.depPlaceName, lang)}
+          </span>
+        </div>
+        <span className="h-px flex-1 bg-slate-200 self-start mt-2.5" aria-hidden />
         <span
-          className={`text-base font-bold tabular-nums leading-none whitespace-nowrap ${muted(
-            "text-slate-900",
+          className={`text-xs whitespace-nowrap self-start mt-1 ${muted(
+            "text-slate-400",
           )}`}
         >
-          {fmtTime(train.depPlandTime)}
-        </span>
-        <span
-          className={`h-px flex-1 ${dim ? "bg-slate-200" : "bg-slate-200"}`}
-          aria-hidden
-        />
-        <span className={`text-xs whitespace-nowrap ${muted("text-slate-400")}`}>
           {durationL(mins, lang)}
         </span>
-        <span
-          className={`h-px flex-1 ${dim ? "bg-slate-200" : "bg-slate-200"}`}
-          aria-hidden
-        />
-        <span
-          className={`text-base font-bold tabular-nums leading-none whitespace-nowrap ${muted(
-            "text-slate-900",
-          )}`}
-        >
-          {fmtTime(train.arrPlandTime)}
-        </span>
+        <span className="h-px flex-1 bg-slate-200 self-start mt-2.5" aria-hidden />
+        <div className="flex flex-col items-end min-w-0">
+          <span
+            className={`text-base font-bold tabular-nums leading-none whitespace-nowrap ${muted(
+              "text-slate-900",
+            )}`}
+          >
+            {fmtTime(train.arrPlandTime)}
+          </span>
+          <span
+            className={`text-sm mt-1 whitespace-nowrap ${muted("text-slate-600")}`}
+          >
+            {stationLabel(train.arrPlaceName, lang)}
+          </span>
+        </div>
       </div>
 
       {/* Divider */}
