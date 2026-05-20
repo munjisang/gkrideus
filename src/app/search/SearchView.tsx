@@ -84,10 +84,16 @@ export default function SearchView() {
   const [filter, setFilter] = useState<FilterKey>("all");
   const tabsRef = useRef<HTMLDivElement>(null);
 
-  /** Map keyed by zero-stripped train_no — populated asynchronously from
-   *  Korail. Tells us live seat availability per class. Codes: 11=available,
-   *  12=sold out, 13=seat-pick, 14=waiting, 00=class not offered. */
-  type SeatAvail = { generalSeat: string; specialSeat: string };
+  /** Map keyed by zero-stripped train_no. */
+  type SeatAvail = {
+    generalSeat: string;
+    specialSeat: string;
+    /** Korail-side fare for the 일반실, parsed from reservePossibleName.
+     *  Often matches TAGO; lower when a discount applies. */
+    generalPrice: number | null;
+    /** Promo tag, e.g. "5%적립" or "25%할인". null if none. */
+    promo: string | null;
+  };
   const [availability, setAvailability] = useState<Map<string, SeatAvail>>(
     () => new Map(),
   );
@@ -137,15 +143,23 @@ export default function SearchView() {
         .then(
           (j: {
             ok: boolean;
-            trains?: { trainNo: string; generalSeat: string; specialSeat: string }[];
+            trains?: {
+              trainNo: string;
+              generalSeat: string;
+              specialSeat: string;
+              reservePossibleName?: string;
+            }[];
           }) => {
             if (!j.ok || !j.trains) return;
             const m = new Map<string, SeatAvail>();
             for (const x of j.trains) {
               const key = String(x.trainNo).replace(/^0+/, "") || "0";
+              const { price, promo } = parsePromo(x.reservePossibleName ?? "");
               m.set(key, {
                 generalSeat: x.generalSeat,
                 specialSeat: x.specialSeat,
+                generalPrice: price,
+                promo,
               });
             }
             setAvailability(m);
@@ -321,6 +335,8 @@ export default function SearchView() {
               t={t}
               standardSoldOut={isSoldOut(avail?.generalSeat)}
               firstSoldOut={isSoldOut(avail?.specialSeat)}
+              standardLivePrice={avail?.generalPrice ?? null}
+              promo={avail?.promo ?? null}
               onPick={() => onPick(tr)}
             />
           );
@@ -337,12 +353,29 @@ function isSoldOut(code: string | undefined): boolean {
   return code === "12";
 }
 
+/** Parse Korail's reservePossibleName like "59,800원\n5%적립" or
+ *  "44,800원 25%할인" into a numeric price + a short promo tag. */
+function parsePromo(text: string): {
+  price: number | null;
+  promo: string | null;
+} {
+  if (!text) return { price: null, promo: null };
+  const priceMatch = text.match(/([\d,]+)\s*원/);
+  const price = priceMatch ? Number(priceMatch[1].replace(/,/g, "")) : null;
+  // any "NN% 할인" or "NN% 적립" anywhere in the string
+  const promoMatch = text.match(/(\d+\s*%\s*(?:할인|적립))/);
+  const promo = promoMatch ? promoMatch[1].replace(/\s+/g, "") : null;
+  return { price, promo };
+}
+
 function TrainCard({
   train,
   lang,
   t,
   standardSoldOut,
   firstSoldOut,
+  standardLivePrice,
+  promo,
   onPick,
 }: {
   train: TrainSchedule;
@@ -350,10 +383,15 @@ function TrainCard({
   t: (k: string) => string;
   standardSoldOut: boolean;
   firstSoldOut: boolean;
+  standardLivePrice: number | null;
+  promo: string | null;
   onPick: () => void;
 }) {
   const mins = durationMinutes(train.depPlandTime, train.arrPlandTime);
-  const standardPrice = train.adultCharge;
+  const tagoStd = train.adultCharge;
+  const standardPrice = standardLivePrice ?? tagoStd;
+  const isDiscounted =
+    standardLivePrice !== null && standardLivePrice < tagoStd;
   const firstPrice = Math.round((train.adultCharge * FIRST_CLASS_MULT) / 100) * 100;
   return (
     <button
@@ -380,12 +418,16 @@ function TrainCard({
           <PriceBox
             label={t("sr.standard")}
             price={standardPrice}
+            originalPrice={isDiscounted ? tagoStd : null}
+            promo={promo}
             lang={lang}
             soldOut={standardSoldOut}
           />
           <PriceBox
             label={t("sr.first")}
             price={firstPrice}
+            originalPrice={null}
+            promo={null}
             lang={lang}
             soldOut={firstSoldOut}
           />
@@ -422,17 +464,25 @@ function GradeBadge({ name, lang }: { name: string; lang: Lang }) {
 function PriceBox({
   label,
   price,
+  originalPrice,
+  promo,
   lang,
   soldOut,
 }: {
   label: string;
   price: number;
+  originalPrice?: number | null;
+  promo?: string | null;
   lang: Lang;
   soldOut?: boolean;
 }) {
+  const showDiscount = !!originalPrice && originalPrice > price;
+  const hasPromo = !!promo;
   return (
     <span
-      className={`inline-flex flex-col items-center justify-center w-[80px] h-12 rounded-sm border leading-tight px-1 ${
+      className={`inline-flex flex-col items-center justify-center w-[88px] ${
+        hasPromo || showDiscount ? "h-14" : "h-12"
+      } rounded-sm border leading-tight px-1 ${
         soldOut
           ? "border-slate-200 bg-white text-slate-300"
           : "border-slate-200 bg-white"
@@ -444,9 +494,29 @@ function PriceBox({
           {lang === "ko" ? "매진" : "Sold out"}
         </span>
       ) : (
-        <span className="text-[13px] font-bold text-slate-900 tabular-nums mt-0.5 whitespace-nowrap">
-          {krwL(price, lang)}
-        </span>
+        <>
+          {showDiscount && (
+            <span className="text-[10px] text-slate-400 tabular-nums line-through leading-none">
+              {krwL(originalPrice!, lang)}
+            </span>
+          )}
+          <span
+            className={`text-[13px] font-bold tabular-nums whitespace-nowrap ${
+              showDiscount ? "text-rose-600" : "text-slate-900"
+            } mt-0.5`}
+          >
+            {krwL(price, lang)}
+          </span>
+          {hasPromo && (
+            <span
+              className={`text-[9px] font-semibold leading-none mt-0.5 ${
+                promo!.includes("할인") ? "text-rose-600" : "text-emerald-600"
+              }`}
+            >
+              {promo}
+            </span>
+          )}
+        </>
       )}
     </span>
   );
