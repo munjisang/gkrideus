@@ -422,7 +422,7 @@ function TrainCard({
       }`}
     >
       {/* Header: logo + train number */}
-      <div className="flex items-center gap-1 px-5 pt-4">
+      <div className="flex items-baseline gap-1 px-5 pt-4">
         <TrainLogo name={train.trainGradeName} dim={dim} />
         <span className={`text-sm font-semibold ${muted("text-slate-500")}`}>
           {Number(train.trainNo) || train.trainNo}
