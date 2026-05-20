@@ -85,8 +85,9 @@ export default function SearchView() {
   const tabsRef = useRef<HTMLDivElement>(null);
 
   /** Map keyed by zero-stripped train_no — populated asynchronously from
-   *  Korail. Tells us live seat availability per class. */
-  type SeatAvail = { generalSeatState: string; specialSeatState: string };
+   *  Korail. Tells us live seat availability per class. Codes: 11=available,
+   *  12=sold out, 13=seat-pick, 14=waiting, 00=class not offered. */
+  type SeatAvail = { generalSeat: string; specialSeat: string };
   const [availability, setAvailability] = useState<Map<string, SeatAvail>>(
     () => new Map(),
   );
@@ -136,15 +137,15 @@ export default function SearchView() {
         .then(
           (j: {
             ok: boolean;
-            trains?: { trainNo: string; generalSeatState: string; specialSeatState: string }[];
+            trains?: { trainNo: string; generalSeat: string; specialSeat: string }[];
           }) => {
             if (!j.ok || !j.trains) return;
             const m = new Map<string, SeatAvail>();
             for (const x of j.trains) {
               const key = String(x.trainNo).replace(/^0+/, "") || "0";
               m.set(key, {
-                generalSeatState: x.generalSeatState,
-                specialSeatState: x.specialSeatState,
+                generalSeat: x.generalSeat,
+                specialSeat: x.specialSeat,
               });
             }
             setAvailability(m);
@@ -318,8 +319,8 @@ export default function SearchView() {
               train={tr}
               lang={lang}
               t={t}
-              standardSoldOut={isSoldOut(avail?.generalSeatState)}
-              firstSoldOut={isSoldOut(avail?.specialSeatState)}
+              standardSoldOut={isSoldOut(avail?.generalSeat)}
+              firstSoldOut={isSoldOut(avail?.specialSeat)}
               onPick={() => onPick(tr)}
             />
           );
@@ -329,11 +330,11 @@ export default function SearchView() {
   );
 }
 
-/** Korail returns a free-form Korean string. Treat anything containing
- *  "매진" as sold-out; missing/empty means unknown (treat as available). */
-function isSoldOut(state: string | undefined): boolean {
-  if (!state) return false;
-  return state.includes("매진");
+/** Korail seat-state codes: "11"=예약가능, "12"=매진, "13"=좌석선택,
+ *  "14"=예약대기, "15"=입석, "00"=해당 없음. Mark sold-out only on "12";
+ *  unknown/missing → assume available (we don't want false negatives). */
+function isSoldOut(code: string | undefined): boolean {
+  return code === "12";
 }
 
 function TrainCard({

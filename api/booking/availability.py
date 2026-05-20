@@ -99,8 +99,17 @@ def _process(body: dict[str, Any]) -> dict[str, Any]:
                 "trainNo": train_no,
                 "trainType": str(getattr(t, "train_type", "") or ""),
                 "trainTypeName": str(getattr(t, "train_type_name", "") or ""),
-                "generalSeatState": str(getattr(t, "general_seat_state", "") or ""),
-                "specialSeatState": str(getattr(t, "special_seat_state", "") or ""),
+                # korail2-ncard 0.1.0 exposes these without the "_state" suffix.
+                # Common codes: "00"=해당없음, "11"=예약가능, "12"=매진,
+                #               "13"=좌석선택, "14"=예약대기, "15"=입석
+                "generalSeat": str(getattr(t, "general_seat", "") or ""),
+                "specialSeat": str(getattr(t, "special_seat", "") or ""),
+                "reservePossible": str(getattr(t, "reserve_possible", "") or ""),
+                # Human-readable string from Korail; for available trains often
+                # contains the discounted fare (e.g. "59,800원\n5%적립").
+                "reservePossibleName": str(
+                    getattr(t, "reserve_possible_name", "") or ""
+                ),
             }
         )
 
