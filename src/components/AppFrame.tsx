@@ -25,9 +25,9 @@ export default function AppFrame({ children }: { children: React.ReactNode }) {
               <Image
                 src={GROUNDK_LOGO}
                 alt="GroundK"
-                width={96}
-                height={28}
-                className="h-7 w-auto"
+                width={69}
+                height={20}
+                className="h-5 w-auto"
                 priority
                 unoptimized
               />
@@ -35,6 +35,7 @@ export default function AppFrame({ children }: { children: React.ReactNode }) {
             <div className="flex items-center gap-2 shrink-0">
               <LangDropdown lang={lang} setLang={setLang} label={t("nav.langMenu")} />
               <ProfileMenu
+                mainLabel={t("nav.main")}
                 myBookingsLabel={t("nav.myBookings")}
                 adminLabel={t("nav.admin")}
                 ariaLabel={t("nav.profileMenu")}
@@ -137,11 +138,15 @@ function LangDropdown({
 
 /* ─────────────────────────────────────────── Profile avatar menu */
 
+const MAIN_URL = "https://mykorailproject.vercel.app/";
+
 function ProfileMenu({
+  mainLabel,
   myBookingsLabel,
   adminLabel,
   ariaLabel,
 }: {
+  mainLabel: string;
   myBookingsLabel: string;
   adminLabel: string;
   ariaLabel: string;
@@ -175,6 +180,16 @@ function ProfileMenu({
           role="menu"
           className="absolute right-0 top-[calc(100%+6px)] z-40 min-w-[140px] py-1 rounded-xl border border-slate-200 bg-white shadow-lg overflow-hidden"
         >
+          {/* External absolute URL — use a plain <a> so the browser does a
+              full navigation to the deployed Vercel host. */}
+          <a
+            role="menuitem"
+            href={MAIN_URL}
+            onClick={() => setOpen(false)}
+            className="block px-3 py-2 text-[13px] font-medium text-slate-700 hover:bg-slate-50 transition"
+          >
+            {mainLabel}
+          </a>
           {/* TODO: replace href once the 예매내역 page is built. */}
           <Link
             role="menuitem"
