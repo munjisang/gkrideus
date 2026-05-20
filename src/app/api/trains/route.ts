@@ -70,15 +70,25 @@ function toSchedule(it: TagoItem, fallbackFrom: string, fallbackTo: string): Tra
   };
 }
 
-/** KTX/SRT family grade codes — names per TAGO `GetVhcleKndList`. */
-const KTX_FAMILY_CODES = new Set(["00", "07", "10", "16", "17", "19"]);
-const KTX_FAMILY_NAME_PREFIX = ["KTX", "SRT"];
+/** Allowed train grade codes (per TAGO `GetVhcleKndList`):
+ *  00 KTX, 07 KTX-산천(A-type), 10 KTX-산천(B-type),
+ *  16 KTX-이음, 17 SRT, 19 KTX-청룡. */
+const ALLOWED_CODES = new Set(["00", "07", "10", "16", "17", "19"]);
+/** Fallback name match when TAGO omits `traingradecode` (rare). */
+const ALLOWED_NAMES = new Set([
+  "KTX",
+  "KTX-산천",
+  "KTX-이음",
+  "KTX-청룡",
+  "SRT",
+]);
 
-function isKtxFamily(it: TagoItem): boolean {
+function isAllowedTrain(it: TagoItem): boolean {
   const code = it.traingradecode ? String(it.traingradecode) : "";
-  if (code && KTX_FAMILY_CODES.has(code)) return true;
-  const name = String(it.traingradename ?? "");
-  return KTX_FAMILY_NAME_PREFIX.some((p) => name.startsWith(p));
+  if (code) return ALLOWED_CODES.has(code);
+  // No code → fall back to (normalized) name.
+  const name = normalizeGradeName(String(it.traingradename ?? ""));
+  return ALLOWED_NAMES.has(name);
 }
 
 async function fetchTago(
@@ -114,7 +124,7 @@ async function fetchTago(
       };
     }
     const allMapped = normalizeItems(data)
-      .filter(isKtxFamily)
+      .filter(isAllowedTrain)
       .map((it) => toSchedule(it, from, to));
     // Dedupe: TAGO occasionally repeats the same train within one response.
     const seen = new Set<string>();

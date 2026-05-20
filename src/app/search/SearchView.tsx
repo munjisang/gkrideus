@@ -32,14 +32,11 @@ type ApiResponse =
     }
   | { ok: false; error: string };
 
-type FilterKey = "all" | "KTX" | "SRT" | "새마을" | "무궁화" | "ITX-청춘";
+type FilterKey = "all" | "KTX" | "SRT";
 const FILTER_TABS: { key: FilterKey; tkey: string }[] = [
   { key: "all", tkey: "sr.filter.all" },
   { key: "KTX", tkey: "sr.filter.ktx" },
   { key: "SRT", tkey: "sr.filter.srt" },
-  { key: "새마을", tkey: "sr.filter.saemaul" },
-  { key: "무궁화", tkey: "sr.filter.mugunghwa" },
-  { key: "ITX-청춘", tkey: "sr.filter.itx" },
 ];
 
 const FIRST_CLASS_MULT = 1.4;
@@ -51,11 +48,8 @@ function encodeTrain(t: TrainSchedule): string {
 function matchesFilter(t: TrainSchedule, f: FilterKey): boolean {
   if (f === "all") return true;
   const name = t.trainGradeName || "";
-  if (f === "KTX") return name.startsWith("KTX"); // KTX, KTX-산천, KTX-이음, KTX-청룡 …
+  if (f === "KTX") return name.startsWith("KTX"); // KTX, KTX-산천, KTX-이음, KTX-청룡
   if (f === "SRT") return name === "SRT";
-  if (f === "새마을") return name.includes("새마을");
-  if (f === "무궁화") return name.includes("무궁화");
-  if (f === "ITX-청춘") return name === "ITX-청춘";
   return false;
 }
 
@@ -346,7 +340,6 @@ export default function SearchView() {
               firstSoldOut={isSoldOut(avail?.specialSeat, avail?.reservePossible)}
               firstUnavailable={isClassUnavailable(avail?.specialSeat)}
               standardLivePrice={avail?.generalPrice ?? null}
-              promo={avail?.promo ?? null}
               onPick={() => onPick(tr)}
             />
           );
@@ -395,7 +388,6 @@ function TrainCard({
   firstSoldOut,
   firstUnavailable,
   standardLivePrice,
-  promo,
   onPick,
 }: {
   train: TrainSchedule;
@@ -405,20 +397,25 @@ function TrainCard({
   firstSoldOut: boolean;
   firstUnavailable: boolean;
   standardLivePrice: number | null;
-  promo: string | null;
   onPick: () => void;
 }) {
   const mins = durationMinutes(train.depPlandTime, train.arrPlandTime);
   const tagoStd = train.adultCharge;
   const standardPrice = standardLivePrice ?? tagoStd;
-  const isDiscounted =
-    standardLivePrice !== null && standardLivePrice < tagoStd;
   const firstPrice = Math.round((train.adultCharge * FIRST_CLASS_MULT) / 100) * 100;
+  // Whole train unbookable when standard is sold out AND special is either
+  // sold out or doesn't exist on this rolling stock.
+  const wholeBlocked = standardSoldOut && (firstSoldOut || firstUnavailable);
   return (
     <button
       type="button"
-      onClick={onPick}
-      className="block w-full text-left bg-white border border-slate-200 p-4 hover:border-slate-400 transition"
+      onClick={wholeBlocked ? undefined : onPick}
+      disabled={wholeBlocked}
+      className={`block w-full text-left p-4 border border-slate-200 transition ${
+        wholeBlocked
+          ? "bg-slate-100 opacity-70 cursor-not-allowed"
+          : "bg-white hover:border-slate-400"
+      }`}
     >
       <div className="flex items-center gap-2 mb-3">
         <GradeBadge name={train.trainGradeName} lang={lang} />
@@ -439,16 +436,12 @@ function TrainCard({
           <PriceBox
             label={t("sr.standard")}
             price={standardPrice}
-            originalPrice={isDiscounted ? tagoStd : null}
-            promo={promo}
             lang={lang}
             soldOut={standardSoldOut}
           />
           <PriceBox
             label={t("sr.first")}
             price={firstPrice}
-            originalPrice={null}
-            promo={null}
             lang={lang}
             soldOut={firstSoldOut}
             unavailable={firstUnavailable}
@@ -486,27 +479,19 @@ function GradeBadge({ name, lang }: { name: string; lang: Lang }) {
 function PriceBox({
   label,
   price,
-  originalPrice,
-  promo,
   lang,
   soldOut,
   unavailable,
 }: {
   label: string;
   price: number;
-  originalPrice?: number | null;
-  promo?: string | null;
   lang: Lang;
   soldOut?: boolean;
   unavailable?: boolean;
 }) {
-  const showDiscount = !!originalPrice && originalPrice > price;
-  const hasPromo = !!promo;
   return (
     <span
-      className={`inline-flex flex-col items-center justify-center w-[88px] ${
-        hasPromo ? "h-14" : "h-12"
-      } rounded-sm border leading-tight px-1 ${
+      className={`inline-flex flex-col items-center justify-center w-[88px] h-12 rounded-sm border leading-tight px-1 ${
         soldOut || unavailable
           ? "border-slate-200 bg-white text-slate-300"
           : "border-slate-200 bg-white"
@@ -520,24 +505,9 @@ function PriceBox({
           {lang === "ko" ? "매진" : "Sold out"}
         </span>
       ) : (
-        <>
-          <span
-            className={`text-[13px] font-bold tabular-nums whitespace-nowrap ${
-              showDiscount ? "text-rose-600" : "text-slate-900"
-            } mt-0.5`}
-          >
-            {krwL(price, lang)}
-          </span>
-          {hasPromo && (
-            <span
-              className={`text-[9px] font-semibold leading-none mt-0.5 ${
-                promo!.includes("할인") ? "text-rose-600" : "text-emerald-600"
-              }`}
-            >
-              {promo}
-            </span>
-          )}
-        </>
+        <span className="text-[13px] font-bold tabular-nums whitespace-nowrap text-slate-900 mt-0.5">
+          {krwL(price, lang)}
+        </span>
       )}
     </span>
   );
