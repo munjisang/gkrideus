@@ -311,6 +311,7 @@ export default function OrderView() {
                 label={r.label}
                 regular={ppRegular}
                 discount={ppDiscount}
+                netPay={ppDiscounted}
                 fee={ppFee}
                 legTotal={ppLegTotal}
                 lang={lang}
@@ -648,6 +649,7 @@ function PaxFareBlock({
   label,
   regular,
   discount,
+  netPay,
   fee,
   legTotal,
   lang,
@@ -656,6 +658,8 @@ function PaxFareBlock({
   label: string;
   regular: number;
   discount: number;
+  /** 정상운임 − 할인. Shown as a standalone subtotal. */
+  netPay: number;
   fee: number;
   legTotal: number;
   lang: Lang;
@@ -690,6 +694,7 @@ function PaxFareBlock({
         // Negative sign to make it obvious the amount is being deducted.
         value={discount > 0 ? `-${krwL(discount, lang)}` : krwL(0, lang)}
       />
+      <Row name={tt("ord.fare.netPay")} value={krwL(netPay, lang)} />
       <Row name={tt("ord.fare.fee")} value={krwL(fee, lang)} />
       <Row name={tt("ord.fare.legTotal")} value={krwL(legTotal, lang)} bold />
     </div>
