@@ -27,9 +27,15 @@ from typing import Any
 # Make the shared PatchedKorail helper importable.
 _HERE = os.path.dirname(os.path.abspath(__file__))
 _REPO_ROOT = os.path.abspath(os.path.join(_HERE, "..", ".."))
-for path in (os.path.join(_REPO_ROOT, "scripts"), _REPO_ROOT):
+for path in (
+    os.path.join(_REPO_ROOT, "scripts"),
+    os.path.join(_REPO_ROOT, "api"),
+    _REPO_ROOT,
+):
     if path not in sys.path:
         sys.path.insert(0, path)
+
+from _lib.creds import load_korail_creds  # type: ignore  # noqa: E402
 
 
 def _seat_option(seat_type: str):
@@ -144,8 +150,7 @@ def _normalize_time(t: str) -> str:
 
 
 def _login_or_error() -> tuple[Any | None, dict[str, Any] | None]:
-    korail_id = os.environ.get("KORAIL_ID")
-    korail_pw = os.environ.get("KORAIL_PASSWORD")
+    korail_id, korail_pw = load_korail_creds()
     if not korail_id or not korail_pw:
         return None, {
             "ok": False,

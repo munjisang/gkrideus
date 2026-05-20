@@ -353,6 +353,8 @@ export default function AdminPage() {
 
   return (
     <div className="mx-auto max-w-5xl px-4 py-6 pb-10">
+      <KorailCredentialsCard />
+
       <div className="flex items-center justify-between mb-4 gap-3 flex-wrap">
         <p className="text-sm text-slate-500">
           주문 <span className="font-semibold text-slate-700">{orders?.length ?? 0}</span>건
@@ -378,6 +380,15 @@ export default function AdminPage() {
             className="text-xs text-slate-500 hover:text-slate-900"
           >
             새로고침
+          </button>
+          <button
+            onClick={async () => {
+              await fetch("/api/admin/auth", { method: "DELETE" });
+              window.location.reload();
+            }}
+            className="text-xs text-slate-500 hover:text-slate-900"
+          >
+            로그아웃
           </button>
         </div>
       </div>
@@ -906,4 +917,145 @@ function toPlandTime(iso: string): string {
   const d = new Date(iso);
   const p = (n: number) => n.toString().padStart(2, "0");
   return `${d.getFullYear()}${p(d.getMonth() + 1)}${p(d.getDate())}${p(d.getHours())}${p(d.getMinutes())}`;
+}
+
+/* ─────────────────────────────────────────── Korail credentials settings */
+
+function KorailCredentialsCard() {
+  const [korailId, setKorailId] = useState("");
+  const [korailPassword, setKorailPassword] = useState("");
+  const [currentId, setCurrentId] = useState<string | null>(null);
+  const [hasPassword, setHasPassword] = useState(false);
+  const [updatedAt, setUpdatedAt] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [msg, setMsg] = useState<string | null>(null);
+  const [err, setErr] = useState<string | null>(null);
+
+  async function load() {
+    setLoading(true);
+    try {
+      const res = await fetch("/api/admin/credentials", { cache: "no-store" });
+      const j = (await res.json()) as {
+        ok: boolean;
+        korailId?: string | null;
+        hasPassword?: boolean;
+        updatedAt?: string | null;
+        error?: string;
+      };
+      if (!res.ok || !j.ok) {
+        setErr(j.error ?? `HTTP ${res.status}`);
+      } else {
+        setCurrentId(j.korailId ?? null);
+        setHasPassword(!!j.hasPassword);
+        setUpdatedAt(j.updatedAt ?? null);
+        if (j.korailId) setKorailId(j.korailId);
+        setErr(null);
+      }
+    } catch (e) {
+      setErr((e as Error).message);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  useEffect(() => {
+    void load();
+  }, []);
+
+  async function save() {
+    setErr(null);
+    setMsg(null);
+    setSaving(true);
+    try {
+      const res = await fetch("/api/admin/credentials", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ korailId, korailPassword }),
+      });
+      const j = (await res.json()) as { ok: boolean; error?: string };
+      if (!res.ok || !j.ok) {
+        setErr(j.error ?? `HTTP ${res.status}`);
+      } else {
+        setMsg("저장되었습니다.");
+        setKorailPassword("");
+        await load();
+      }
+    } catch (e) {
+      setErr((e as Error).message);
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  const canSave = !!korailId.trim() && !!korailPassword.trim() && !saving;
+
+  return (
+    <section className="bg-white border border-slate-200 rounded-xl p-5 mb-4">
+      <div className="flex items-center justify-between mb-3">
+        <h2 className="font-semibold text-slate-800">코레일 계정</h2>
+        <span className="text-xs text-slate-400">
+          {loading
+            ? "불러오는 중…"
+            : currentId
+              ? `현재: ${currentId}${hasPassword ? " · 비밀번호 설정됨" : ""}${
+                  updatedAt
+                    ? ` · ${new Date(updatedAt).toLocaleString("ko-KR")}`
+                    : ""
+                }`
+              : "현재: 환경변수 fallback 사용 중"}
+        </span>
+      </div>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <label className="block">
+          <span className="text-xs font-medium text-slate-500 mb-1 block">
+            회원번호 / ID
+          </span>
+          <input
+            value={korailId}
+            onChange={(e) => setKorailId(e.target.value)}
+            placeholder="0160346790"
+            autoComplete="off"
+            className="h-11 px-3 rounded-lg border border-slate-200 bg-white w-full focus:outline-none focus:ring-2 focus:ring-sky-300"
+          />
+        </label>
+        <label className="block">
+          <span className="text-xs font-medium text-slate-500 mb-1 block">
+            비밀번호
+          </span>
+          <input
+            type="password"
+            value={korailPassword}
+            onChange={(e) => setKorailPassword(e.target.value)}
+            placeholder={hasPassword ? "(변경 시에만 입력)" : "비밀번호"}
+            autoComplete="off"
+            className="h-11 px-3 rounded-lg border border-slate-200 bg-white w-full focus:outline-none focus:ring-2 focus:ring-sky-300"
+          />
+        </label>
+      </div>
+      {err && (
+        <div className="mt-3 text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg px-3 py-2">
+          {err}
+        </div>
+      )}
+      {msg && (
+        <div className="mt-3 text-sm text-green-700 bg-green-50 border border-green-200 rounded-lg px-3 py-2">
+          {msg}
+        </div>
+      )}
+      <div className="mt-3 flex justify-end">
+        <button
+          onClick={save}
+          disabled={!canSave}
+          className={`h-10 px-4 rounded-lg text-sm font-semibold transition ${
+            canSave
+              ? "bg-slate-900 hover:bg-slate-800 text-white"
+              : "bg-slate-200 text-slate-400 cursor-not-allowed"
+          }`}
+        >
+          {saving ? "저장 중…" : "저장"}
+        </button>
+      </div>
+    </section>
+  );
 }

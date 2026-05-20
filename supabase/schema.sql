@@ -63,3 +63,28 @@ begin
     return new;
 end;
 $$;
+
+
+-- ─────────────────────────────────────────────────────────────────
+-- korail_credentials — single-row table holding the Korail account used by
+-- the Python serverless functions for live booking. Editable from the
+-- admin UI; the Python side falls back to KORAIL_ID / KORAIL_PASSWORD env
+-- vars when this row is empty.
+create table if not exists public.korail_credentials (
+    id              text primary key default 'default',
+    korail_id       text not null,
+    korail_password text not null,
+    updated_at      timestamptz not null default now()
+);
+
+alter table public.korail_credentials enable row level security;
+
+-- Block every anon access — reads/writes go through Next.js API routes
+-- using the service role key, which bypasses RLS by design.
+drop policy if exists "no_anon" on public.korail_credentials;
+create policy "no_anon"
+    on public.korail_credentials
+    for all
+    to anon
+    using (false)
+    with check (false);
