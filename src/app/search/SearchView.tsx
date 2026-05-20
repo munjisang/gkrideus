@@ -505,7 +505,7 @@ function PriceBox({
   return (
     <span
       className={`inline-flex flex-col items-center justify-center w-[88px] ${
-        hasPromo || showDiscount ? "h-14" : "h-12"
+        hasPromo ? "h-14" : "h-12"
       } rounded-sm border leading-tight px-1 ${
         soldOut || unavailable
           ? "border-slate-200 bg-white text-slate-300"
@@ -521,11 +521,6 @@ function PriceBox({
         </span>
       ) : (
         <>
-          {showDiscount && (
-            <span className="text-[10px] text-slate-400 tabular-nums line-through leading-none">
-              {krwL(originalPrice!, lang)}
-            </span>
-          )}
           <span
             className={`text-[13px] font-bold tabular-nums whitespace-nowrap ${
               showDiscount ? "text-rose-600" : "text-slate-900"

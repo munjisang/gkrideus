@@ -78,8 +78,11 @@ def _process(body: dict[str, Any]) -> dict[str, Any]:
     if err is not None or korail is None:
         return err or {"ok": False, "stage": "login", "error": "unknown login failure"}
 
+    # _allday returns the FULL day's timetable; plain search_train only
+    # returns the first ~8 trains from the given time, which means trains
+    # later in the morning were missed and showed as "available" by default.
     try:
-        trains = korail.search_train(
+        trains = korail.search_train_allday(
             body["depName"],
             body["arrName"],
             body["date"],
