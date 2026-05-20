@@ -792,8 +792,12 @@ function OrderDetail({
               <div className="font-medium">{p.name}</div>
               <div className="text-xs text-slate-500 mt-0.5 break-all">
                 {p.email}
-                <br />
-                {p.countryCode} {p.phone}
+                {(p.countryCode || p.phone) && (
+                  <>
+                    <br />
+                    {p.countryCode} {p.phone}
+                  </>
+                )}
               </div>
             </li>
           ))}

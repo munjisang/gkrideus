@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { COUNTRY_CODES } from "../../lib/countries";
+import { COUNTRIES } from "../../lib/countries";
 import { fmtTime, durationMinutes } from "../../lib/format";
 import { newOrderId, saveOrder } from "../../lib/storage";
 import { TrainLogo } from "../../components/TrainLogo";
@@ -40,17 +40,16 @@ function decodeTrain(p: string | null): TrainSchedule | null {
 }
 
 function emptyPassenger(): Passenger {
-  return { name: "", email: "", countryCode: "+82", phone: "" };
+  // countryCode stores the ISO-3166 alpha-2 code (e.g. "KR"). Empty
+  // string forces the user to pick one — the submit button stays
+  // disabled until they do.
+  return { name: "", email: "", countryCode: "", phone: "" };
 }
 
-type PayMethod = "card" | "paypal" | "intlcard" | "toss" | "kakao" | "naver";
+type PayMethod = "card" | "paypal";
 const PAY_METHODS: { id: PayMethod; ko: string; en: string }[] = [
   { id: "card", ko: "신용카드", en: "Credit card" },
   { id: "paypal", ko: "Paypal", en: "Paypal" },
-  { id: "intlcard", ko: "해외카드", en: "Intl. card" },
-  { id: "toss", ko: "토스", en: "Toss" },
-  { id: "kakao", ko: "카카오", en: "KakaoPay" },
-  { id: "naver", ko: "네이버", en: "NaverPay" },
 ];
 
 const AGREEMENTS = [
@@ -157,7 +156,7 @@ export default function OrderView() {
     (tripType === "oneway" || !!inbound) &&
     !!reservant.name.trim() &&
     /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(reservant.email) &&
-    /^[0-9\-\s]{6,15}$/.test(reservant.phone) &&
+    !!reservant.countryCode &&
     payMethod !== null &&
     allAgreed;
 
@@ -167,7 +166,7 @@ export default function OrderView() {
     if (!reservant.name.trim()) return t("ord.err.name");
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(reservant.email))
       return t("ord.err.email");
-    if (!/^[0-9\-\s]{6,15}$/.test(reservant.phone)) return t("ord.err.phone");
+    if (!reservant.countryCode) return t("ord.err.country");
     if (!payMethod) return t("ord.err.pay");
     if (!allAgreed) return t("ord.err.agree");
     return null;
@@ -334,7 +333,7 @@ export default function OrderView() {
               <input
                 value={reservant.name}
                 onChange={(e) => setReservant((p) => ({ ...p, name: e.target.value }))}
-                placeholder="홍길동"
+                placeholder={t("ord.namePh")}
                 className={INPUT}
                 required
               />
@@ -344,34 +343,33 @@ export default function OrderView() {
                 type="email"
                 value={reservant.email}
                 onChange={(e) => setReservant((p) => ({ ...p, email: e.target.value }))}
-                placeholder="example@mail.com"
+                placeholder={t("ord.emailPh")}
                 className={INPUT}
                 required
               />
             </Field>
-            <Field label={t("ord.phone")}>
-              <div className="flex gap-2">
-                <select
-                  value={reservant.countryCode}
-                  onChange={(e) =>
-                    setReservant((p) => ({ ...p, countryCode: e.target.value }))
-                  }
-                  className="h-11 px-2 rounded-lg border border-slate-200 bg-white text-sm w-24 shrink-0 focus:outline-none focus:ring-2 focus:ring-sky-300"
-                >
-                  {COUNTRY_CODES.map((c) => (
-                    <option key={c.code} value={c.code}>
-                      {c.code}
-                    </option>
-                  ))}
-                </select>
-                <input
-                  value={reservant.phone}
-                  onChange={(e) => setReservant((p) => ({ ...p, phone: e.target.value }))}
-                  placeholder="010-1234-5678"
-                  className={INPUT}
-                  required
-                />
-              </div>
+            <Field label={t("ord.country")}>
+              <select
+                value={reservant.countryCode}
+                onChange={(e) =>
+                  setReservant((p) => ({ ...p, countryCode: e.target.value }))
+                }
+                className={`${INPUT} appearance-none bg-[length:16px] bg-no-repeat bg-[right_12px_center] pr-9`}
+                style={{
+                  backgroundImage:
+                    "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E\")",
+                }}
+                required
+              >
+                <option value="" disabled>
+                  {t("ord.countryPh")}
+                </option>
+                {COUNTRIES.map((c) => (
+                  <option key={c.iso} value={c.iso}>
+                    {c.flag} {lang === "ko" ? c.ko : c.en}
+                  </option>
+                ))}
+              </select>
             </Field>
           </div>
         </section>
