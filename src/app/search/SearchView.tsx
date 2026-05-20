@@ -84,6 +84,13 @@ export default function SearchView() {
   const [filter, setFilter] = useState<FilterKey>("all");
   const tabsRef = useRef<HTMLDivElement>(null);
 
+  /** Map keyed by zero-stripped train_no — populated asynchronously from
+   *  Korail. Tells us live seat availability per class. */
+  type SeatAvail = { generalSeatState: string; specialSeatState: string };
+  const [availability, setAvailability] = useState<Map<string, SeatAvail>>(
+    () => new Map(),
+  );
+
   // Auto-scroll the active filter tab to the left of its track.
   useEffect(() => {
     const wrap = tabsRef.current;
@@ -101,11 +108,52 @@ export default function SearchView() {
       return;
     }
     setLoading(true);
+    setAvailability(new Map());
+    // Primary fetch: TAGO (fast, has pricing).
     fetch(`/api/trains?from=${fromId}&to=${toId}&date=${date}`, { cache: "no-store" })
       .then((r) => r.json())
       .then((j: ApiResponse) => setData(j))
       .catch((e: Error) => setData({ ok: false, error: e.message }))
       .finally(() => setLoading(false));
+
+    // Secondary fetch: Korail seat availability — non-blocking, may take
+    // a few seconds on cold start, may fail entirely if Korail is blocked.
+    // We just enrich silently when it arrives.
+    const fromName = fromNameParam || "";
+    const toName = toNameParam || "";
+    if (fromName && toName) {
+      fetch("/api/booking/availability", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          depName: fromName,
+          arrName: toName,
+          date,
+          time: "000000",
+        }),
+      })
+        .then((r) => r.json())
+        .then(
+          (j: {
+            ok: boolean;
+            trains?: { trainNo: string; generalSeatState: string; specialSeatState: string }[];
+          }) => {
+            if (!j.ok || !j.trains) return;
+            const m = new Map<string, SeatAvail>();
+            for (const x of j.trains) {
+              const key = String(x.trainNo).replace(/^0+/, "") || "0";
+              m.set(key, {
+                generalSeatState: x.generalSeatState,
+                specialSeatState: x.specialSeatState,
+              });
+            }
+            setAvailability(m);
+          },
+        )
+        .catch(() => {
+          /* silent — availability is optional UX */
+        });
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [fromId, toId, date]);
 
@@ -261,29 +309,46 @@ export default function SearchView() {
           </div>
         )}
 
-        {filtered.map((tr, idx) => (
-          <TrainCard
-            key={`${tr.trainGradeName}-${tr.trainNo}-${tr.depPlandTime}-${idx}`}
-            train={tr}
-            lang={lang}
-            t={t}
-            onPick={() => onPick(tr)}
-          />
-        ))}
+        {filtered.map((tr, idx) => {
+          const key = String(tr.trainNo).replace(/^0+/, "") || "0";
+          const avail = availability.get(key);
+          return (
+            <TrainCard
+              key={`${tr.trainGradeName}-${tr.trainNo}-${tr.depPlandTime}-${idx}`}
+              train={tr}
+              lang={lang}
+              t={t}
+              standardSoldOut={isSoldOut(avail?.generalSeatState)}
+              firstSoldOut={isSoldOut(avail?.specialSeatState)}
+              onPick={() => onPick(tr)}
+            />
+          );
+        })}
       </div>
     </div>
   );
+}
+
+/** Korail returns a free-form Korean string. Treat anything containing
+ *  "매진" as sold-out; missing/empty means unknown (treat as available). */
+function isSoldOut(state: string | undefined): boolean {
+  if (!state) return false;
+  return state.includes("매진");
 }
 
 function TrainCard({
   train,
   lang,
   t,
+  standardSoldOut,
+  firstSoldOut,
   onPick,
 }: {
   train: TrainSchedule;
   lang: Lang;
   t: (k: string) => string;
+  standardSoldOut: boolean;
+  firstSoldOut: boolean;
   onPick: () => void;
 }) {
   const mins = durationMinutes(train.depPlandTime, train.arrPlandTime);
@@ -311,8 +376,18 @@ function TrainCard({
           <div className="text-xs text-slate-500 mt-1">{durationL(mins, lang)}</div>
         </div>
         <div className="flex gap-2 shrink-0">
-          <PriceBox label={t("sr.standard")} price={standardPrice} lang={lang} />
-          <PriceBox label={t("sr.first")} price={firstPrice} lang={lang} />
+          <PriceBox
+            label={t("sr.standard")}
+            price={standardPrice}
+            lang={lang}
+            soldOut={standardSoldOut}
+          />
+          <PriceBox
+            label={t("sr.first")}
+            price={firstPrice}
+            lang={lang}
+            soldOut={firstSoldOut}
+          />
         </div>
       </div>
     </button>
