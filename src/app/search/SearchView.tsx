@@ -717,22 +717,31 @@ function OutboundRecap({
   try {
     const tr = JSON.parse(decodeURIComponent(outboundJson)) as TrainSchedule;
     return (
-      <div className="pb-2">
-        <button
-          type="button"
-          onClick={onChange}
-          className="inline-flex items-center gap-2 text-sm bg-sky-50 border border-sky-100 text-sky-800 rounded-full px-3 py-1.5 hover:bg-sky-100 transition"
+      <button
+        type="button"
+        onClick={onChange}
+        className="w-full flex items-center gap-2 px-5 py-3 rounded-xl bg-sky-50 border border-sky-100 text-sm text-sky-800 hover:bg-sky-100 transition text-left"
+      >
+        <span className="font-semibold shrink-0">{t("sr.outbound")}</span>
+        <span className="flex-1 min-w-0 truncate">
+          {stationLabel(tr.depPlaceName, lang)} {fmtTime(tr.depPlandTime)} →{" "}
+          {stationLabel(tr.arrPlaceName, lang)} {fmtTime(tr.arrPlandTime)}
+        </span>
+        <svg
+          className="shrink-0"
+          width="14"
+          height="14"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          aria-hidden
         >
-          <span className="font-semibold">{t("sr.outbound")}</span>
-          <span>
-            {stationLabel(tr.depPlaceName, lang)} {fmtTime(tr.depPlandTime)} →{" "}
-            {stationLabel(tr.arrPlaceName, lang)} {fmtTime(tr.arrPlandTime)}
-          </span>
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
-            <path d="M9 18l6-6-6-6" />
-          </svg>
-        </button>
-      </div>
+          <path d="M9 18l6-6-6-6" />
+        </svg>
+      </button>
     );
   } catch {
     return null;
