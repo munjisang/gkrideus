@@ -313,6 +313,22 @@ export default function SearchView() {
         </div>
       </div>
 
+      {/* Round-trip recap: show the picked outbound train above the
+          date/passenger pills when the user is on the inbound leg. */}
+      {tripType === "roundtrip" && leg === "inbound" && outboundParam && (
+        <div className="mx-4 sm:mx-6 lg:mx-[470px] pt-3">
+          <OutboundRecap
+            outboundJson={outboundParam}
+            onChange={() => {
+              const next = new URLSearchParams(sp.toString());
+              next.delete("leg");
+              next.delete("outbound");
+              router.push(`/search?${next.toString()}`);
+            }}
+          />
+        </div>
+      )}
+
       {/* Filter pills: date+hour and passenger count */}
       <div className="mx-4 sm:mx-6 lg:mx-[470px] pt-3 pb-1 flex flex-wrap gap-2">
         <button
@@ -365,18 +381,6 @@ export default function SearchView() {
 
       {/* Content */}
       <div className="mx-4 sm:mx-6 lg:mx-[470px] py-3 pb-10 space-y-2">
-        {tripType === "roundtrip" && leg === "inbound" && outboundParam && (
-          <OutboundRecap
-            outboundJson={outboundParam}
-            onChange={() => {
-              const next = new URLSearchParams(sp.toString());
-              next.delete("leg");
-              next.delete("outbound");
-              router.push(`/search?${next.toString()}`);
-            }}
-          />
-        )}
-
         {data && !data.ok && (
           <div className="bg-red-50 border border-red-200 text-red-700 rounded-xl px-4 py-3 text-sm">
             {data.error}

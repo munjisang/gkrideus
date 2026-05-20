@@ -14,7 +14,7 @@ export default function SearchLoading({ from, to }: { from: string; to: string }
 
   useEffect(() => {
     if (cached) return;
-    fetch("/lottie/train-loading.json", { cache: "force-cache" })
+    fetch("/lottie/searching.json", { cache: "force-cache" })
       .then((r) => r.json())
       .then((d: AnimationData) => {
         cached = d;
@@ -27,7 +27,7 @@ export default function SearchLoading({ from, to }: { from: string; to: string }
 
   return (
     <div className="fixed inset-0 z-40 bg-white flex flex-col items-center justify-center px-6">
-      <div className="w-56 h-56">
+      <div className="w-64 h-44">
         {data ? (
           <Lottie animationData={data} loop autoplay style={{ width: "100%", height: "100%" }} />
         ) : (
