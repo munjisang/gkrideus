@@ -235,14 +235,6 @@ const DICT: Record<string, Entry> = {
     ko: "예매를 확정 처리합니다. 진행할까요?",
     en: "Mark this booking as confirmed. Proceed?",
   },
-  "bk.pax.cancel": { ko: "취소", en: "Cancel" },
-  "bk.pax.cancelled": { ko: "취소됨", en: "Cancelled" },
-  "bk.pax.restore": { ko: "복원", en: "Restore" },
-  "bk.pax.lastCancelConfirm": {
-    ko: "마지막 인원입니다.\n예매 전체가 KORAIL에서 취소되며 복구되지 않습니다.\n진행할까요?",
-    en: "This is the last passenger.\nThe entire booking will be cancelled on Korail and cannot be undone.\nProceed?",
-  },
-  "bk.pax.section": { ko: "인원별 예매 관리", en: "Per-passenger management" },
 
   // complete
   "cp.done": { ko: "예매가 완료되었습니다", en: "Booking Complete" },

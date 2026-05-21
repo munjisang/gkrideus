@@ -64,11 +64,6 @@ export type Reservation = {
   /** 인원별 호차/좌석 — Korail의 `tk_seat_info` 배열을 통째로 보관.
    *  예약시 인원 순서(어른→어린이→경로→유아)와 매칭. */
   seats?: { carNo: string; seatNo: string }[];
-  /** 인원별 취소 트래킹 — 좌석이 있는 인원 순서(어른→어린이→경로→유아 중
-   *  좌석 가진 부분)에서의 0-based index 배열. Korail은 PNR 단위로만
-   *  cancel API를 제공하므로, 마지막 활성 인원이 취소되기 전까지는 우리
-   *  DB에만 기록한다. 옵셔널이므로 옛 데이터와 100% 호환. */
-  cancelledPaxIndexes?: number[];
   raw?: unknown;
 };
 
