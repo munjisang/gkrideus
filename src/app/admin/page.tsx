@@ -12,9 +12,8 @@ import { fmtDate, fmtDateTime, fmtKRW, fmtTime } from "../../lib/format";
 import type { Order, Reservation, TrainSchedule } from "../../lib/types";
 import AccountsTab from "./AccountsTab";
 import SettingsTab from "./SettingsTab";
-import BookingCard, {
-  type AdminActions,
-} from "../../components/bookings/BookingCard";
+import BookingCard from "../../components/bookings/BookingCard";
+import AdminBookingModal from "./AdminBookingModal";
 import { useI18n } from "../../lib/i18n";
 
 type AdminTab = "bookings" | "accounts" | "settings";
@@ -39,20 +38,18 @@ type BookingResult = {
   serverReply?: unknown;
 };
 
-/** Compute the admin-action flags + failure message for a single order
- *  and bundle them with the parent's handlers. Mirrors the logic that
- *  used to live inside the now-removed OrderCard. */
-function adminActionsFor(
+/** Derive the admin-action gating flags for one order. Used by the
+ *  popup to decide which action buttons to show. */
+function adminFlagsFor(
   order: Order,
-  ctx: {
-    busy: boolean;
-    result: BookingResult | undefined;
-    onBook: () => void;
-    onConfirm: () => void;
-    onCancel: () => void;
-    onDelete: () => void;
-  },
-): AdminActions {
+  ctx: { busy: boolean; result: BookingResult | undefined },
+): {
+  busy: boolean;
+  hasLiveReservation: boolean;
+  hasUnconfirmedLeg: boolean;
+  isExpired: boolean;
+  failureMessage?: string;
+} {
   const hasLiveReservation =
     (order.reservation?.mode === "live" &&
       !!order.reservation.rsvId &&
@@ -87,10 +84,6 @@ function adminActionsFor(
     hasUnconfirmedLeg,
     isExpired,
     failureMessage,
-    onBook: ctx.onBook,
-    onConfirm: ctx.onConfirm,
-    onCancel: ctx.onCancel,
-    onDelete: ctx.onDelete,
   };
 }
 
@@ -98,6 +91,7 @@ export default function AdminPage() {
   const { t, lang } = useI18n();
   const [tab, setTab] = useState<AdminTab>("bookings");
   const [orders, setOrders] = useState<Order[] | null>(null);
+  const [openId, setOpenId] = useState<string | null>(null);
   const [busyId, setBusyId] = useState<string | null>(null);
   const [resultBy, setResultBy] = useState<Record<string, BookingResult>>({});
   const [syncing, setSyncing] = useState(false);
@@ -603,14 +597,7 @@ export default function AdminPage() {
                 order={o}
                 lang={lang}
                 t={t}
-                adminActions={adminActionsFor(o, {
-                  busy: busyId === o.id,
-                  result: resultBy[o.id],
-                  onBook: () => onBook(o),
-                  onConfirm: () => onConfirm(o),
-                  onCancel: () => onCancel(o),
-                  onDelete: () => onDelete(o.id),
-                })}
+                onClick={() => setOpenId(o.id)}
               />
             ))}
           </div>
@@ -625,6 +612,34 @@ export default function AdminPage() {
               </button>
             </div>
           )}
+
+          {/* Popup with reconstructed detail + admin action buttons.
+           *  Looking up the order from state each render keeps the popup
+           *  in sync after sync/cancel/confirm patches. */}
+          {(() => {
+            const open = openId
+              ? (orders?.find((o) => o.id === openId) ?? null)
+              : null;
+            if (!open) return null;
+            const flags = adminFlagsFor(open, {
+              busy: busyId === open.id,
+              result: resultBy[open.id],
+            });
+            return (
+              <AdminBookingModal
+                order={open}
+                flags={flags}
+                onClose={() => setOpenId(null)}
+                onBook={() => onBook(open)}
+                onConfirm={() => onConfirm(open)}
+                onCancel={() => onCancel(open)}
+                onDelete={() => {
+                  onDelete(open.id);
+                  setOpenId(null);
+                }}
+              />
+            );
+          })()}
         </>
       )}
     </div>

@@ -2,9 +2,15 @@
 
 /**
  * Shared booking card used in both the user-facing /bookings list and
- * the admin "예매내역" tab. The visual layout is identical; admin gets
- * an optional row of actions (예매하기/확정/취소/삭제) plus failure
- * details rendered just under the standard footer.
+ * the admin "예매내역" tab. Visual layout is identical across the two;
+ * the caller decides what happens on click:
+ *
+ *   • `onClick` omitted   → card is a `<Link>` to /bookings/[id]
+ *                            (default user-facing behaviour).
+ *   • `onClick` function  → card is a `<button>` invoking that handler
+ *                            (used by admin to open a popup).
+ *   • `onClick === null`  → card is a plain inert `<div>` (for embedding
+ *                            inside a popup body without nested clicks).
  */
 import Link from "next/link";
 import { durationMinutes, fmtTime } from "../../lib/format";
@@ -27,30 +33,15 @@ export function rsvStatus(r: Reservation | undefined): StatusKey {
   return "pending";
 }
 
-/** Admin-only controls. When this prop is omitted, the card renders
- *  exactly the user-facing version. */
-export type AdminActions = {
-  busy?: boolean;
-  hasLiveReservation: boolean;
-  hasUnconfirmedLeg: boolean;
-  isExpired: boolean;
-  /** Top-of-action banner shown when the last live attempt failed. */
-  failureMessage?: string;
-  onBook: () => void;
-  onConfirm: () => void;
-  onCancel: () => void;
-  onDelete: () => void;
-};
-
 type Props = {
   order: Order;
   lang: Lang;
   t: (k: string, p?: Record<string, string | number>) => string;
-  /** When omitted, card is fully user-facing. */
-  adminActions?: AdminActions;
+  /** See file header for the three modes. */
+  onClick?: (() => void) | null;
 };
 
-export default function BookingCard({ order, lang, t, adminActions }: Props) {
+export default function BookingCard({ order, lang, t, onClick }: Props) {
   const outStatus = rsvStatus(order.reservation);
   const inStatus =
     order.tripType === "roundtrip" ? rsvStatus(order.inboundReservation) : null;
@@ -58,14 +49,15 @@ export default function BookingCard({ order, lang, t, adminActions }: Props) {
     outStatus === "cancelled" &&
     (inStatus === null || inStatus === "cancelled");
 
-  // Admin variant: card becomes a div (so action buttons inside can click
-  // without bubbling into a Link); the "view detail" affordance moves to
-  // a small text link in the footer.
-  const cardClass = `block rounded-xl border transition ${
+  const baseClass = `block w-full text-left rounded-xl border transition ${
     wholeCancelled
       ? "bg-slate-100 border-slate-200"
       : "bg-white border-slate-200 hover:border-slate-400"
   }`;
+  const inertClass = `block w-full rounded-xl border ${
+    wholeCancelled ? "bg-slate-100 border-slate-200" : "bg-white border-slate-200"
+  }`;
+
   const Inner = (
     <>
       <LegBlock
@@ -112,96 +104,23 @@ export default function BookingCard({ order, lang, t, adminActions }: Props) {
     </>
   );
 
-  if (adminActions) {
+  if (onClick === null) {
+    return <div className={inertClass}>{Inner}</div>;
+  }
+  if (typeof onClick === "function") {
     return (
-      <div className={cardClass}>
+      <button type="button" onClick={onClick} className={baseClass}>
         {Inner}
-        <AdminActionsBar
-          order={order}
-          actions={adminActions}
-        />
-      </div>
+      </button>
     );
   }
   return (
     <Link
       href={`/bookings/${encodeURIComponent(order.id)}`}
-      className={cardClass}
+      className={baseClass}
     >
       {Inner}
     </Link>
-  );
-}
-
-/* ──────────────────────────────────────────── Admin actions */
-
-function AdminActionsBar({
-  order,
-  actions,
-}: {
-  order: Order;
-  actions: AdminActions;
-}) {
-  return (
-    <div className="border-t border-slate-100">
-      {actions.failureMessage && (
-        <div className="px-4 py-2 text-[12px] text-red-700 bg-red-50 border-b border-red-100 break-words whitespace-pre-line">
-          {actions.failureMessage}
-        </div>
-      )}
-      {actions.hasUnconfirmedLeg && (
-        <button
-          type="button"
-          onClick={actions.onConfirm}
-          disabled={actions.busy}
-          className="w-full h-10 text-sm font-semibold text-emerald-700 bg-emerald-50 hover:bg-emerald-100 disabled:opacity-50 transition"
-        >
-          확정
-        </button>
-      )}
-      <div className="grid grid-cols-3 border-t border-slate-100">
-        {actions.hasLiveReservation ? (
-          <button
-            type="button"
-            onClick={actions.onCancel}
-            disabled={actions.busy}
-            className="h-11 text-sm font-medium text-red-700 bg-red-50 hover:bg-red-100 border-r border-slate-100 transition disabled:opacity-60"
-          >
-            {actions.busy ? "처리중…" : "예매취소"}
-          </button>
-        ) : actions.isExpired ? (
-          <button
-            disabled
-            className="h-11 text-sm font-medium text-slate-400 bg-slate-50 border-r border-slate-100 cursor-not-allowed"
-          >
-            기한만료
-          </button>
-        ) : (
-          <button
-            type="button"
-            onClick={actions.onBook}
-            disabled={actions.busy}
-            className="h-11 text-sm font-medium text-red-700 bg-red-50 hover:bg-red-100 border-r border-slate-100 transition disabled:opacity-60"
-          >
-            {actions.busy ? "예매중…" : "예매하기"}
-          </button>
-        )}
-        <Link
-          href={`/bookings/${encodeURIComponent(order.id)}`}
-          className="h-11 grid place-items-center text-sm text-slate-600 border-r border-slate-100 hover:bg-slate-50"
-        >
-          상세
-        </Link>
-        <button
-          type="button"
-          onClick={actions.onDelete}
-          disabled={actions.busy}
-          className="h-11 text-sm text-red-600 hover:bg-red-50 disabled:opacity-50"
-        >
-          삭제
-        </button>
-      </div>
-    </div>
   );
 }
 
