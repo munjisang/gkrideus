@@ -77,6 +77,96 @@ def _login_or_error() -> tuple[Any | None, dict[str, Any] | None]:
     return korail, None
 
 
+_KORAIL_MYTICKETLIST_URL = (
+    "https://smart.letskorail.com/classes/com.korail.mobile.myTicket.MyTicketList"
+)
+_KORAIL_TICKET_SEAT_URL = (
+    "https://smart.letskorail.com/classes/com.korail.mobile.refunds.SelTicketInfo"
+)
+
+
+def _fetch_my_tickets_with_seats(korail: Any) -> list[dict[str, Any]]:
+    """Replicate `korail.tickets()` but keep the FULL `tk_seat_info` array
+    per ticket. The upstream library only extracts the first seat, so a
+    booking for 3 passengers reports just one seat number.
+
+    Returns a list of dicts shaped:
+        {
+          trainNo, depDate, depTime, depCode, arrCode,
+          carNo, price, buyerName,
+          seats: [{carNo, seatNo}, ...],   # one entry per passenger
+        }
+    """
+    list_data = {
+        "Device": getattr(korail, "_device", ""),
+        "Version": getattr(korail, "_version", ""),
+        "Key": getattr(korail, "_key", ""),
+        "txtIndex": "1",
+        "h_page_no": "1",
+        "txtDeviceId": "",
+        "h_abrd_dt_from": "",
+        "h_abrd_dt_to": "",
+    }
+    try:
+        r = korail._session.get(_KORAIL_MYTICKETLIST_URL, params=list_data)
+        j = json.loads(r.text)
+    except Exception:  # noqa: BLE001
+        return []
+    if str(j.get("strResult", "")) != "SUCC":
+        return []
+
+    out: list[dict[str, Any]] = []
+    for info in j.get("reservation_list", []) or []:
+        ticket_list = info.get("ticket_list") or []
+        if not ticket_list:
+            continue
+        train_info = ticket_list[0].get("train_info") or []
+        if not train_info:
+            continue
+        ti = train_info[0]
+        sale_wct = str(ti.get("h_orgtk_wct_no") or "")
+        sale_dt = str(ti.get("h_orgtk_ret_sale_dt") or "")
+        sale_sq = str(ti.get("h_orgtk_sale_sqno") or "")
+        sale_pw = str(ti.get("h_orgtk_ret_pwd") or "")
+
+        # Pull all seats via the per-ticket detail call.
+        seat_data = {
+            "Device": getattr(korail, "_device", ""),
+            "Version": getattr(korail, "_version", ""),
+            "Key": getattr(korail, "_key", ""),
+            "h_orgtk_wct_no": sale_wct,
+            "h_orgtk_ret_sale_dt": sale_dt,
+            "h_orgtk_sale_sqno": sale_sq,
+            "h_orgtk_ret_pwd": sale_pw,
+        }
+        seats: list[dict[str, Any]] = []
+        try:
+            sr = korail._session.get(_KORAIL_TICKET_SEAT_URL, params=seat_data)
+            sj = json.loads(sr.text)
+        except Exception:  # noqa: BLE001
+            sj = {}
+        ticket_infos = (sj.get("ticket_infos") or {}).get("ticket_info") or []
+        if ticket_infos:
+            for s in ticket_infos[0].get("tk_seat_info") or []:
+                car = str(s.get("h_srcar_no") or ti.get("h_srcar_no") or "")
+                seat_no = str(s.get("h_seat_no") or "")
+                if seat_no:
+                    seats.append({"carNo": car, "seatNo": seat_no})
+
+        out.append({
+            "trainNo": str(ti.get("h_trn_no") or ""),
+            "depDate": str(ti.get("h_dpt_dt") or ""),
+            "depTime": str(ti.get("h_dpt_tm") or ""),
+            "depCode": str(ti.get("h_dpt_rs_stn_cd") or ""),
+            "arrCode": str(ti.get("h_arv_rs_stn_cd") or ""),
+            "carNo": str(ti.get("h_srcar_no") or ""),
+            "price": int(str(ti.get("h_rcvd_amt") or "0") or "0"),
+            "buyerName": str(ti.get("h_buy_ps_nm") or ""),
+            "seats": seats,
+        })
+    return out
+
+
 def _norm_train_no(v: Any) -> str:
     """Strip leading zeros so '001' == '1' across our DB and Korail."""
     s = str(v or "").strip()
@@ -143,25 +233,24 @@ def _process(body: dict[str, Any]) -> dict[str, Any]:
     active = [x for x in rsv_ids if x in active_set]
     disappeared = [x for x in rsv_ids if x not in active_set]
 
-    # ── tickets() — only if any rsvId disappeared AND we have matchers
+    # ── tickets — only if any rsvId disappeared AND we have matchers.
+    #
+    # The upstream library's `korail.tickets()` only extracts
+    # `tk_seat_info[0]` per ticket, losing per-passenger seats for
+    # multi-pax bookings. We do the two underlying calls ourselves and
+    # keep the full `tk_seat_info[]` array.
     ticketed: list[dict[str, Any]] = []
     cancelled: list[str] = []
     total_tickets = 0
     if disappeared and matchers:
         try:
-            tickets = korail.tickets()
+            tickets_with_seats = _fetch_my_tickets_with_seats(korail)
         except Exception:  # noqa: BLE001
-            tickets = []
-        total_tickets = len(tickets)
-        # Build ticket index by (train_no, dep_date, dep_time HHMM).
-        by_key: dict[tuple[str, str, str], Any] = {}
-        for t in tickets:
-            key = _ticket_key(
-                getattr(t, "train_no", ""),
-                getattr(t, "dep_date", ""),
-                getattr(t, "dep_time", ""),
-            )
-            # First-wins is fine — same key shouldn't appear twice.
+            tickets_with_seats = []
+        total_tickets = len(tickets_with_seats)
+        by_key: dict[tuple[str, str, str], dict[str, Any]] = {}
+        for t in tickets_with_seats:
+            key = _ticket_key(t.get("trainNo"), t.get("depDate"), t.get("depTime"))
             by_key.setdefault(key, t)
 
         for rid in disappeared:
@@ -174,16 +263,19 @@ def _process(body: dict[str, Any]) -> dict[str, Any]:
             if t is None:
                 cancelled.append(rid)
                 continue
+            seats = t.get("seats") or []
+            first = seats[0] if seats else {}
             ticketed.append({
                 "rsvId": rid,
-                "carNo": str(getattr(t, "car_no", "") or "") or None,
-                "seatNo": str(getattr(t, "seat_no", "") or "") or None,
-                "seatNoEnd": str(getattr(t, "seat_no_end", "") or "") or None,
-                "trainNo": str(getattr(t, "train_no", "") or ""),
-                "depDate": str(getattr(t, "dep_date", "") or ""),
-                "depTime": str(getattr(t, "dep_time", "") or ""),
-                "price": int(getattr(t, "price", 0) or 0),
-                "buyerName": str(getattr(t, "buyer_name", "") or ""),
+                "carNo": first.get("carNo") or t.get("carNo") or None,
+                "seatNo": first.get("seatNo") or None,
+                "seatNoEnd": None,  # library doesn't fill this reliably
+                "seats": seats,
+                "trainNo": t.get("trainNo", ""),
+                "depDate": t.get("depDate", ""),
+                "depTime": t.get("depTime", ""),
+                "price": t.get("price", 0),
+                "buyerName": t.get("buyerName", ""),
             })
     else:
         # No matchers → can't distinguish ticketed from cancelled. Be

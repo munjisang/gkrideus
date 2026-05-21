@@ -54,12 +54,16 @@ export type Reservation = {
   ticketed?: boolean;
   /** ISO timestamp when we observed the ticketing. */
   ticketedAt?: string;
-  /** 호차 — e.g. "04". Only present once ticketed. */
+  /** 호차 — e.g. "04". Only present once ticketed.
+   *  Legacy single-seat compat: matches `seats[0].carNo`. */
   carNo?: string;
-  /** 좌석번호 — e.g. "7A". */
+  /** 좌석번호 — e.g. "7A". Legacy: matches `seats[0].seatNo`. */
   seatNo?: string;
-  /** 다구간 좌석의 끝 좌석. 단일 좌석이면 undefined. */
+  /** 다구간 좌석의 끝 좌석 (라이브러리가 채우지 않으므로 보통 undefined). */
   seatNoEnd?: string;
+  /** 인원별 호차/좌석 — Korail의 `tk_seat_info` 배열을 통째로 보관.
+   *  예약시 인원 순서(어른→어린이→경로→유아)와 매칭. */
+  seats?: { carNo: string; seatNo: string }[];
   raw?: unknown;
 };
 

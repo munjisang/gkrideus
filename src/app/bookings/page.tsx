@@ -91,6 +91,7 @@ export default function BookingsListPage() {
           carNo: string | null;
           seatNo: string | null;
           seatNoEnd: string | null;
+          seats?: { carNo: string; seatNo: string }[];
         }[];
       };
       if (!j.ok) return;
@@ -119,6 +120,7 @@ export default function BookingsListPage() {
             carNo: tk.carNo ?? undefined,
             seatNo: tk.seatNo ?? undefined,
             seatNoEnd: tk.seatNoEnd ?? undefined,
+            seats: tk.seats && tk.seats.length > 0 ? tk.seats : undefined,
           };
         } else if (cancelled.has(e.rsvId)) {
           flagged = {

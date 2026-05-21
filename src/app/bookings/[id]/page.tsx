@@ -647,19 +647,29 @@ function LegBlock({
         </span>
       </div>
 
-      {/* Per-passenger 호차/좌석 assignments (only once ticketed). */}
-      {status === "ticketed" && rsv?.carNo && rsv?.seatNo && (
+      {/* Per-passenger 호차/좌석 assignments (only once ticketed).
+       *
+       * Preferred path: `rsv.seats` is the full per-passenger array from
+       * Korail's `tk_seat_info` (filled by our patched sync). Fall back
+       * to expanding a `seatNo`..`seatNoEnd` range for legacy rows that
+       * predate the seats-array migration. */}
+      {status === "ticketed" && (rsv?.seats?.length || (rsv?.carNo && rsv?.seatNo)) && (
         <ul className="mt-3 pt-3 border-t border-slate-100 space-y-1.5">
           {(() => {
             const seatedCount = paxLabels.filter((p) => p.isSeated).length;
-            const seats = expandSeats(rsv.seatNo, rsv.seatNoEnd, seatedCount);
-            const carText =
+            const seatList: { carNo: string; seatNo: string }[] =
+              rsv!.seats && rsv!.seats.length > 0
+                ? rsv!.seats
+                : expandSeats(rsv!.seatNo, rsv!.seatNoEnd, seatedCount).map(
+                    (s) => ({ carNo: rsv!.carNo ?? "", seatNo: s }),
+                  );
+            const fmtCar = (car: string) =>
               lang === "ko"
-                ? `${Number(rsv.carNo) || rsv.carNo}호`
-                : `Car ${Number(rsv.carNo) || rsv.carNo}`;
+                ? `${Number(car) || car}호`
+                : `Car ${Number(car) || car}`;
             let seatIdx = 0;
             return paxLabels.map((p) => {
-              const seat = p.isSeated ? seats[seatIdx++] : null;
+              const seat = p.isSeated ? seatList[seatIdx++] : null;
               return (
                 <li
                   key={p.label}
@@ -667,7 +677,7 @@ function LegBlock({
                 >
                   <span className="text-slate-600">{p.label}</span>
                   <span className="font-semibold text-violet-700 tabular-nums">
-                    {seat ? `${carText} ${seat}` : "—"}
+                    {seat ? `${fmtCar(seat.carNo)} ${seat.seatNo}` : "—"}
                   </span>
                 </li>
               );

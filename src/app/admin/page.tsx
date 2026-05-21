@@ -110,6 +110,7 @@ export default function AdminPage() {
           carNo: string | null;
           seatNo: string | null;
           seatNoEnd: string | null;
+          seats?: { carNo: string; seatNo: string }[];
         }[];
         error?: string;
         stage?: string;
@@ -146,6 +147,7 @@ export default function AdminPage() {
             carNo: tk.carNo ?? undefined,
             seatNo: tk.seatNo ?? undefined,
             seatNoEnd: tk.seatNoEnd ?? undefined,
+            seats: tk.seats && tk.seats.length > 0 ? tk.seats : undefined,
           };
         } else if (cancelled.has(entry.rsvId)) {
           flagged = {
