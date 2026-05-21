@@ -331,6 +331,17 @@ export default function OrderView() {
     };
     try {
       await saveOrder(order);
+      // Fire-and-forget admin notification — never blocks navigation
+      // and never surfaces to the user even if Discord is down.
+      // `keepalive: true` lets the request finish after we navigate.
+      void fetch("/api/notify/booking", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ orderId: order.id }),
+        keepalive: true,
+      }).catch(() => {
+        /* silent — notifications are best-effort */
+      });
       router.push(`/order/complete?id=${encodeURIComponent(order.id)}`);
     } catch (err) {
       setError(t("ord.err.saveFail", { m: (err as Error).message }));
