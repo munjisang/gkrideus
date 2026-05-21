@@ -132,3 +132,11 @@ on conflict (service, account_id) do nothing;
 -- 결제수단 저장 (신용카드 / Paypal). 옛 row는 null이므로 nullable로 추가.
 alter table public.orders
     add column if not exists pay_method text;
+
+
+-- 계정 정렬 우선순위 (작은 값이 먼저 시도/표시). 옛 row는 0으로 채워짐.
+alter table public.service_accounts
+    add column if not exists display_order int not null default 0;
+
+create index if not exists service_accounts_service_display_order_idx
+    on public.service_accounts (service, display_order);

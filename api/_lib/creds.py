@@ -48,22 +48,31 @@ def _supabase_get(path: str) -> list[dict] | None:
 
 
 def _from_service_accounts(service: str) -> Tuple[str | None, str | None]:
+    rows = _all_enabled_service_accounts(service)
+    if not rows:
+        return None, None
+    aid = (rows[0].get("account_id") or "").strip()
+    apw = (rows[0].get("account_password") or "").strip()
+    return (aid or None), (apw or None)
+
+
+def _all_enabled_service_accounts(service: str) -> list[dict]:
+    """All enabled accounts for the given service, ordered by the
+    admin-configured priority. Empty list when none configured (or when
+    Supabase env is missing). The retry-on-fail logic in reserve.py
+    iterates this list."""
     qs = urllib.parse.urlencode(
         {
             "service": f"eq.{service}",
             "enabled": "eq.true",
-            "select": "account_id,account_password,updated_at",
-            "order": "updated_at.desc",
-            "limit": "1",
+            "select": "account_id,account_password,display_order,updated_at",
+            # display_order asc → smallest priority first.
+            # updated_at desc as a stable tiebreaker.
+            "order": "display_order.asc,updated_at.desc",
         }
     )
     rows = _supabase_get(f"/rest/v1/service_accounts?{qs}")
-    if not rows:
-        return None, None
-    row = rows[0]
-    aid = (row.get("account_id") or "").strip()
-    apw = (row.get("account_password") or "").strip()
-    return (aid or None), (apw or None)
+    return rows or []
 
 
 def _from_legacy_korail_creds() -> Tuple[str | None, str | None]:
@@ -99,3 +108,25 @@ def load_service_creds(service: str) -> Tuple[str | None, str | None]:
 def load_korail_creds() -> Tuple[str | None, str | None]:
     """Backwards-compatible alias for the Korail-specific call sites."""
     return load_service_creds("korail")
+
+
+def load_service_creds_all(service: str) -> list[Tuple[str, str]]:
+    """Return EVERY enabled credential for the given service, ordered by
+    `display_order` (admin-set priority). Used by retry-on-fail logic in
+    reserve.py.
+
+    Falls back to a single-credential list built from the legacy table
+    and env vars when the new `service_accounts` table is empty, so old
+    deployments continue to work."""
+    rows = _all_enabled_service_accounts(service)
+    pairs: list[Tuple[str, str]] = []
+    for r in rows:
+        aid = (r.get("account_id") or "").strip()
+        apw = (r.get("account_password") or "").strip()
+        if aid and apw:
+            pairs.append((aid, apw))
+    if pairs:
+        return pairs
+    # Fallback path matches load_service_creds() for backward compat.
+    aid, apw = load_service_creds(service)
+    return [(aid, apw)] if aid and apw else []

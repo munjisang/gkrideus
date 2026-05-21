@@ -24,7 +24,11 @@ export async function PATCH(
     );
   }
   const { id } = await ctx.params;
-  let body: { accountPassword?: string; enabled?: boolean } = {};
+  let body: {
+    accountPassword?: string;
+    enabled?: boolean;
+    displayOrder?: number;
+  } = {};
   try {
     body = await req.json();
   } catch {
@@ -43,6 +47,9 @@ export async function PATCH(
   }
   if (typeof body.enabled === "boolean") {
     patch.enabled = body.enabled;
+  }
+  if (typeof body.displayOrder === "number" && Number.isFinite(body.displayOrder)) {
+    patch.display_order = Math.max(0, Math.floor(body.displayOrder));
   }
   // Don't issue a no-op UPDATE.
   if (Object.keys(patch).length <= 1) {

@@ -14,6 +14,7 @@ type AccountRow = {
   account_id: string;
   account_password: string;
   enabled: boolean;
+  display_order: number;
   created_at: string;
   updated_at: string;
 };
@@ -33,7 +34,7 @@ export async function GET() {
   }
   const res = await supaFetch(
     cfg,
-    "/rest/v1/service_accounts?select=id,service,account_id,enabled,created_at,updated_at&order=service.asc,created_at.asc",
+    "/rest/v1/service_accounts?select=id,service,account_id,enabled,display_order,created_at,updated_at&order=service.asc,display_order.asc,created_at.asc",
   );
   if (!res.ok) {
     const text = await res.text();
@@ -120,6 +121,7 @@ export async function POST(req: Request) {
           service: rows[0].service,
           account_id: rows[0].account_id,
           enabled: rows[0].enabled,
+          display_order: rows[0].display_order,
           created_at: rows[0].created_at,
           updated_at: rows[0].updated_at,
         }

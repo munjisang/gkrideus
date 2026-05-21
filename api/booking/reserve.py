@@ -35,7 +35,10 @@ for path in (
     if path not in sys.path:
         sys.path.insert(0, path)
 
-from _lib.creds import load_korail_creds  # type: ignore  # noqa: E402
+from _lib.creds import (  # type: ignore  # noqa: E402
+    load_korail_creds,
+    load_service_creds_all,
+)
 
 
 def _seat_option(seat_type: str):
@@ -149,8 +152,14 @@ def _normalize_time(t: str) -> str:
     return digits.ljust(6, "0")[:6]
 
 
-def _login_or_error() -> tuple[Any | None, dict[str, Any] | None]:
-    korail_id, korail_pw = load_korail_creds()
+def _login_or_error(
+    korail_id: str | None = None, korail_pw: str | None = None
+) -> tuple[Any | None, dict[str, Any] | None]:
+    # When explicit creds aren't passed, fall back to the legacy single-
+    # account lookup (env / first-enabled DB row). The retry loop in
+    # _process passes creds for each attempt explicitly.
+    if not korail_id or not korail_pw:
+        korail_id, korail_pw = load_korail_creds()
     if not korail_id or not korail_pw:
         return None, {
             "ok": False,
@@ -215,16 +224,22 @@ def _login_or_error() -> tuple[Any | None, dict[str, Any] | None]:
     return korail, None
 
 
-def _process(body: dict[str, Any]) -> dict[str, Any]:
-    required = ["depName", "arrName", "date", "time", "trainNo", "passengers", "seatType"]
-    missing = [k for k in required if not body.get(k)]
-    if missing:
-        return {"ok": False, "stage": "input", "error": f"missing keys: {missing}"}
+"""Stages where retrying with another account can't possibly help —
+   input errors are deterministic, match failures hit the same train
+   list regardless of who's logged in, and the dry-run path doesn't
+   even touch Korail credentials beyond login."""
+_NON_RETRY_STAGES = {"input", "import", "match", "dry-run"}
 
-    env_live = os.environ.get("KORAIL_RESERVE_LIVE") == "1"
-    live = env_live and bool(body.get("live"))
 
-    korail, err = _login_or_error()
+def _attempt_with_account(
+    body: dict[str, Any],
+    korail_id: str,
+    korail_pw: str,
+    live: bool,
+    env_live: bool,
+) -> dict[str, Any]:
+    """Run the full search + reserve flow with one specific account."""
+    korail, err = _login_or_error(korail_id, korail_pw)
     if err is not None or korail is None:
         return err or {"ok": False, "stage": "login", "error": "unknown login failure"}
 
@@ -291,6 +306,61 @@ def _process(body: dict[str, Any]) -> dict[str, Any]:
         "requestedLive": True,
         "train": train_dict,
         "reservation": _to_dict(rsv, _RESERVATION_KEYS),
+    }
+
+
+def _process(body: dict[str, Any]) -> dict[str, Any]:
+    required = ["depName", "arrName", "date", "time", "trainNo", "passengers", "seatType"]
+    missing = [k for k in required if not body.get(k)]
+    if missing:
+        return {"ok": False, "stage": "input", "error": f"missing keys: {missing}"}
+
+    env_live = os.environ.get("KORAIL_RESERVE_LIVE") == "1"
+    live = env_live and bool(body.get("live"))
+
+    accounts = load_service_creds_all("korail")
+    if not accounts:
+        return {
+            "ok": False,
+            "stage": "env",
+            "error": "Korail 계정이 설정되어 있지 않습니다.",
+        }
+
+    attempts: list[dict[str, Any]] = []
+    for idx, (aid, pw) in enumerate(accounts):
+        result = _attempt_with_account(body, aid, pw, live, env_live)
+        # Successful (live reservation or dry-run) → return immediately.
+        if result.get("ok"):
+            result["accountIndex"] = idx
+            result["accountId"] = aid
+            result["accountTried"] = idx + 1
+            if attempts:
+                # Surface prior failures so the admin can see which
+                # accounts were retried before success.
+                result["priorAttempts"] = attempts
+            return result
+        # Track this failure.
+        attempts.append({
+            "accountIndex": idx,
+            "accountId": aid,
+            "stage": result.get("stage"),
+            "error": result.get("error"),
+        })
+        # Deterministic failure → no point retrying with other accounts.
+        if result.get("stage") in _NON_RETRY_STAGES:
+            result["attempts"] = attempts
+            result["accountId"] = aid
+            return result
+
+    # Every enabled account failed in a retry-able way.
+    last = attempts[-1] if attempts else {"stage": "unknown", "error": "no attempts"}
+    return {
+        "ok": False,
+        "stage": "all-accounts-failed",
+        "error": f"등록된 {len(accounts)}개 계정 모두 예매 실패 — 마지막: {last.get('error')}",
+        "lastStage": last.get("stage"),
+        "lastError": last.get("error"),
+        "attempts": attempts,
     }
 
 

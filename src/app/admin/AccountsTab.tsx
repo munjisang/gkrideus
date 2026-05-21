@@ -1,15 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
-
-type Account = {
-  id: string;
-  service: "korail" | "srt";
-  account_id: string;
-  enabled: boolean;
-  created_at: string;
-  updated_at: string;
-};
+import { useEffect, useMemo, useState } from "react";
 
 type ServiceKey = "korail" | "srt";
 
@@ -17,13 +8,28 @@ const SERVICE_LABEL: Record<ServiceKey, string> = {
   korail: "코레일",
   srt: "SRT",
 };
+const SERVICES: ServiceKey[] = ["korail", "srt"];
+
+type Account = {
+  id: string;
+  service: ServiceKey;
+  account_id: string;
+  enabled: boolean;
+  display_order: number;
+  created_at: string;
+  updated_at: string;
+};
 
 export default function AccountsTab() {
   const [accounts, setAccounts] = useState<Account[] | null>(null);
   const [err, setErr] = useState<string | null>(null);
   const [busyId, setBusyId] = useState<string | null>(null);
   const [adding, setAdding] = useState(false);
-  const [changingPwOf, setChangingPwOf] = useState<Account | null>(null);
+  const [subTab, setSubTab] = useState<ServiceKey>("korail");
+
+  // Drag tracking — index within the current sub-tab's filtered list.
+  const [dragFrom, setDragFrom] = useState<number | null>(null);
+  const [dragOver, setDragOver] = useState<number | null>(null);
 
   async function load() {
     setErr(null);
@@ -48,6 +54,13 @@ export default function AccountsTab() {
     void load();
   }, []);
 
+  /** Accounts visible in the current sub-tab. Pre-sorted by display_order
+   *  on the server, then by created_at as a tiebreaker. */
+  const tabAccounts = useMemo(() => {
+    if (!accounts) return [];
+    return accounts.filter((a) => a.service === subTab);
+  }, [accounts, subTab]);
+
   async function toggleEnabled(acct: Account) {
     setBusyId(acct.id);
     try {
@@ -68,7 +81,11 @@ export default function AccountsTab() {
   }
 
   async function removeAccount(acct: Account) {
-    if (!confirm(`${SERVICE_LABEL[acct.service]} 계정 ${acct.account_id}을(를) 삭제할까요?`)) {
+    if (
+      !confirm(
+        `${SERVICE_LABEL[acct.service]} 계정 ${acct.account_id}을(를) 삭제할까요?`,
+      )
+    ) {
       return;
     }
     setBusyId(acct.id);
@@ -87,9 +104,68 @@ export default function AccountsTab() {
     }
   }
 
+  /** Commit a reorder: PATCH every row in the tab whose display_order
+   *  shifted. Fire concurrently for speed, then reload once. */
+  async function commitReorder(reordered: Account[]) {
+    const patches = reordered
+      .map((a, i) => ({ a, newOrder: i }))
+      .filter(({ a, newOrder }) => a.display_order !== newOrder);
+    if (patches.length === 0) return;
+    try {
+      await Promise.all(
+        patches.map(({ a, newOrder }) =>
+          fetch(`/api/admin/accounts/${a.id}`, {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ displayOrder: newOrder }),
+          }),
+        ),
+      );
+      await load();
+    } catch (e) {
+      alert(`순서 저장 실패: ${(e as Error).message}`);
+      await load();
+    }
+  }
+
+  function onDragStart(idx: number) {
+    setDragFrom(idx);
+  }
+  function onDragOverIdx(idx: number, e: React.DragEvent) {
+    e.preventDefault();
+    if (dragFrom === null || dragFrom === idx) return;
+    setDragOver(idx);
+  }
+  function onDragLeaveIdx(idx: number) {
+    if (dragOver === idx) setDragOver(null);
+  }
+  function onDrop(idx: number, e: React.DragEvent) {
+    e.preventDefault();
+    if (dragFrom === null || dragFrom === idx) {
+      setDragFrom(null);
+      setDragOver(null);
+      return;
+    }
+    const next = [...tabAccounts];
+    const [moved] = next.splice(dragFrom, 1);
+    next.splice(idx, 0, moved);
+    // Optimistic local update — full list with this tab's slice swapped.
+    if (accounts) {
+      const others = accounts.filter((a) => a.service !== subTab);
+      setAccounts([...others, ...next]);
+    }
+    setDragFrom(null);
+    setDragOver(null);
+    void commitReorder(next);
+  }
+  function onDragEnd() {
+    setDragFrom(null);
+    setDragOver(null);
+  }
+
   return (
     <section className="bg-white border border-slate-200 rounded-xl p-5">
-      <div className="flex items-center justify-between mb-4">
+      <div className="flex items-center justify-between mb-4 gap-2 flex-wrap">
         <h2 className="font-semibold text-slate-800">계정 설정</h2>
         <button
           onClick={() => setAdding(true)}
@@ -99,6 +175,37 @@ export default function AccountsTab() {
         </button>
       </div>
 
+      {/* Service sub-tabs */}
+      <nav className="flex gap-1 border-b border-slate-200 mb-3">
+        {SERVICES.map((s) => {
+          const active = s === subTab;
+          const count = (accounts ?? []).filter((a) => a.service === s).length;
+          return (
+            <button
+              key={s}
+              onClick={() => setSubTab(s)}
+              className={`relative h-9 px-3 text-sm font-semibold transition ${
+                active
+                  ? "text-slate-900"
+                  : "text-slate-400 hover:text-slate-700"
+              }`}
+            >
+              {SERVICE_LABEL[s]}
+              <span
+                className={`ml-1 inline-block text-[11px] font-medium tabular-nums ${
+                  active ? "text-slate-500" : "text-slate-400"
+                }`}
+              >
+                {count}
+              </span>
+              {active && (
+                <span className="absolute left-2 right-2 -bottom-px h-0.5 bg-slate-900 rounded-full" />
+              )}
+            </button>
+          );
+        })}
+      </nav>
+
       {err && (
         <div className="mb-3 text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg px-3 py-2">
           {err}
@@ -107,56 +214,88 @@ export default function AccountsTab() {
 
       {accounts == null ? (
         <div className="py-8 text-center text-sm text-slate-400">불러오는 중…</div>
-      ) : accounts.length === 0 ? (
+      ) : tabAccounts.length === 0 ? (
         <div className="py-10 text-center text-sm text-slate-400">
-          등록된 계정이 없습니다.
+          {SERVICE_LABEL[subTab]} 계정이 없습니다.
           <br />
-          <span className="text-xs">우측 상단 "계정 추가"를 눌러 등록하세요.</span>
+          <span className="text-xs">우측 상단 &ldquo;계정 추가&rdquo;를 눌러 등록하세요.</span>
         </div>
       ) : (
-        <ul className="divide-y divide-slate-100">
-          {accounts.map((acct) => (
-            <li
-              key={acct.id}
-              className="flex items-center gap-3 py-3 flex-wrap sm:flex-nowrap"
-            >
-              <ServiceBadge service={acct.service} />
-              <span className="flex-1 min-w-0 text-sm font-medium text-slate-900 truncate">
-                {acct.account_id}
-              </span>
-              <button
-                onClick={() => setChangingPwOf(acct)}
-                disabled={busyId === acct.id}
-                className="h-9 px-3 rounded-lg border border-slate-200 text-sm font-medium text-slate-700 hover:border-slate-300 disabled:opacity-50 transition"
-              >
-                비밀번호 변경
-              </button>
-              <Toggle
-                checked={acct.enabled}
-                disabled={busyId === acct.id}
-                onChange={() => toggleEnabled(acct)}
-                label="사용 여부"
-              />
-              <button
-                onClick={() => removeAccount(acct)}
-                disabled={busyId === acct.id}
-                className="h-9 w-9 grid place-items-center rounded-lg text-slate-400 hover:text-red-600 hover:bg-red-50 disabled:opacity-50 transition"
-                aria-label="삭제"
-                title="삭제"
-              >
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M3 6h18" />
-                  <path d="M8 6V4a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2" />
-                  <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" />
-                </svg>
-              </button>
-            </li>
-          ))}
-        </ul>
+        <>
+          <p className="mb-2 text-[11px] text-slate-400">
+            드래그해서 순서를 바꾸면 예매 시 위에서부터 차례로 시도합니다.
+          </p>
+          <ul className="divide-y divide-slate-100">
+            {tabAccounts.map((acct, idx) => {
+              const isDragging = dragFrom === idx;
+              const isDragOver = dragOver === idx && dragFrom !== idx;
+              return (
+                <li
+                  key={acct.id}
+                  draggable
+                  onDragStart={() => onDragStart(idx)}
+                  onDragOver={(e) => onDragOverIdx(idx, e)}
+                  onDragLeave={() => onDragLeaveIdx(idx)}
+                  onDrop={(e) => onDrop(idx, e)}
+                  onDragEnd={onDragEnd}
+                  className={`flex items-center gap-3 py-3 px-2 -mx-2 rounded transition flex-wrap sm:flex-nowrap ${
+                    isDragging ? "opacity-40" : ""
+                  } ${
+                    isDragOver
+                      ? "bg-sky-50 ring-2 ring-sky-200"
+                      : "hover:bg-slate-50"
+                  }`}
+                >
+                  {/* Drag handle */}
+                  <span
+                    className="shrink-0 cursor-grab active:cursor-grabbing text-slate-300 hover:text-slate-500 select-none"
+                    aria-label="순서 변경"
+                    title="드래그해서 순서 변경"
+                  >
+                    <svg width="14" height="20" viewBox="0 0 14 20" fill="currentColor" aria-hidden>
+                      <circle cx="4" cy="4" r="1.5" />
+                      <circle cx="10" cy="4" r="1.5" />
+                      <circle cx="4" cy="10" r="1.5" />
+                      <circle cx="10" cy="10" r="1.5" />
+                      <circle cx="4" cy="16" r="1.5" />
+                      <circle cx="10" cy="16" r="1.5" />
+                    </svg>
+                  </span>
+                  <span className="shrink-0 inline-flex items-center justify-center w-7 h-6 text-[11px] font-bold rounded bg-slate-100 text-slate-500 tabular-nums">
+                    {idx + 1}
+                  </span>
+                  <span className="flex-1 min-w-0 text-sm font-medium text-slate-900 truncate">
+                    {acct.account_id}
+                  </span>
+                  <Toggle
+                    checked={acct.enabled}
+                    disabled={busyId === acct.id}
+                    onChange={() => toggleEnabled(acct)}
+                    label="사용 여부"
+                  />
+                  <button
+                    onClick={() => removeAccount(acct)}
+                    disabled={busyId === acct.id}
+                    className="h-9 w-9 grid place-items-center rounded-lg text-slate-400 hover:text-red-600 hover:bg-red-50 disabled:opacity-50 transition"
+                    aria-label="삭제"
+                    title="삭제"
+                  >
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M3 6h18" />
+                      <path d="M8 6V4a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2" />
+                      <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" />
+                    </svg>
+                  </button>
+                </li>
+              );
+            })}
+          </ul>
+        </>
       )}
 
       {adding && (
         <AddAccountModal
+          defaultService={subTab}
           onClose={() => setAdding(false)}
           onSaved={async () => {
             setAdding(false);
@@ -164,32 +303,7 @@ export default function AccountsTab() {
           }}
         />
       )}
-
-      {changingPwOf && (
-        <ChangePasswordModal
-          account={changingPwOf}
-          onClose={() => setChangingPwOf(null)}
-          onSaved={async () => {
-            setChangingPwOf(null);
-            await load();
-          }}
-        />
-      )}
     </section>
-  );
-}
-
-function ServiceBadge({ service }: { service: ServiceKey }) {
-  const cls =
-    service === "korail"
-      ? "bg-sky-50 text-sky-700 border-sky-200"
-      : "bg-fuchsia-50 text-fuchsia-700 border-fuchsia-200";
-  return (
-    <span
-      className={`shrink-0 inline-flex items-center justify-center w-16 h-7 text-xs font-bold rounded border ${cls}`}
-    >
-      {SERVICE_LABEL[service]}
-    </span>
   );
 }
 
@@ -225,7 +339,7 @@ function Toggle({
   );
 }
 
-/* ─────────────────────────────────────────── Modals */
+/* ─────────────────────────────────────────── Add Account Modal */
 
 function ModalShell({
   title,
@@ -265,13 +379,15 @@ function ModalShell({
 }
 
 function AddAccountModal({
+  defaultService,
   onClose,
   onSaved,
 }: {
+  defaultService: ServiceKey;
   onClose: () => void;
   onSaved: () => void;
 }) {
-  const [service, setService] = useState<ServiceKey>("korail");
+  const [service, setService] = useState<ServiceKey>(defaultService);
   const [accountId, setAccountId] = useState("");
   const [accountPassword, setAccountPassword] = useState("");
   const [enabled, setEnabled] = useState(true);
@@ -313,7 +429,7 @@ function AddAccountModal({
         <div>
           <span className="text-xs font-medium text-slate-500 block mb-1">서비스</span>
           <div className="flex gap-2">
-            {(["korail", "srt"] as ServiceKey[]).map((s) => {
+            {SERVICES.map((s) => {
               const active = service === s;
               return (
                 <button
@@ -379,87 +495,6 @@ function AddAccountModal({
           }`}
         >
           {submitting ? "추가 중…" : "추가"}
-        </button>
-      </div>
-    </ModalShell>
-  );
-}
-
-function ChangePasswordModal({
-  account,
-  onClose,
-  onSaved,
-}: {
-  account: Account;
-  onClose: () => void;
-  onSaved: () => void;
-}) {
-  const [password, setPassword] = useState("");
-  const [submitting, setSubmitting] = useState(false);
-  const [err, setErr] = useState<string | null>(null);
-
-  async function save() {
-    setErr(null);
-    setSubmitting(true);
-    try {
-      const res = await fetch(`/api/admin/accounts/${account.id}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ accountPassword: password }),
-      });
-      const j = (await res.json()) as { ok: boolean; error?: string };
-      if (!res.ok || !j.ok) {
-        setErr(j.error ?? `HTTP ${res.status}`);
-        setSubmitting(false);
-        return;
-      }
-      onSaved();
-    } catch (e) {
-      setErr((e as Error).message);
-      setSubmitting(false);
-    }
-  }
-
-  return (
-    <ModalShell title="비밀번호 변경" onClose={onClose}>
-      <div className="px-5 py-3 space-y-3">
-        <div className="text-xs text-slate-500">
-          {SERVICE_LABEL[account.service]} · {account.account_id}
-        </div>
-        <label className="block">
-          <span className="text-xs font-medium text-slate-500 mb-1 block">새 비밀번호</span>
-          <input
-            type="password"
-            autoFocus
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            autoComplete="off"
-            className="h-11 px-3 rounded-lg border border-slate-200 bg-white w-full focus:outline-none focus:ring-2 focus:ring-sky-300"
-          />
-        </label>
-        {err && (
-          <div className="text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg px-3 py-2">
-            {err}
-          </div>
-        )}
-      </div>
-      <div className="px-5 pt-2 pb-5 flex gap-2">
-        <button
-          onClick={onClose}
-          className="flex-1 h-11 rounded-xl border border-slate-200 bg-white text-slate-700 font-semibold"
-        >
-          취소
-        </button>
-        <button
-          onClick={save}
-          disabled={!password.trim() || submitting}
-          className={`flex-1 h-11 rounded-xl font-semibold transition ${
-            password.trim() && !submitting
-              ? "bg-slate-900 hover:bg-slate-800 text-white"
-              : "bg-slate-200 text-slate-400 cursor-not-allowed"
-          }`}
-        >
-          {submitting ? "저장 중…" : "변경"}
         </button>
       </div>
     </ModalShell>
