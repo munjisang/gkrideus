@@ -362,11 +362,20 @@ export default function BookingDetailPage({
                 value={krwL(totalNetPay, lang)}
               />
               <KvLine label={t("ord.fare.fee")} value={krwL(totalFee, lang)} />
-              <KvLine label={t("ord.total")} value={krwL(grandTotal, lang)} />
+              <KvLine label={t("bk.payAmount")} value={krwL(grandTotal, lang)} />
               <KvLine
                 label={t("bk.cancelFee")}
                 value={`-${krwL(cancelFee, lang)}`}
               />
+              {/* 환불 합계 — mirrors the 결제정보 section's bold sky line. */}
+              <div className="pt-2 mt-1 border-t border-slate-100 flex items-center justify-between">
+                <span className="text-sm font-semibold text-slate-800">
+                  {t("bk.cancelAmount")}
+                </span>
+                <span className="text-base font-bold text-sky-700 tabular-nums">
+                  {krwL(Math.max(0, grandTotal - cancelFee), lang)}
+                </span>
+              </div>
             </div>
           </section>
         )}

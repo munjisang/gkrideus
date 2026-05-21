@@ -223,6 +223,8 @@ const DICT: Record<string, Entry> = {
   "bk.pay.at": { ko: "결제일시", en: "Paid at" },
   "bk.cancel.at": { ko: "취소일시", en: "Cancelled at" },
   "bk.cancelFee": { ko: "취소수수료(10%)", en: "Cancellation fee (10%)" },
+  "bk.payAmount": { ko: "결제금액", en: "Paid amount" },
+  "bk.cancelAmount": { ko: "취소금액", en: "Refund amount" },
   "bk.payMethod.card": { ko: "신용카드", en: "Credit card" },
   "bk.payMethod.paypal": { ko: "Paypal", en: "Paypal" },
   "bk.confirm": { ko: "확정", en: "Confirm" },
