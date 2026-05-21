@@ -153,6 +153,7 @@ const DICT: Record<string, Entry> = {
   "ord.perPerson": { ko: "1인", en: "/person" },
   "ord.noTrain": { ko: "선택된 열차 정보가 없습니다.", en: "No train selected." },
   "ord.toHome": { ko: "처음으로", en: "Home" },
+  "ord.toBookings": { ko: "예매내역 가기", en: "View my bookings" },
   "ord.err.name": { ko: "예약자 이름을 입력해주세요.", en: "Enter the booker's name." },
   "ord.err.email": {
     ko: "예약자 이메일이 올바르지 않습니다.",
@@ -210,6 +211,7 @@ const DICT: Record<string, Entry> = {
   "bk.cancelFail": { ko: "취소 실패: {m}", en: "Cancel failed: {m}" },
   "bk.cancelling": { ko: "취소 중…", en: "Cancelling…" },
   "bk.totalShort": { ko: "총 {m}", en: "Total {m}" },
+  "bk.legPax": { ko: "총인원 {n}명", en: "{n} pax" },
 
   // complete
   "cp.done": { ko: "예매가 완료되었습니다", en: "Booking Complete" },

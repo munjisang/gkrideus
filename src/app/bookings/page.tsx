@@ -1,40 +1,120 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { loadOrders } from "../../lib/storage";
-import { fmtTime } from "../../lib/format";
-import { fmtDateDots, krwL } from "../../lib/format-i18n";
+import { loadOrders, updateOrder } from "../../lib/storage";
+import { fmtTime, durationMinutes } from "../../lib/format";
+import { fmtDateDots, durationL, krwL } from "../../lib/format-i18n";
+import { legFares } from "../../lib/fareCalc";
 import { useI18n, stationLabel, type Lang } from "../../lib/i18n";
 import { TrainLogo } from "../../components/TrainLogo";
-import type { Order, Reservation, TrainSchedule } from "../../lib/types";
+import type { Order, Reservation, SeatType, TrainSchedule } from "../../lib/types";
 
 type StatusKey = "live" | "dry" | "cancelled";
 
-function statusOf(o: Order): StatusKey {
-  const live = o.reservation?.mode === "live" && !!o.reservation.rsvId;
-  if (live) return "live";
-  if (o.reservation?.mode === "dry") return "dry";
+function rsvStatus(r: Reservation | undefined): StatusKey {
+  if (r?.mode === "live" && r.rsvId) return "live";
+  if (r?.mode === "dry") return "dry";
   return "cancelled";
 }
 
 export default function BookingsListPage() {
   const { t, lang } = useI18n();
   const [orders, setOrders] = useState<Order[] | null>(null);
+  const [syncing, setSyncing] = useState(false);
+  const initialSyncRef = useRef(false);
 
+  /** Pull orders from storage and re-sort newest-first. */
+  async function refresh() {
+    try {
+      const rows = await loadOrders();
+      rows.sort((a, b) => (b.createdAt || "").localeCompare(a.createdAt || ""));
+      setOrders(rows);
+      return rows;
+    } catch {
+      setOrders([]);
+      return [];
+    }
+  }
+
+  /**
+   * Ask the server which live reservations Korail still recognises; clear
+   * any that have disappeared (expired / cancelled / paid-out). Mirrors
+   * the admin sync logic but runs silently from the user view.
+   */
+  async function syncReservations(currentOrders: Order[]) {
+    const live: { orderId: string; leg: "out" | "in"; rsvId: string }[] = [];
+    for (const o of currentOrders) {
+      if (o.reservation?.mode === "live" && o.reservation.rsvId)
+        live.push({ orderId: o.id, leg: "out", rsvId: o.reservation.rsvId });
+      if (o.inboundReservation?.mode === "live" && o.inboundReservation.rsvId)
+        live.push({ orderId: o.id, leg: "in", rsvId: o.inboundReservation.rsvId });
+    }
+    if (live.length === 0) return;
+    setSyncing(true);
+    try {
+      const res = await fetch("/api/booking/sync", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ rsvIds: live.map((x) => x.rsvId) }),
+      });
+      const j = (await res.json()) as {
+        ok: boolean;
+        cancelled?: string[];
+      };
+      if (!j.ok) return;
+      const cancelled = new Set(j.cancelled ?? []);
+      if (cancelled.size === 0) return;
+      // Group cleared legs by order so we hit storage once per order.
+      const patches = new Map<string, Partial<Order>>();
+      for (const e of live) {
+        if (!cancelled.has(e.rsvId)) continue;
+        const cur = patches.get(e.orderId) ?? {};
+        if (e.leg === "out") cur.reservation = undefined;
+        else cur.inboundReservation = undefined;
+        patches.set(e.orderId, cur);
+      }
+      for (const [id, p] of patches) await updateOrder(id, p);
+      // Refresh local state so the new status renders.
+      await refresh();
+    } catch {
+      /* silent — sync is best-effort UX */
+    } finally {
+      setSyncing(false);
+    }
+  }
+
+  // Initial load + one-shot sync on first render.
   useEffect(() => {
-    loadOrders()
-      .then((rows) => {
-        // Newest first.
-        rows.sort((a, b) => (b.createdAt || "").localeCompare(a.createdAt || ""));
-        setOrders(rows);
-      })
-      .catch(() => setOrders([]));
+    (async () => {
+      const rows = await refresh();
+      if (initialSyncRef.current) return;
+      initialSyncRef.current = true;
+      await syncReservations(rows);
+    })();
+    // Reload list when storage changes in another tab.
+    function onStorage(e: StorageEvent) {
+      if (e.key === "korail.orders") void refresh();
+    }
+    // Reload + re-sync when the user comes back to the tab.
+    function onVisible() {
+      if (document.visibilityState !== "visible") return;
+      void (async () => {
+        const rows = await refresh();
+        await syncReservations(rows);
+      })();
+    }
+    window.addEventListener("storage", onStorage);
+    document.addEventListener("visibilitychange", onVisible);
+    return () => {
+      window.removeEventListener("storage", onStorage);
+      document.removeEventListener("visibilitychange", onVisible);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (
     <div className="bg-slate-50 min-h-full">
-      {/* Page header — back arrow + title */}
       <div className="sticky top-0 z-10 bg-white border-b border-slate-200">
         <div className="mx-4 sm:mx-6 lg:mx-[470px] flex items-center py-3">
           <Link
@@ -48,6 +128,11 @@ export default function BookingsListPage() {
           </Link>
           <h1 className="flex-1 text-center text-base font-bold text-slate-900">
             {t("bk.title")}
+            {syncing && (
+              <span className="ml-2 text-[11px] font-normal text-slate-400">
+                {t("common.loading")}
+              </span>
+            )}
           </h1>
           <span className="w-10" />
         </div>
@@ -61,9 +146,7 @@ export default function BookingsListPage() {
         ) : orders.length === 0 ? (
           <EmptyState t={t} />
         ) : (
-          orders.map((o) => (
-            <BookingCard key={o.id} order={o} lang={lang} t={t} />
-          ))
+          orders.map((o) => <BookingCard key={o.id} order={o} lang={lang} t={t} />)
         )}
       </div>
     </div>
@@ -110,69 +193,175 @@ function BookingCard({
   lang: Lang;
   t: (k: string, p?: Record<string, string | number>) => string;
 }) {
-  const status = statusOf(order);
+  const outStatus = rsvStatus(order.reservation);
+  const inStatus =
+    order.tripType === "roundtrip"
+      ? rsvStatus(order.inboundReservation)
+      : null;
+  const wholeCancelled =
+    outStatus === "cancelled" &&
+    (inStatus === null || inStatus === "cancelled");
   return (
     <Link
       href={`/bookings/${encodeURIComponent(order.id)}`}
-      className="block bg-white border border-slate-200 rounded-xl px-4 py-3 hover:border-slate-400 transition"
+      className={`block rounded-xl border transition ${
+        wholeCancelled
+          ? "bg-slate-100 border-slate-200 hover:border-slate-300"
+          : "bg-white border-slate-200 hover:border-slate-400"
+      }`}
     >
-      <div className="flex items-center justify-between gap-2 pb-2">
-        <StatusBadge status={status} t={t} />
-        <span className="text-xs text-slate-400 tabular-nums">
-          {fmtDateDots(order.outbound.depPlandTime)}
-        </span>
-      </div>
-
-      <LegRow leg="out" train={order.outbound} lang={lang} t={t} />
-      {order.tripType === "roundtrip" && order.inbound && (
-        <div className="mt-1">
-          <LegRow leg="in" train={order.inbound} lang={lang} t={t} />
-        </div>
+      <LegBlock
+        leg="out"
+        label={t("ord.legOut")}
+        status={outStatus}
+        train={order.outbound}
+        seat={order.seatType}
+        passengerCount={order.passengerCount}
+        rsv={order.reservation}
+        lang={lang}
+        t={t}
+      />
+      {order.tripType === "roundtrip" && order.inbound && inStatus !== null && (
+        <>
+          <div className="mx-5 border-t border-dashed border-slate-200" />
+          <LegBlock
+            leg="in"
+            label={t("ord.legIn")}
+            status={inStatus}
+            train={order.inbound}
+            seat={order.inboundSeatType ?? order.seatType}
+            passengerCount={order.passengerCount}
+            rsv={order.inboundReservation}
+            lang={lang}
+            t={t}
+          />
+        </>
       )}
-
-      <div className="mt-2 pt-2 border-t border-slate-100 flex items-center justify-end">
-        <span className="text-xs text-slate-500 tabular-nums">
-          {t("bk.totalShort", { m: krwL(order.totalPrice, lang) })}
-        </span>
-      </div>
     </Link>
   );
 }
 
-/** One-line train: [tag] logo no · dep_t arr_t · dep_st → arr_st */
-function LegRow({
+/** Single-leg block matching the spec layout. */
+function LegBlock({
   leg,
+  label,
+  status,
   train,
+  seat,
+  passengerCount,
+  rsv,
   lang,
   t,
 }: {
   leg: "out" | "in";
+  label: string;
+  status: StatusKey;
   train: TrainSchedule;
+  seat: SeatType;
+  passengerCount: number;
+  rsv: Reservation | undefined;
   lang: Lang;
-  t: (k: string) => string;
+  t: (k: string, p?: Record<string, string | number>) => string;
 }) {
+  const mins = durationMinutes(train.depPlandTime, train.arrPlandTime);
+  const fares = legFares(train, seat);
+  const legTotal = fares.discounted * Math.max(1, passengerCount);
+  const dim = status === "cancelled";
+  const muted = (cls: string) => (dim ? "text-slate-400" : cls);
   return (
-    <div className="flex items-center gap-2 text-sm text-slate-700">
-      <span className="text-[10px] font-bold text-sky-700 bg-sky-50 border border-sky-100 rounded px-1.5 py-0.5 leading-tight shrink-0">
-        {leg === "out" ? t("ord.legOut") : t("ord.legIn")}
-      </span>
-      <TrainLogo name={train.trainGradeName} />
-      <span className="text-xs font-semibold text-slate-500 shrink-0">
-        {Number(train.trainNo) || train.trainNo}
-      </span>
-      <span className="ml-auto tabular-nums whitespace-nowrap text-slate-900">
-        {fmtTime(train.depPlandTime)}
-        <span className="mx-1 text-slate-300">→</span>
-        {fmtTime(train.arrPlandTime)}
-      </span>
-      <span className="text-xs text-slate-500 whitespace-nowrap">
-        · {stationLabel(train.depPlaceName, lang)} → {stationLabel(train.arrPlaceName, lang)}
-      </span>
+    <div
+      className={`px-5 py-4 ${
+        dim ? "bg-slate-100/60 first:rounded-t-xl last:rounded-b-xl" : ""
+      }`}
+      data-leg={leg}
+    >
+      {/* Row 1: badge · status · rsvId */}
+      <div className="flex items-center gap-2 flex-wrap">
+        <span
+          className={`text-xs font-bold rounded px-2 py-0.5 leading-tight border ${
+            dim
+              ? "text-slate-400 bg-slate-100 border-slate-200"
+              : "text-sky-700 bg-sky-50 border-sky-100"
+          }`}
+        >
+          {label}
+        </span>
+        <span className="text-slate-300">·</span>
+        <StatusText status={status} t={t} />
+        {status !== "cancelled" && rsv?.rsvId && (
+          <>
+            <span className="text-slate-300">·</span>
+            <span className={`text-xs font-semibold tabular-nums ${muted("text-slate-600")}`}>
+              {rsv.rsvId}
+            </span>
+          </>
+        )}
+      </div>
+
+      {/* Row 2: logo + train no ─── date */}
+      <div className="flex items-baseline justify-between gap-2 pt-3">
+        <div className="flex items-baseline gap-2 min-w-0">
+          <TrainLogo name={train.trainGradeName} dim={dim} />
+          <span className={`text-sm font-semibold ${muted("text-slate-500")}`}>
+            {Number(train.trainNo) || train.trainNo}
+          </span>
+        </div>
+        <span className={`text-sm tabular-nums shrink-0 ${muted("text-slate-500")}`}>
+          {fmtDateDots(train.depPlandTime)}
+        </span>
+      </div>
+
+      {/* Row 3: dep_time ─── duration ─── arr_time */}
+      <div className="flex items-center gap-3 pt-3">
+        <span
+          className={`text-base font-bold tabular-nums leading-none whitespace-nowrap ${muted(
+            "text-slate-900",
+          )}`}
+        >
+          {fmtTime(train.depPlandTime)}
+        </span>
+        <span className="h-px flex-1 bg-slate-200" aria-hidden />
+        <span className={`text-xs whitespace-nowrap ${muted("text-slate-400")}`}>
+          {durationL(mins, lang)}
+        </span>
+        <span className="h-px flex-1 bg-slate-200" aria-hidden />
+        <span
+          className={`text-base font-bold tabular-nums leading-none whitespace-nowrap ${muted(
+            "text-slate-900",
+          )}`}
+        >
+          {fmtTime(train.arrPlandTime)}
+        </span>
+      </div>
+
+      {/* Row 4: dep_station ······· arr_station */}
+      <div className="flex items-center justify-between pt-1">
+        <span className={`text-sm whitespace-nowrap ${muted("text-slate-600")}`}>
+          {stationLabel(train.depPlaceName, lang)}
+        </span>
+        <span className={`text-sm whitespace-nowrap ${muted("text-slate-600")}`}>
+          {stationLabel(train.arrPlaceName, lang)}
+        </span>
+      </div>
+
+      {/* Row 5: 총 인원 ········ 금액 */}
+      <div className="flex items-center justify-between pt-3">
+        <span className={`text-xs ${muted("text-slate-500")}`}>
+          {t("bk.legPax", { n: passengerCount })}
+        </span>
+        <span
+          className={`text-sm font-bold tabular-nums ${
+            dim ? "text-slate-400 line-through" : "text-slate-900"
+          }`}
+        >
+          {krwL(legTotal, lang)}
+        </span>
+      </div>
     </div>
   );
 }
 
-function StatusBadge({
+function StatusText({
   status,
   t,
 }: {
@@ -181,14 +370,12 @@ function StatusBadge({
 }) {
   const cls =
     status === "live"
-      ? "bg-sky-50 text-sky-700 border-sky-200"
+      ? "text-sky-700"
       : status === "dry"
-        ? "bg-slate-100 text-slate-600 border-slate-200"
-        : "bg-slate-100 text-slate-400 border-slate-200";
+        ? "text-slate-600"
+        : "text-slate-400";
   return (
-    <span
-      className={`inline-flex items-center h-6 px-2 text-[11px] font-bold rounded-full border ${cls}`}
-    >
+    <span className={`text-xs font-semibold ${cls}`}>
       {status === "live"
         ? t("bk.status.live")
         : status === "dry"
@@ -197,6 +384,3 @@ function StatusBadge({
     </span>
   );
 }
-
-// Re-export for the LegRow's discriminant — keep narrow types co-located.
-export type { Reservation };

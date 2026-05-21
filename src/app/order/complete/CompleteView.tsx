@@ -107,12 +107,18 @@ export default function CompleteView() {
         />
       </div>
 
-      <div className="mt-6">
+      <div className="mt-6 grid grid-cols-2 gap-2">
         <Link
           href="/"
-          className="block h-12 border border-slate-200 bg-white grid place-items-center text-slate-700 hover:border-sky-300"
+          className="h-12 border border-slate-200 bg-white grid place-items-center text-slate-700 hover:border-sky-300"
         >
           {t("ord.toHome")}
+        </Link>
+        <Link
+          href="/bookings"
+          className="h-12 bg-slate-900 hover:bg-slate-800 grid place-items-center text-white font-semibold transition"
+        >
+          {t("ord.toBookings")}
         </Link>
       </div>
     </div>
