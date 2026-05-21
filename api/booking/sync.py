@@ -145,13 +145,33 @@ def _fetch_my_tickets_with_seats(korail: Any) -> list[dict[str, Any]]:
             sj = json.loads(sr.text)
         except Exception:  # noqa: BLE001
             sj = {}
+        # KORAIL's response can split a multi-pax booking either across
+        # `ticket_info[]` entries (1 seat per entry) or within a single
+        # entry's `tk_seat_info[]` array. Iterate BOTH dimensions to
+        # capture every seat regardless of layout.
         ticket_infos = (sj.get("ticket_infos") or {}).get("ticket_info") or []
-        if ticket_infos:
-            for s in ticket_infos[0].get("tk_seat_info") or []:
-                car = str(s.get("h_srcar_no") or ti.get("h_srcar_no") or "")
+        seen_seats: set[tuple[str, str]] = set()
+        for ti_entry in ticket_infos:
+            inner = ti_entry.get("tk_seat_info") or []
+            if not inner:
+                # Fallback: some legacy responses put seat fields directly
+                # on the ticket_info entry rather than in tk_seat_info.
+                inner = [ti_entry]
+            for s in inner:
+                car = str(
+                    s.get("h_srcar_no")
+                    or ti_entry.get("h_srcar_no")
+                    or ti.get("h_srcar_no")
+                    or ""
+                )
                 seat_no = str(s.get("h_seat_no") or "")
-                if seat_no:
-                    seats.append({"carNo": car, "seatNo": seat_no})
+                if not seat_no:
+                    continue
+                key = (car, seat_no)
+                if key in seen_seats:
+                    continue
+                seen_seats.add(key)
+                seats.append({"carNo": car, "seatNo": seat_no})
 
         out.append({
             "trainNo": str(ti.get("h_trn_no") or ""),
@@ -163,6 +183,9 @@ def _fetch_my_tickets_with_seats(korail: Any) -> list[dict[str, Any]]:
             "price": int(str(ti.get("h_rcvd_amt") or "0") or "0"),
             "buyerName": str(ti.get("h_buy_ps_nm") or ""),
             "seats": seats,
+            # Raw seat-detail payload — only kept for debugging via the
+            # `debug: true` body flag. Consumers should ignore.
+            "_rawSeatInfo": sj.get("ticket_infos"),
         })
     return out
 
@@ -265,7 +288,7 @@ def _process(body: dict[str, Any]) -> dict[str, Any]:
                 continue
             seats = t.get("seats") or []
             first = seats[0] if seats else {}
-            ticketed.append({
+            entry: dict[str, Any] = {
                 "rsvId": rid,
                 "carNo": first.get("carNo") or t.get("carNo") or None,
                 "seatNo": first.get("seatNo") or None,
@@ -276,7 +299,12 @@ def _process(body: dict[str, Any]) -> dict[str, Any]:
                 "depTime": t.get("depTime", ""),
                 "price": t.get("price", 0),
                 "buyerName": t.get("buyerName", ""),
-            })
+            }
+            if body.get("debug"):
+                # Expose the raw KORAIL seat payload so the client can
+                # inspect why per-pax seats aren't being captured.
+                entry["_rawSeatInfo"] = t.get("_rawSeatInfo")
+            ticketed.append(entry)
     else:
         # No matchers → can't distinguish ticketed from cancelled. Be
         # conservative and report everything as cancelled (legacy behaviour).
