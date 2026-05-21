@@ -324,6 +324,7 @@ export default function OrderView() {
       },
       passengers: [reservant],
       seatPref,
+      payMethod: payMethod ?? undefined,
       totalPrice,
       reservation: outRsv,
       inboundReservation: inRsv,

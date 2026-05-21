@@ -9,14 +9,13 @@ import { useI18n, stationLabel, type Lang } from "../../lib/i18n";
 import { TrainLogo } from "../../components/TrainLogo";
 import type { Order, Reservation, TrainSchedule } from "../../lib/types";
 
-type StatusKey = "live" | "dry" | "cancelled";
+type StatusKey = "pending" | "confirmed" | "cancelled";
 
 function rsvStatus(r: Reservation | undefined): StatusKey {
   if (!r) return "cancelled";
   if (r.cancelled) return "cancelled";
-  if (r.mode === "live" && r.rsvId) return "live";
-  if (r.mode === "dry") return "dry";
-  return "cancelled";
+  if (r.confirmed) return "confirmed";
+  return "pending";
 }
 
 export default function BookingsListPage() {
@@ -378,17 +377,17 @@ function StatusText({
   t: (k: string) => string;
 }) {
   const cls =
-    status === "live"
-      ? "text-sky-700"
-      : status === "dry"
-        ? "text-slate-600"
+    status === "confirmed"
+      ? "text-emerald-700"
+      : status === "pending"
+        ? "text-sky-700"
         : "text-slate-400";
   return (
     <span className={`text-xs font-semibold ${cls}`}>
-      {status === "live"
-        ? t("bk.status.live")
-        : status === "dry"
-          ? t("bk.status.dry")
+      {status === "confirmed"
+        ? t("bk.status.confirmed")
+        : status === "pending"
+          ? t("bk.status.pending")
           : t("bk.status.cancelled")}
     </span>
   );

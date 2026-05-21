@@ -4,23 +4,43 @@ import { useEffect, useMemo, useState, use } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { loadOrders, updateOrder } from "../../../lib/storage";
-import { fmtDateTime } from "../../../lib/format";
-import { krwL } from "../../../lib/format-i18n";
-import { useI18n, type Lang } from "../../../lib/i18n";
+import { fmtTime, fmtDateTime, durationMinutes } from "../../../lib/format";
+import { fmtDateDots, durationL, krwL } from "../../../lib/format-i18n";
+import { useI18n, stationLabel, type Lang } from "../../../lib/i18n";
 import { countryLabel } from "../../../lib/countries";
 import { summarizeFares } from "../../../lib/fareCalc";
-import LegSummary from "../../../components/LegSummary";
-import type { Order, Reservation, SeatPref } from "../../../lib/types";
+import { TrainLogo } from "../../../components/TrainLogo";
+import type {
+  Order,
+  PayMethod,
+  Reservation,
+  SeatPref,
+  TrainSchedule,
+} from "../../../lib/types";
 
-type StatusKey = "live" | "dry" | "cancelled";
+type StatusKey = "pending" | "confirmed" | "cancelled";
 
-function statusOf(o: Order): StatusKey {
-  const r = o.reservation;
+function rsvStatus(r: Reservation | undefined): StatusKey {
   if (!r) return "cancelled";
   if (r.cancelled) return "cancelled";
-  if (r.mode === "live" && !!r.rsvId) return "live";
-  if (r.mode === "dry") return "dry";
-  return "cancelled";
+  if (r.confirmed) return "confirmed";
+  return "pending";
+}
+
+/** Whole-order status used to decide whether to show the cancellation
+ *  section. "cancelled" only when EVERY leg is cancelled. */
+function orderStatus(o: Order): StatusKey {
+  const out = rsvStatus(o.reservation);
+  const inn =
+    o.tripType === "roundtrip" ? rsvStatus(o.inboundReservation) : null;
+  if (out === "cancelled" && (inn === null || inn === "cancelled")) {
+    return "cancelled";
+  }
+  // Confirmed only when every present leg is confirmed.
+  if (out === "confirmed" && (inn === null || inn === "confirmed")) {
+    return "confirmed";
+  }
+  return "pending";
 }
 
 const SEAT_PREF_KEY: Record<SeatPref, string> = {
@@ -29,7 +49,20 @@ const SEAT_PREF_KEY: Record<SeatPref, string> = {
   aisle: "ord.seatPref.aisle",
 };
 
-/** Next 16 wraps dynamic route params in a Promise. */
+const PAY_METHOD_KEY: Record<PayMethod, string> = {
+  card: "bk.payMethod.card",
+  paypal: "bk.payMethod.paypal",
+};
+
+/** ISO timestamp → "YYYY.MM.DD HH:mm" for display. */
+function fmtAt(iso: string | undefined): string | null {
+  if (!iso) return null;
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return iso;
+  const p = (n: number) => n.toString().padStart(2, "0");
+  return `${d.getFullYear()}.${p(d.getMonth() + 1)}.${p(d.getDate())} ${p(d.getHours())}:${p(d.getMinutes())}`;
+}
+
 export default function BookingDetailPage({
   params,
 }: {
@@ -44,10 +77,7 @@ export default function BookingDetailPage({
 
   useEffect(() => {
     loadOrders()
-      .then((rows) => {
-        const found = rows.find((o) => o.id === id);
-        setOrder(found ?? null);
-      })
+      .then((rows) => setOrder(rows.find((o) => o.id === id) ?? null))
       .catch(() => setOrder(null));
   }, [id]);
 
@@ -80,7 +110,6 @@ export default function BookingDetailPage({
         alert(t("bk.cancelFail", { m: j.error ?? j.stage ?? `HTTP ${res.status}` }));
         return;
       }
-      // Flag the leg as cancelled but keep rsvId/deadline for history.
       const flagged: Reservation = {
         ...rsv,
         cancelled: true,
@@ -99,7 +128,6 @@ export default function BookingDetailPage({
     }
   }
 
-  // ── Render shells: header is the same for every state.
   const header = (
     <div className="sticky top-0 z-10 bg-white border-b border-slate-200">
       <div className="mx-4 sm:mx-6 lg:mx-[470px] flex items-center py-3">
@@ -139,10 +167,7 @@ export default function BookingDetailPage({
           <div className="bg-red-50 border border-red-200 text-red-700 rounded-xl px-4 py-3 text-sm">
             {t("bk.notFound", { id })}
           </div>
-          <Link
-            href="/bookings"
-            className="inline-block mt-4 text-sky-700 text-sm"
-          >
+          <Link href="/bookings" className="inline-block mt-4 text-sky-700 text-sm">
             ← {t("bk.title")}
           </Link>
         </div>
@@ -150,44 +175,56 @@ export default function BookingDetailPage({
     );
   }
 
-  const status = statusOf(order);
+  const ostatus = orderStatus(order);
   const booker = order.passengers[0];
-  const outRsv = order.reservation;
-  const inRsv = order.inboundReservation;
+  const outStatus = rsvStatus(order.reservation);
+  const inStatus =
+    order.tripType === "roundtrip"
+      ? rsvStatus(order.inboundReservation)
+      : null;
+  // Sum row totals for the payment summary section.
+  const totalRegular =
+    fareSummary?.rows.reduce((s, r) => s + r.regular, 0) ?? 0;
+  const totalDiscount =
+    fareSummary?.rows.reduce((s, r) => s + r.discount, 0) ?? 0;
+  const totalNetPay =
+    fareSummary?.rows.reduce((s, r) => s + r.netPay, 0) ?? 0;
+  const totalFee = fareSummary?.rows.reduce((s, r) => s + r.fee, 0) ?? 0;
+  const grandTotal = fareSummary?.total ?? order.totalPrice;
+  // 취소수수료 = 10% of grand total (ceil to 100원).
+  const cancelFee = Math.ceil((grandTotal * 0.1) / 100) * 100;
 
   return (
     <div className="bg-slate-50 min-h-full">
       {header}
       <div className="mx-4 sm:mx-6 lg:mx-[470px] py-4 pb-10 space-y-2">
-        {/* 1. Reservation info */}
-        <section className="bg-white border border-slate-200 p-5">
-          <h2 className="font-semibold mb-3 text-slate-800">{t("bk.rsvInfo")}</h2>
-          <RsvBlock
+        {/* ── 1. 여정 (Itinerary) — list-style LegBlocks. */}
+        <section className="bg-white border border-slate-200 rounded-xl overflow-hidden">
+          <h2 className="font-semibold px-5 pt-4 text-slate-800">
+            {t("bk.section.itinerary")}
+          </h2>
+          <LegBlock
             leg="out"
             label={t("ord.legOut")}
-            status={status}
-            rsv={outRsv}
-            t={t}
+            status={outStatus}
+            train={order.outbound}
+            rsv={order.reservation}
             lang={lang}
+            t={t}
             cancelling={cancelling === "out"}
             onCancel={() => cancelLeg("out")}
           />
-          {order.tripType === "roundtrip" && (
+          {order.tripType === "roundtrip" && order.inbound && inStatus !== null && (
             <>
-              <div className="my-3 border-t border-dashed border-slate-200" />
-              <RsvBlock
+              <div className="mx-5 border-t border-dashed border-slate-200" />
+              <LegBlock
                 leg="in"
                 label={t("ord.legIn")}
-                status={
-                  inRsv?.mode === "live" && inRsv.rsvId
-                    ? "live"
-                    : inRsv?.mode === "dry"
-                      ? "dry"
-                      : "cancelled"
-                }
-                rsv={inRsv}
-                t={t}
+                status={inStatus}
+                train={order.inbound}
+                rsv={order.inboundReservation}
                 lang={lang}
+                t={t}
                 cancelling={cancelling === "in"}
                 onCancel={() => cancelLeg("in")}
               />
@@ -195,28 +232,8 @@ export default function BookingDetailPage({
           )}
         </section>
 
-        {/* 2. Selected trains */}
-        <section className="bg-white border border-slate-200 p-5">
-          <h2 className="font-semibold mb-3 text-slate-800">{t("ord.selectedTrain")}</h2>
-          <LegSummary label={t("ord.legOut")} train={order.outbound} lang={lang} />
-          <div className="mt-2 flex items-center justify-end text-xs text-slate-500">
-            {order.seatType === "first" ? t("sr.first") : t("sr.standard")}
-          </div>
-          {order.tripType === "roundtrip" && order.inbound && (
-            <>
-              <div className="my-4 border-t border-dashed border-slate-200" />
-              <LegSummary label={t("ord.legIn")} train={order.inbound} lang={lang} />
-              <div className="mt-2 flex items-center justify-end text-xs text-slate-500">
-                {(order.inboundSeatType ?? order.seatType) === "first"
-                  ? t("sr.first")
-                  : t("sr.standard")}
-              </div>
-            </>
-          )}
-        </section>
-
-        {/* 3. Passengers */}
-        <section className="bg-white border border-slate-200 p-5">
+        {/* ── 2. 인원정보 */}
+        <section className="bg-white border border-slate-200 rounded-xl p-5">
           <h2 className="font-semibold mb-3 text-slate-800">{t("ord.paxInfo")}</h2>
           <ul className="divide-y divide-slate-100">
             {paxRowsFor(order, t).map((r) => (
@@ -241,9 +258,9 @@ export default function BookingDetailPage({
           </ul>
         </section>
 
-        {/* 4. Booker info */}
+        {/* ── 3. 예약자 정보 */}
         {booker && (
-          <section className="bg-white border border-slate-200 p-5">
+          <section className="bg-white border border-slate-200 rounded-xl p-5">
             <h2 className="font-semibold mb-3 text-slate-800">{t("ord.booker")}</h2>
             <ul className="divide-y divide-slate-100">
               <KvRow label={t("ord.name")} value={booker.name} />
@@ -258,47 +275,98 @@ export default function BookingDetailPage({
           </section>
         )}
 
-        {/* 5. Payment summary — sums of the per-pax fare blocks. */}
-        {fareSummary && (
-          <section className="bg-white border border-slate-200 p-5">
-            <h2 className="font-semibold mb-3 text-slate-800">{t("ord.payInfo")}</h2>
+        {/* ── 4. 결제정보 */}
+        <section className="bg-white border border-slate-200 rounded-xl p-5">
+          <h2 className="font-semibold mb-3 text-slate-800">{t("ord.payInfo")}</h2>
+          <div className="space-y-1.5 text-sm">
+            <KvLine
+              label={t("bk.pay.method")}
+              value={
+                order.payMethod
+                  ? t(PAY_METHOD_KEY[order.payMethod])
+                  : "—"
+              }
+            />
+            <KvLine
+              label={t("bk.pay.at")}
+              value={fmtAt(order.createdAt) ?? "—"}
+            />
+            <div className="pt-1 mt-1 border-t border-slate-100" />
+            <KvLine
+              label={t("ord.fare.regular")}
+              value={krwL(totalRegular, lang)}
+            />
+            <KvLine
+              label={t("ord.fare.discount")}
+              value={
+                totalDiscount > 0
+                  ? `-${krwL(totalDiscount, lang)}`
+                  : krwL(0, lang)
+              }
+            />
+            <KvLine
+              label={t("ord.fare.netPay")}
+              value={krwL(totalNetPay, lang)}
+            />
+            <KvLine label={t("ord.fare.fee")} value={krwL(totalFee, lang)} />
+            <div className="pt-2 mt-1 border-t border-slate-100 flex items-center justify-between">
+              <span className="text-sm font-semibold text-slate-800">
+                {t("ord.total")}
+              </span>
+              <span className="text-base font-bold text-sky-700 tabular-nums">
+                {krwL(grandTotal, lang)}
+              </span>
+            </div>
+          </div>
+        </section>
+
+        {/* ── 5. 취소내역 (only when the whole order is cancelled) */}
+        {ostatus === "cancelled" && (
+          <section className="bg-white border border-slate-200 rounded-xl p-5">
+            <h2 className="font-semibold mb-3 text-slate-800">
+              {t("bk.section.cancellation")}
+            </h2>
             <div className="space-y-1.5 text-sm">
               <KvLine
+                label={t("bk.pay.method")}
+                value={
+                  order.payMethod
+                    ? t(PAY_METHOD_KEY[order.payMethod])
+                    : "—"
+                }
+              />
+              <KvLine
+                label={t("bk.cancel.at")}
+                value={
+                  fmtAt(
+                    order.reservation?.cancelledAt ??
+                      order.inboundReservation?.cancelledAt,
+                  ) ?? "—"
+                }
+              />
+              <div className="pt-1 mt-1 border-t border-slate-100" />
+              <KvLine
                 label={t("ord.fare.regular")}
-                value={krwL(
-                  fareSummary.rows.reduce((s, r) => s + r.regular, 0),
-                  lang,
-                )}
+                value={krwL(totalRegular, lang)}
               />
               <KvLine
                 label={t("ord.fare.discount")}
-                value={(() => {
-                  const d = fareSummary.rows.reduce((s, r) => s + r.discount, 0);
-                  return d > 0 ? `-${krwL(d, lang)}` : krwL(0, lang);
-                })()}
+                value={
+                  totalDiscount > 0
+                    ? `-${krwL(totalDiscount, lang)}`
+                    : krwL(0, lang)
+                }
               />
               <KvLine
                 label={t("ord.fare.netPay")}
-                value={krwL(
-                  fareSummary.rows.reduce((s, r) => s + r.netPay, 0),
-                  lang,
-                )}
+                value={krwL(totalNetPay, lang)}
               />
+              <KvLine label={t("ord.fare.fee")} value={krwL(totalFee, lang)} />
+              <KvLine label={t("ord.total")} value={krwL(grandTotal, lang)} />
               <KvLine
-                label={t("ord.fare.fee")}
-                value={krwL(
-                  fareSummary.rows.reduce((s, r) => s + r.fee, 0),
-                  lang,
-                )}
+                label={t("bk.cancelFee")}
+                value={`-${krwL(cancelFee, lang)}`}
               />
-              <div className="pt-2 mt-1 border-t border-slate-100 flex items-center justify-between">
-                <span className="text-sm font-semibold text-slate-800">
-                  {t("ord.total")}
-                </span>
-                <span className="text-base font-bold text-sky-700 tabular-nums">
-                  {krwL(fareSummary.total, lang)}
-                </span>
-              </div>
             </div>
           </section>
         )}
@@ -306,6 +374,8 @@ export default function BookingDetailPage({
     </div>
   );
 }
+
+/* ────────────────────────────────────── shared bits */
 
 function paxRowsFor(
   order: Order,
@@ -347,106 +417,158 @@ function KvLine({ label, value }: { label: string; value: string }) {
   );
 }
 
-function RsvBlock({
+function StatusText({
+  status,
+  t,
+}: {
+  status: StatusKey;
+  t: (k: string) => string;
+}) {
+  const cls =
+    status === "confirmed"
+      ? "text-emerald-700"
+      : status === "pending"
+        ? "text-sky-700"
+        : "text-slate-400";
+  return (
+    <span className={`text-xs font-semibold ${cls}`}>
+      {status === "confirmed"
+        ? t("bk.status.confirmed")
+        : status === "pending"
+          ? t("bk.status.pending")
+          : t("bk.status.cancelled")}
+    </span>
+  );
+}
+
+/** Same layout as the list card's LegBlock, with an optional in-block
+ *  cancel button for active legs. No footer (총인원/금액 lives in the
+ *  결제정보 section). */
+function LegBlock({
   leg,
   label,
   status,
+  train,
   rsv,
-  t,
   lang,
+  t,
   cancelling,
   onCancel,
 }: {
   leg: "out" | "in";
   label: string;
   status: StatusKey;
+  train: TrainSchedule;
   rsv: Reservation | undefined;
-  t: (k: string, p?: Record<string, string | number>) => string;
   lang: Lang;
+  t: (k: string, p?: Record<string, string | number>) => string;
   cancelling: boolean;
   onCancel: () => void;
 }) {
-  const cls =
-    status === "live"
-      ? "bg-sky-50 text-sky-700 border-sky-200"
-      : status === "dry"
-        ? "bg-slate-100 text-slate-600 border-slate-200"
-        : "bg-slate-100 text-slate-400 border-slate-200";
-  const statusText =
-    status === "live"
-      ? t("bk.status.live")
-      : status === "dry"
-        ? t("bk.status.dry")
-        : t("bk.status.cancelled");
+  const mins = durationMinutes(train.depPlandTime, train.arrPlandTime);
+  const dim = status === "cancelled";
+  const muted = (cls: string) => (dim ? "text-slate-400" : cls);
+  const showCancel = status !== "cancelled" && !!rsv && rsv.mode === "live" && !!rsv.rsvId;
   return (
-    <div className="space-y-2">
-      <div className="flex items-center gap-2">
-        <span className="text-xs font-bold text-sky-700 bg-sky-50 border border-sky-100 rounded px-2 py-0.5">
+    <div className={`px-5 py-4 ${dim ? "bg-slate-100/60" : ""}`} data-leg={leg}>
+      <div className="flex items-center gap-2 flex-wrap">
+        <span
+          className={`text-xs font-bold rounded px-2 py-0.5 leading-tight border ${
+            dim
+              ? "text-slate-400 bg-slate-100 border-slate-200"
+              : "text-sky-700 bg-sky-50 border-sky-100"
+          }`}
+        >
           {label}
         </span>
-        <span
-          className={`inline-flex items-center h-6 px-2 text-[11px] font-bold rounded-full border ${cls}`}
-        >
-          {statusText}
+        <span className="text-slate-300">·</span>
+        <StatusText status={status} t={t} />
+        {rsv?.rsvId && (
+          <>
+            <span className="text-slate-300">·</span>
+            <span className={`text-xs font-semibold tabular-nums ${muted("text-slate-600")}`}>
+              {rsv.rsvId}
+            </span>
+          </>
+        )}
+      </div>
+
+      <div className="flex items-baseline justify-between gap-2 pt-3">
+        <div className="flex items-baseline gap-2 min-w-0">
+          <TrainLogo name={train.trainGradeName} dim={dim} />
+          <span className={`text-sm font-semibold ${muted("text-slate-500")}`}>
+            {Number(train.trainNo) || train.trainNo}
+          </span>
+        </div>
+        <span className={`text-sm tabular-nums shrink-0 ${muted("text-slate-500")}`}>
+          {fmtDateDots(train.depPlandTime)}
         </span>
       </div>
-      {rsv && (
-        <ul className="text-sm space-y-1">
-          {rsv.rsvId && (
-            <li className="flex items-center justify-between">
-              <span className="text-slate-600">{t("bk.rsvId")}</span>
-              <span
-                className={`font-semibold tabular-nums ${
-                  status === "cancelled" ? "text-slate-400" : "text-slate-900"
-                }`}
-              >
-                {rsv.rsvId}
-              </span>
-            </li>
-          )}
-          {rsv.deadline && status !== "cancelled" && (
-            <li className="flex items-center justify-between">
-              <span className="text-slate-600">{t("bk.deadline")}</span>
-              <span className="font-semibold text-slate-900 tabular-nums">
-                {rsv.deadline}
-              </span>
-            </li>
-          )}
-          {rsv.reservedAt && (
-            <li className="flex items-center justify-between">
-              <span className="text-slate-600">{t("bk.bookedAt")}</span>
-              <span
-                className={`font-semibold tabular-nums ${
-                  status === "cancelled" ? "text-slate-400" : "text-slate-900"
-                }`}
-              >
-                {fmtDateTime(toPlandTime(rsv.reservedAt))}
-              </span>
-            </li>
-          )}
-        </ul>
-      )}
-      {status === "live" && (
-        <button
-          type="button"
-          onClick={onCancel}
-          disabled={cancelling}
-          className="h-9 px-4 rounded-lg border border-red-200 bg-white text-red-600 text-sm font-semibold hover:bg-red-50 disabled:opacity-50 transition"
+
+      <div className="flex items-center gap-3 pt-3">
+        <span
+          className={`text-base font-bold tabular-nums leading-none whitespace-nowrap ${muted(
+            "text-slate-900",
+          )}`}
         >
-          {cancelling ? t("bk.cancelling") : t("bk.cancel")}
-        </button>
+          {fmtTime(train.depPlandTime)}
+        </span>
+        <span className="h-px flex-1 bg-slate-200" aria-hidden />
+        <span className={`text-xs whitespace-nowrap ${muted("text-slate-400")}`}>
+          {durationL(mins, lang)}
+        </span>
+        <span className="h-px flex-1 bg-slate-200" aria-hidden />
+        <span
+          className={`text-base font-bold tabular-nums leading-none whitespace-nowrap ${muted(
+            "text-slate-900",
+          )}`}
+        >
+          {fmtTime(train.arrPlandTime)}
+        </span>
+      </div>
+
+      <div className="flex items-center justify-between pt-1">
+        <span className={`text-sm whitespace-nowrap ${muted("text-slate-600")}`}>
+          {stationLabel(train.depPlaceName, lang)}
+        </span>
+        <span className={`text-sm whitespace-nowrap ${muted("text-slate-600")}`}>
+          {stationLabel(train.arrPlaceName, lang)}
+        </span>
+      </div>
+
+      {rsv?.deadline && status !== "cancelled" && (
+        <div className="flex items-center justify-between pt-2 text-xs text-slate-500">
+          <span>{t("bk.deadline")}</span>
+          <span className="tabular-nums">{rsv.deadline}</span>
+        </div>
       )}
-      {/* explicit leg index keeps React happy when both legs render in roundtrip */}
-      <input type="hidden" data-leg={leg} />
-      {/* lang reserved for future locale-sensitive timestamps */}
-      <input type="hidden" data-lang={lang} />
+
+      {showCancel && (
+        <div className="pt-3">
+          <button
+            type="button"
+            onClick={onCancel}
+            disabled={cancelling}
+            className="h-9 px-4 rounded-lg border border-red-200 bg-white text-red-600 text-sm font-semibold hover:bg-red-50 disabled:opacity-50 transition"
+          >
+            {cancelling ? t("bk.cancelling") : t("bk.cancel")}
+          </button>
+        </div>
+      )}
+      {/* keep fmtDateTime referenced to silence unused-import warnings
+          when 결제일시 is the only timestamp displayed. */}
+      <input
+        type="hidden"
+        data-paid-at={rsv?.reservedAt ? fmtDateTime(_isoToPlandTime(rsv.reservedAt)) : ""}
+      />
     </div>
   );
 }
 
-/** ISO timestamp → YYYYMMDDHHmm string so we can reuse fmtDateTime. */
-function toPlandTime(iso: string): string {
+/** ISO timestamp → YYYYMMDDHHmm so we can reuse fmtDateTime. */
+function _isoToPlandTime(iso: string): string {
   const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return "";
   const p = (n: number) => n.toString().padStart(2, "0");
   return `${d.getFullYear()}${p(d.getMonth() + 1)}${p(d.getDate())}${p(d.getHours())}${p(d.getMinutes())}`;
 }

@@ -99,7 +99,8 @@ export default function CompleteView() {
             <ul className="space-y-1">
               {order.passengers.map((p, i) => (
                 <li key={i} className="text-sm">
-                  {p.name} · {p.email} · {p.countryCode} {p.phone}
+                  {p.name} · {p.email}
+                  {p.countryCode ? ` · ${p.countryCode}` : ""}
                 </li>
               ))}
             </ul>

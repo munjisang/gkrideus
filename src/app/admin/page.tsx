@@ -157,6 +157,24 @@ export default function AdminPage() {
     refresh();
   }
 
+  /** Mark every still-active leg as admin-confirmed. */
+  async function onConfirm(order: Order) {
+    if (!confirm("이 예매를 확정 처리할까요?")) return;
+    const nowIso = new Date().toISOString();
+    const patch: Partial<Order> = {};
+    const out = order.reservation;
+    const inn = order.inboundReservation;
+    if (out && !out.cancelled && !out.confirmed) {
+      patch.reservation = { ...out, confirmed: true, confirmedAt: nowIso };
+    }
+    if (inn && !inn.cancelled && !inn.confirmed) {
+      patch.inboundReservation = { ...inn, confirmed: true, confirmedAt: nowIso };
+    }
+    if (Object.keys(patch).length === 0) return;
+    await updateOrder(order.id, patch);
+    refresh();
+  }
+
   async function onClear() {
     if (!confirm("모든 주문 내역을 삭제할까요? (되돌릴 수 없음)")) return;
     await clearOrders();
@@ -485,6 +503,7 @@ export default function AdminPage() {
                 onBook={() => onBook(o)}
                 onCancel={() => onCancel(o)}
                 onDelete={() => onDelete(o.id)}
+                onConfirm={() => onConfirm(o)}
               />
             ))}
           </ul>
@@ -578,6 +597,7 @@ function OrderCard({
   onBook,
   onCancel,
   onDelete,
+  onConfirm,
 }: {
   order: Order;
   busy: boolean;
@@ -586,11 +606,24 @@ function OrderCard({
   onBook: () => void;
   onCancel: () => void;
   onDelete: () => void;
+  onConfirm: () => void;
 }) {
   const hasLiveReservation =
-    (order.reservation?.mode === "live" && !!order.reservation.rsvId) ||
-    (order.inboundReservation?.mode === "live" && !!order.inboundReservation.rsvId);
+    (order.reservation?.mode === "live" &&
+      !!order.reservation.rsvId &&
+      !order.reservation.cancelled) ||
+    (order.inboundReservation?.mode === "live" &&
+      !!order.inboundReservation.rsvId &&
+      !order.inboundReservation.cancelled);
   const hasAnyReservation = !!order.reservation || !!order.inboundReservation;
+  // Any active leg that admin hasn't confirmed yet → show 확정 button.
+  const hasUnconfirmedLeg =
+    (!!order.reservation &&
+      !order.reservation.cancelled &&
+      !order.reservation.confirmed) ||
+    (!!order.inboundReservation &&
+      !order.inboundReservation.cancelled &&
+      !order.inboundReservation.confirmed);
   // Unreserved order whose departure date has already passed → expired.
   const todayYmd = (() => {
     const d = new Date();
@@ -664,6 +697,18 @@ function OrderCard({
             {result?.error ?? "알 수 없는 오류"}
           </div>
         </div>
+      )}
+
+      {/* Confirm bar — appears only when admin can advance a leg from
+          pending → confirmed. */}
+      {hasUnconfirmedLeg && (
+        <button
+          onClick={onConfirm}
+          disabled={busy}
+          className="w-full h-10 border-t border-slate-100 text-sm font-semibold text-emerald-700 bg-emerald-50 hover:bg-emerald-100 disabled:opacity-50 transition"
+        >
+          확정
+        </button>
       )}
 
       {/* Action row */}

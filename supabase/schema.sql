@@ -127,3 +127,8 @@ select 'korail', korail_id, korail_password, true
 from public.korail_credentials
 where korail_id is not null and korail_password is not null
 on conflict (service, account_id) do nothing;
+
+
+-- 결제수단 저장 (신용카드 / Paypal). 옛 row는 null이므로 nullable로 추가.
+alter table public.orders
+    add column if not exists pay_method text;

@@ -2,6 +2,7 @@ export type TripType = "oneway" | "roundtrip";
 export type SeatType = "standard" | "first";
 export type SeatPref = "none" | "window" | "aisle";
 export type Gender = "M" | "F";
+export type PayMethod = "card" | "paypal";
 
 export type TrainSchedule = {
   trainNo: string;
@@ -43,6 +44,10 @@ export type Reservation = {
   cancelled?: boolean;
   /** ISO timestamp when we observed the cancellation. */
   cancelledAt?: string;
+  /** True once the admin marks the booking as confirmed. */
+  confirmed?: boolean;
+  /** ISO timestamp when admin confirmed. */
+  confirmedAt?: string;
   raw?: unknown;
 };
 
@@ -68,6 +73,9 @@ export type Order = {
   /** "none" (default), "window", or "aisle". UX-only — Korail seat-pref
    *  flag is not honored by the booking endpoint yet. */
   seatPref?: SeatPref;
+  /** Payment method chosen at checkout. Persisted for the booking
+   *  detail's "결제수단" line. */
+  payMethod?: PayMethod;
   totalPrice: number;
   /** Result of clicking [예매하기] in admin — outbound leg. */
   reservation?: Reservation;
