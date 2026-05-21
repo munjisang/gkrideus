@@ -44,6 +44,7 @@ type Row = {
   reservation: Order["reservation"] | null;
   inbound_reservation: Order["reservation"] | null;
   pay_method: Order["payMethod"] | null;
+  fee_settings: Order["feeSettings"] | null;
 };
 
 function rowToOrder(r: Row): Order {
@@ -62,6 +63,7 @@ function rowToOrder(r: Row): Order {
     reservation: r.reservation ?? undefined,
     inboundReservation: r.inbound_reservation ?? undefined,
     payMethod: r.pay_method ?? undefined,
+    feeSettings: r.fee_settings ?? undefined,
   };
 }
 function orderToRow(o: Order): Row {
@@ -80,6 +82,7 @@ function orderToRow(o: Order): Row {
     reservation: o.reservation ?? null,
     inbound_reservation: o.inboundReservation ?? null,
     pay_method: o.payMethod ?? null,
+    fee_settings: o.feeSettings ?? null,
   };
 }
 
@@ -171,6 +174,7 @@ export async function updateOrder(
   if ("inboundReservation" in patch)
     dbPatch.inbound_reservation = patch.inboundReservation ?? null;
   if ("payMethod" in patch) dbPatch.pay_method = patch.payMethod ?? null;
+  if ("feeSettings" in patch) dbPatch.fee_settings = patch.feeSettings ?? null;
 
   const { data, error } = await sb
     .from("orders")

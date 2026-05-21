@@ -1,5 +1,10 @@
 import { firstClassMult } from "./fare";
-import type { SeatType, TrainSchedule } from "./types";
+import {
+  DEFAULT_FEE_SETTINGS,
+  type FeeSettings,
+  type SeatType,
+  type TrainSchedule,
+} from "./types";
 
 /** Passenger fare categories, mirrored from the home-page passenger sheet. */
 export type PaxType = "adult" | "child" | "toddler" | "senior";
@@ -26,17 +31,23 @@ export type PaxFare = {
   legTotal: number;
 };
 
-/** Compute one passenger's fare from the adult-base per-person values. */
+/** Compute one passenger's fare from the adult-base per-person values.
+ *  `feeSettings` lets the admin pick the rate and which baseline (정상
+ *  운임 vs 결제운임) the rate is applied to. Defaults match the
+ *  pre-Phase-3 behaviour. */
 export function paxFareFor(
   ppAdultRegular: number,
   ppAdultDiscounted: number,
   type: PaxType,
+  feeSettings: FeeSettings = DEFAULT_FEE_SETTINGS,
 ): PaxFare {
   const rate = PAX_FARE_RATE[type];
   const regular = Math.round((ppAdultRegular * rate) / 100) * 100;
   const netPay = Math.round((ppAdultDiscounted * rate) / 100) * 100;
   const discount = Math.max(0, regular - netPay);
-  const fee = Math.ceil((netPay * 0.2) / 100) * 100;
+  const basisAmount =
+    feeSettings.bookingFeeBasis === "regular" ? regular : netPay;
+  const fee = Math.ceil((basisAmount * feeSettings.bookingFeeRate) / 100) * 100;
   return { type, regular, discount, netPay, fee, legTotal: netPay + fee };
 }
 
@@ -97,7 +108,8 @@ type PaxBreakdownIn = {
 
 /** Aggregate fares across out/in legs and the chosen seat for each.
  *  When `breakdown` is omitted we assume `passengerCount` adults — keeps
- *  callers without a typed breakdown (legacy localStorage data) working. */
+ *  callers without a typed breakdown (legacy localStorage data) working.
+ *  `feeSettings` defaults to the legacy 20%/discounted rule. */
 export function summarizeFares(
   outbound: TrainSchedule | null | undefined,
   outboundSeat: SeatType,
@@ -105,6 +117,7 @@ export function summarizeFares(
   inboundSeat: SeatType,
   passengerCount: number,
   breakdown?: PaxBreakdownIn | null,
+  feeSettings: FeeSettings = DEFAULT_FEE_SETTINGS,
 ): FareSummary {
   const out = legFares(outbound, outboundSeat);
   const inn = legFares(inbound, inboundSeat);
@@ -116,7 +129,9 @@ export function summarizeFares(
     breakdown && (breakdown.adults || breakdown.children || breakdown.toddlers || breakdown.seniors)
       ? expandPaxBreakdown(breakdown)
       : Array(Math.max(1, passengerCount)).fill("adult");
-  const rows = types.map((type) => paxFareFor(ppRegular, ppDiscounted, type));
+  const rows = types.map((type) =>
+    paxFareFor(ppRegular, ppDiscounted, type, feeSettings),
+  );
   const total = rows.reduce((sum, r) => sum + r.legTotal, 0);
   return { ppRegular, ppDiscounted, ppDiscount, rows, total };
 }

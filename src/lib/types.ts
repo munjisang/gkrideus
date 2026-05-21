@@ -4,6 +4,22 @@ export type SeatPref = "none" | "window" | "aisle";
 export type Gender = "M" | "F";
 export type PayMethod = "card" | "paypal";
 
+/** Admin-configurable fee policy stored in `service_settings`. */
+export type FeeSettings = {
+  /** 발권수수료율 in [0, 1]. e.g. 0.2 = 20%. */
+  bookingFeeRate: number;
+  /** Apply the rate to either 정상운임 (regular) or 결제운임 (discounted). */
+  bookingFeeBasis: "regular" | "discounted";
+  /** 취소수수료율 in [0, 1]. */
+  cancelFeeRate: number;
+};
+
+export const DEFAULT_FEE_SETTINGS: FeeSettings = {
+  bookingFeeRate: 0.2,
+  bookingFeeBasis: "discounted",
+  cancelFeeRate: 0.1,
+};
+
 export type TrainSchedule = {
   trainNo: string;
   trainGradeCode: string;
@@ -92,6 +108,10 @@ export type Order = {
   /** Payment method chosen at checkout. Persisted for the booking
    *  detail's "결제수단" line. */
   payMethod?: PayMethod;
+  /** Snapshot of admin fee settings at checkout time. Lets the booking
+   *  detail re-render the same numbers later even after the admin
+   *  changes service-settings. */
+  feeSettings?: FeeSettings;
   totalPrice: number;
   /** Result of clicking [예매하기] in admin — outbound leg. */
   reservation?: Reservation;

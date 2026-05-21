@@ -18,6 +18,7 @@ import type {
   SeatType,
   TrainSchedule,
 } from "../../../lib/types";
+import { DEFAULT_FEE_SETTINGS } from "../../../lib/types";
 
 type StatusKey = "pending" | "confirmed" | "ticketed" | "cancelled";
 
@@ -143,6 +144,8 @@ export default function BookingDetailPage({
       .catch(() => setOrder(null));
   }, [id]);
 
+  const feeSettings = order?.feeSettings ?? DEFAULT_FEE_SETTINGS;
+
   const fareSummary = useMemo(() => {
     if (!order) return null;
     return summarizeFares(
@@ -152,8 +155,9 @@ export default function BookingDetailPage({
       order.inboundSeatType ?? order.seatType,
       order.passengerCount,
       order.paxBreakdown ?? null,
+      feeSettings,
     );
-  }, [order]);
+  }, [order, feeSettings]);
 
   async function cancelLeg(leg: "out" | "in") {
     if (!order) return;
@@ -253,8 +257,12 @@ export default function BookingDetailPage({
     fareSummary?.rows.reduce((s, r) => s + r.netPay, 0) ?? 0;
   const totalFee = fareSummary?.rows.reduce((s, r) => s + r.fee, 0) ?? 0;
   const grandTotal = fareSummary?.total ?? order.totalPrice;
-  // 취소수수료 = 10% of grand total (ceil to 100원).
-  const cancelFee = Math.ceil((grandTotal * 0.1) / 100) * 100;
+  // 취소수수료 — rate from the admin's service settings (frozen onto the
+  // order at checkout). Ceil to 100원 to match other fee math.
+  const cancelFee =
+    Math.ceil((grandTotal * feeSettings.cancelFeeRate) / 100) * 100;
+  const cancelFeePctLabel = `${Math.round(feeSettings.cancelFeeRate * 100)}%`;
+  const bookingFeePctLabel = `${Math.round(feeSettings.bookingFeeRate * 100)}%`;
 
   return (
     <div className="bg-slate-50 min-h-full">
@@ -377,7 +385,10 @@ export default function BookingDetailPage({
               label={t("ord.fare.netPay")}
               value={krwL(totalNetPay, lang)}
             />
-            <KvLine label={t("ord.fare.fee")} value={krwL(totalFee, lang)} />
+            <KvLine
+              label={t("ord.fare.fee", { p: bookingFeePctLabel })}
+              value={krwL(totalFee, lang)}
+            />
             <div className="pt-2 mt-1 border-t border-slate-100 flex items-center justify-between">
               <span className="text-sm font-semibold text-slate-800">
                 {t("ord.total")}
@@ -430,10 +441,13 @@ export default function BookingDetailPage({
                 label={t("ord.fare.netPay")}
                 value={krwL(totalNetPay, lang)}
               />
-              <KvLine label={t("ord.fare.fee")} value={krwL(totalFee, lang)} />
+              <KvLine
+              label={t("ord.fare.fee", { p: bookingFeePctLabel })}
+              value={krwL(totalFee, lang)}
+            />
               <KvLine label={t("bk.payAmount")} value={krwL(grandTotal, lang)} />
               <KvLine
-                label={t("bk.cancelFee")}
+                label={t("bk.cancelFee", { p: cancelFeePctLabel })}
                 value={`-${krwL(cancelFee, lang)}`}
               />
               {/* 환불 합계 — mirrors the 결제정보 section's bold sky line. */}

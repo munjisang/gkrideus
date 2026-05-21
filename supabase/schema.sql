@@ -140,3 +140,37 @@ alter table public.service_accounts
 
 create index if not exists service_accounts_service_display_order_idx
     on public.service_accounts (service, display_order);
+
+
+-- ─────────────────────────────────────────────────────────────────
+-- service_settings — single-row table for admin-configurable fees.
+-- The booking flow reads this at checkout time and freezes the values
+-- onto the order itself (Order.feeSettings) for historical consistency.
+create table if not exists public.service_settings (
+    id                 text primary key default 'default',
+    booking_fee_rate   numeric not null default 0.20,
+    booking_fee_basis  text    not null default 'discounted'
+                         check (booking_fee_basis in ('regular', 'discounted')),
+    cancel_fee_rate    numeric not null default 0.10,
+    updated_at         timestamptz not null default now()
+);
+
+alter table public.service_settings enable row level security;
+
+drop policy if exists "no_anon" on public.service_settings;
+create policy "no_anon"
+    on public.service_settings
+    for all
+    to anon
+    using (false)
+    with check (false);
+
+-- Seed the single 'default' row if it doesn't exist yet.
+insert into public.service_settings (id) values ('default')
+on conflict (id) do nothing;
+
+-- order.fee_settings — JSONB snapshot of the rate/basis used at
+-- checkout. Lets us re-render the same breakdown later even after the
+-- admin changes settings. Null for legacy orders.
+alter table public.orders
+    add column if not exists fee_settings jsonb;

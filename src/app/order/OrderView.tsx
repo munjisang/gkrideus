@@ -12,6 +12,7 @@ import { durationL, krwL } from "../../lib/format-i18n";
 import { legFares, summarizeFares, type PaxType } from "../../lib/fareCalc";
 import { useI18n, type Lang } from "../../lib/i18n";
 import type {
+  FeeSettings,
   Order,
   Passenger,
   Reservation,
@@ -20,6 +21,7 @@ import type {
   TrainSchedule,
   TripType,
 } from "../../lib/types";
+import { DEFAULT_FEE_SETTINGS } from "../../lib/types";
 
 /** Response envelope returned by /api/booking/reserve and /api/booking/cancel. */
 type BookingResult = {
@@ -150,6 +152,26 @@ export default function OrderView() {
   const [seatPref, setSeatPref] = useState<SeatPref>("none");
   const [reservant, setReservant] = useState<Passenger>(emptyPassenger);
   const [countrySheetOpen, setCountrySheetOpen] = useState(false);
+
+  // Fee policy from the admin. Initial render uses defaults; we refresh
+  // when the (lightweight) public endpoint responds. The fetched value
+  // is what gets snapshotted onto the order at checkout time.
+  const [feeSettings, setFeeSettings] = useState<FeeSettings>(DEFAULT_FEE_SETTINGS);
+  useEffect(() => {
+    let cancelled = false;
+    fetch("/api/settings/fare", { cache: "no-store" })
+      .then((r) => r.json())
+      .then((j: { ok: boolean; settings?: FeeSettings }) => {
+        if (cancelled) return;
+        if (j.ok && j.settings) setFeeSettings(j.settings);
+      })
+      .catch(() => {
+        /* fall back to defaults silently */
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
   const [payMethod, setPayMethod] = useState<PayMethod | null>(null);
   const [agreed, setAgreed] = useState<Record<AgreementId, boolean>>({
     fare: false,
@@ -177,6 +199,7 @@ export default function OrderView() {
       toddlers: paxToddlers,
       seniors: paxSeniors,
     },
+    feeSettings,
   );
   const totalPrice = fareSummary.total;
 
@@ -325,6 +348,10 @@ export default function OrderView() {
       passengers: [reservant],
       seatPref,
       payMethod: payMethod ?? undefined,
+      // Freeze the policy that was in effect at checkout so the booking
+      // detail can reproduce the same numbers even after the admin
+      // tweaks service-settings later.
+      feeSettings,
       totalPrice,
       reservation: outRsv,
       inboundReservation: inRsv,
@@ -455,6 +482,7 @@ export default function OrderView() {
                 netPay={r.fare.netPay}
                 fee={r.fare.fee}
                 legTotal={r.fare.legTotal}
+                feePctLabel={`${Math.round(feeSettings.bookingFeeRate * 100)}%`}
                 lang={lang}
                 tt={t}
               />
@@ -795,6 +823,7 @@ function PaxFareBlock({
   netPay,
   fee,
   legTotal,
+  feePctLabel,
   lang,
   tt,
 }: {
@@ -805,8 +834,10 @@ function PaxFareBlock({
   netPay: number;
   fee: number;
   legTotal: number;
+  /** "20%" — interpolated into the i18n label for the fee row. */
+  feePctLabel: string;
   lang: Lang;
-  tt: (k: string) => string;
+  tt: (k: string, p?: Record<string, string | number>) => string;
 }) {
   const Row = ({
     name,
@@ -838,7 +869,10 @@ function PaxFareBlock({
         value={discount > 0 ? `-${krwL(discount, lang)}` : krwL(0, lang)}
       />
       <Row name={tt("ord.fare.netPay")} value={krwL(netPay, lang)} />
-      <Row name={tt("ord.fare.fee")} value={krwL(fee, lang)} />
+      <Row
+        name={tt("ord.fare.fee", { p: feePctLabel })}
+        value={krwL(fee, lang)}
+      />
       <Row name={tt("ord.fare.legTotal")} value={krwL(legTotal, lang)} bold />
     </div>
   );

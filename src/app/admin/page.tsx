@@ -11,12 +11,14 @@ import {
 import { fmtDate, fmtDateTime, fmtKRW, fmtTime } from "../../lib/format";
 import type { Order, Reservation, TrainSchedule } from "../../lib/types";
 import AccountsTab from "./AccountsTab";
+import SettingsTab from "./SettingsTab";
 
-type AdminTab = "bookings" | "accounts";
+type AdminTab = "bookings" | "accounts" | "settings";
 
 const TABS: { id: AdminTab; label: string }[] = [
   { id: "bookings", label: "예매내역" },
   { id: "accounts", label: "계정설정" },
+  { id: "settings", label: "서비스 설정" },
 ];
 
 type BookingResult = {
@@ -479,6 +481,7 @@ export default function AdminPage() {
       </div>
 
       {tab === "accounts" && <AccountsTab />}
+      {tab === "settings" && <SettingsTab />}
 
       {tab === "bookings" && (
         <>
