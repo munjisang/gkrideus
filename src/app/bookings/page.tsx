@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { loadOrders, updateOrder } from "../../lib/storage";
 import { fmtTime, durationMinutes } from "../../lib/format";
-import { fmtDateDots, durationL, krwL, fmtCarSeatL } from "../../lib/format-i18n";
+import { fmtDateDots, durationL, krwL } from "../../lib/format-i18n";
 import { useI18n, stationLabel, type Lang } from "../../lib/i18n";
 import { TrainLogo } from "../../components/TrainLogo";
 import type { Order, Reservation, TrainSchedule } from "../../lib/types";
@@ -364,17 +364,6 @@ function LegBlock({
             </span>
           </>
         )}
-        {(() => {
-          const cs = fmtCarSeatL(rsv?.carNo, rsv?.seatNo, rsv?.seatNoEnd, lang);
-          return cs ? (
-            <>
-              <span className="text-slate-300">·</span>
-              <span className={`text-xs font-semibold ${muted("text-violet-700")}`}>
-                {cs}
-              </span>
-            </>
-          ) : null;
-        })()}
       </div>
 
       {/* Row 2: logo + train no ─── date */}

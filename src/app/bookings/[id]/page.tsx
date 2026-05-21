@@ -5,12 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { loadOrders, updateOrder } from "../../../lib/storage";
 import { fmtTime, fmtDateTime, durationMinutes } from "../../../lib/format";
-import {
-  fmtDateDots,
-  durationL,
-  krwL,
-  fmtCarSeatL,
-} from "../../../lib/format-i18n";
+import { fmtDateDots, durationL, krwL } from "../../../lib/format-i18n";
 import { useI18n, stationLabel, type Lang } from "../../../lib/i18n";
 import { countryLabel } from "../../../lib/countries";
 import { summarizeFares } from "../../../lib/fareCalc";
@@ -61,6 +56,64 @@ const PAY_METHOD_KEY: Record<PayMethod, string> = {
   card: "bk.payMethod.card",
   paypal: "bk.payMethod.paypal",
 };
+
+/** Expand a Korail seat range ("11A" → "11B") into the individual seat
+ *  strings. Falls back gracefully when the range can't be parsed or when
+ *  no end seat is provided. */
+function expandSeats(
+  seatNo: string | undefined,
+  seatNoEnd: string | undefined,
+  totalCount: number,
+): string[] {
+  if (!seatNo) return [];
+  if (!seatNoEnd || seatNoEnd === seatNo) {
+    // Single declared seat — just that one slot.
+    return [seatNo];
+  }
+  const m1 = seatNo.match(/^(\d+)([A-Za-z])$/);
+  const m2 = seatNoEnd.match(/^(\d+)([A-Za-z])$/);
+  if (!m1 || !m2) return [seatNo, seatNoEnd];
+  const row1 = m1[1];
+  const col1 = m1[2].toUpperCase().charCodeAt(0);
+  const row2 = m2[1];
+  const col2 = m2[2].toUpperCase().charCodeAt(0);
+  // Same row → simple A..B/C/D enumeration.
+  if (row1 === row2) {
+    const out: string[] = [];
+    for (let c = col1; c <= col2 && out.length < totalCount + 8; c++) {
+      out.push(`${row1}${String.fromCharCode(c)}`);
+    }
+    return out;
+  }
+  // Different rows — return the endpoints; caller pads/truncates.
+  return [seatNo, seatNoEnd];
+}
+
+/** Generate per-passenger labels for seated pax types (toddlers excluded
+ *  since they ride without a dedicated seat). */
+function seatedPaxLabels(
+  order: Order,
+  t: (k: string, p?: Record<string, string | number>) => string,
+): { label: string; isSeated: boolean }[] {
+  const b = order.paxBreakdown ?? {
+    adults: order.passengerCount,
+    children: 0,
+    toddlers: 0,
+    seniors: 0,
+  };
+  const out: { label: string; isSeated: boolean }[] = [];
+  for (let i = 1; i <= (b.adults ?? 0); i++)
+    out.push({ label: `${t("pax.adult")}${i}`, isSeated: true });
+  for (let i = 1; i <= (b.children ?? 0); i++)
+    out.push({ label: `${t("pax.child")}${i}`, isSeated: true });
+  for (let i = 1; i <= (b.seniors ?? 0); i++)
+    out.push({ label: `${t("pax.senior")}${i}`, isSeated: true });
+  for (let i = 1; i <= (b.toddlers ?? 0); i++)
+    out.push({ label: `${t("pax.toddler")}${i}`, isSeated: false });
+  if (out.length === 0)
+    out.push({ label: t("pax.adult"), isSeated: true });
+  return out;
+}
 
 /** ISO timestamp → "YYYY.MM.DD HH:mm" for display. */
 function fmtAt(iso: string | undefined): string | null {
@@ -206,6 +259,9 @@ export default function BookingDetailPage({
     <div className="bg-slate-50 min-h-full">
       {header}
       <div className="mx-4 sm:mx-6 lg:mx-[470px] py-4 pb-10 space-y-2">
+        {/* Per-passenger labels used by the seat-assignment rows inside
+            each leg block. Toddlers carry isSeated=false. */}
+        {(() => null)()}
         {/* ── 1. 여정 (Itinerary) — list-style LegBlocks. */}
         <section className="bg-white border border-slate-200 rounded-xl overflow-hidden">
           <h2 className="font-semibold px-5 pt-4 text-slate-800">
@@ -221,6 +277,7 @@ export default function BookingDetailPage({
             t={t}
             cancelling={cancelling === "out"}
             onCancel={() => cancelLeg("out")}
+            paxLabels={seatedPaxLabels(order, t)}
           />
           {order.tripType === "roundtrip" && order.inbound && inStatus !== null && (
             <>
@@ -235,6 +292,7 @@ export default function BookingDetailPage({
                 t={t}
                 cancelling={cancelling === "in"}
                 onCancel={() => cancelLeg("in")}
+                paxLabels={seatedPaxLabels(order, t)}
               />
             </>
           )}
@@ -478,6 +536,7 @@ function LegBlock({
   t,
   cancelling,
   onCancel,
+  paxLabels,
 }: {
   leg: "out" | "in";
   label: string;
@@ -488,6 +547,9 @@ function LegBlock({
   t: (k: string, p?: Record<string, string | number>) => string;
   cancelling: boolean;
   onCancel: () => void;
+  /** All passengers on this order. Toddlers carry isSeated=false so we
+   *  can render an em-dash instead of pretending they have a seat. */
+  paxLabels: { label: string; isSeated: boolean }[];
 }) {
   const mins = durationMinutes(train.depPlandTime, train.arrPlandTime);
   const dim = status === "cancelled";
@@ -523,17 +585,6 @@ function LegBlock({
             </span>
           </>
         )}
-        {(() => {
-          const cs = fmtCarSeatL(rsv?.carNo, rsv?.seatNo, rsv?.seatNoEnd, lang);
-          return cs ? (
-            <>
-              <span className="text-slate-300">·</span>
-              <span className={`text-xs font-semibold ${muted("text-violet-700")}`}>
-                {cs}
-              </span>
-            </>
-          ) : null;
-        })()}
       </div>
 
       <div className="flex items-baseline justify-between gap-2 pt-3">
@@ -578,6 +629,35 @@ function LegBlock({
           {stationLabel(train.arrPlaceName, lang)}
         </span>
       </div>
+
+      {/* Per-passenger 호차/좌석 assignments (only once ticketed). */}
+      {status === "ticketed" && rsv?.carNo && rsv?.seatNo && (
+        <ul className="mt-3 pt-3 border-t border-slate-100 space-y-1.5">
+          {(() => {
+            const seatedCount = paxLabels.filter((p) => p.isSeated).length;
+            const seats = expandSeats(rsv.seatNo, rsv.seatNoEnd, seatedCount);
+            const carText =
+              lang === "ko"
+                ? `${Number(rsv.carNo) || rsv.carNo}호`
+                : `Car ${Number(rsv.carNo) || rsv.carNo}`;
+            let seatIdx = 0;
+            return paxLabels.map((p) => {
+              const seat = p.isSeated ? seats[seatIdx++] : null;
+              return (
+                <li
+                  key={p.label}
+                  className="flex items-center justify-between text-sm"
+                >
+                  <span className="text-slate-600">{p.label}</span>
+                  <span className="font-semibold text-violet-700 tabular-nums">
+                    {seat ? `${carText} ${seat}` : "—"}
+                  </span>
+                </li>
+              );
+            });
+          })()}
+        </ul>
+      )}
 
       {showCancel && (
         <div className="pt-3">
