@@ -12,6 +12,10 @@ import { fmtDate, fmtDateTime, fmtKRW, fmtTime } from "../../lib/format";
 import type { Order, Reservation, TrainSchedule } from "../../lib/types";
 import AccountsTab from "./AccountsTab";
 import SettingsTab from "./SettingsTab";
+import BookingCard, {
+  type AdminActions,
+} from "../../components/bookings/BookingCard";
+import { useI18n } from "../../lib/i18n";
 
 type AdminTab = "bookings" | "accounts" | "settings";
 
@@ -35,10 +39,65 @@ type BookingResult = {
   serverReply?: unknown;
 };
 
+/** Compute the admin-action flags + failure message for a single order
+ *  and bundle them with the parent's handlers. Mirrors the logic that
+ *  used to live inside the now-removed OrderCard. */
+function adminActionsFor(
+  order: Order,
+  ctx: {
+    busy: boolean;
+    result: BookingResult | undefined;
+    onBook: () => void;
+    onConfirm: () => void;
+    onCancel: () => void;
+    onDelete: () => void;
+  },
+): AdminActions {
+  const hasLiveReservation =
+    (order.reservation?.mode === "live" &&
+      !!order.reservation.rsvId &&
+      !order.reservation.cancelled) ||
+    (order.inboundReservation?.mode === "live" &&
+      !!order.inboundReservation.rsvId &&
+      !order.inboundReservation.cancelled);
+  const hasUnconfirmedLeg =
+    (!!order.reservation &&
+      !order.reservation.cancelled &&
+      !order.reservation.ticketed &&
+      !order.reservation.confirmed) ||
+    (!!order.inboundReservation &&
+      !order.inboundReservation.cancelled &&
+      !order.inboundReservation.ticketed &&
+      !order.inboundReservation.confirmed);
+  const hasAnyReservation = !!order.reservation || !!order.inboundReservation;
+  const todayYmd = (() => {
+    const d = new Date();
+    const p = (n: number) => n.toString().padStart(2, "0");
+    return `${d.getFullYear()}${p(d.getMonth() + 1)}${p(d.getDate())}`;
+  })();
+  const isExpired =
+    !hasAnyReservation && order.outbound.depPlandTime.slice(0, 8) < todayYmd;
+  const failureMessage =
+    ctx.result && ctx.result.ok === false
+      ? `[${ctx.result.stage ?? "오류"}] ${ctx.result.error ?? "알 수 없는 오류"}`
+      : undefined;
+  return {
+    busy: ctx.busy,
+    hasLiveReservation,
+    hasUnconfirmedLeg,
+    isExpired,
+    failureMessage,
+    onBook: ctx.onBook,
+    onConfirm: ctx.onConfirm,
+    onCancel: ctx.onCancel,
+    onDelete: ctx.onDelete,
+  };
+}
+
 export default function AdminPage() {
+  const { t, lang } = useI18n();
   const [tab, setTab] = useState<AdminTab>("bookings");
   const [orders, setOrders] = useState<Order[] | null>(null);
-  const [openId, setOpenId] = useState<string | null>(null);
   const [busyId, setBusyId] = useState<string | null>(null);
   const [resultBy, setResultBy] = useState<Record<string, BookingResult>>({});
   const [syncing, setSyncing] = useState(false);
@@ -537,21 +596,24 @@ export default function AdminPage() {
             </div>
           )}
 
-          <ul className="grid gap-4 grid-cols-1 md:grid-cols-2 xl:grid-cols-3">
+          <div className="space-y-2">
             {orders?.map((o) => (
-              <OrderCard
+              <BookingCard
                 key={o.id}
                 order={o}
-                busy={busyId === o.id}
-                result={resultBy[o.id]}
-                onToggle={() => setOpenId(o.id)}
-                onBook={() => onBook(o)}
-                onCancel={() => onCancel(o)}
-                onDelete={() => onDelete(o.id)}
-                onConfirm={() => onConfirm(o)}
+                lang={lang}
+                t={t}
+                adminActions={adminActionsFor(o, {
+                  busy: busyId === o.id,
+                  result: resultBy[o.id],
+                  onBook: () => onBook(o),
+                  onConfirm: () => onConfirm(o),
+                  onCancel: () => onCancel(o),
+                  onDelete: () => onDelete(o.id),
+                })}
               />
             ))}
-          </ul>
+          </div>
 
           {orders && orders.length > 0 && (
             <div className="mt-6 flex justify-center">
@@ -563,12 +625,6 @@ export default function AdminPage() {
               </button>
             </div>
           )}
-
-          <DetailModal
-            order={openId ? (orders?.find((o) => o.id === openId) ?? null) : null}
-            result={openId ? resultBy[openId] : undefined}
-            onClose={() => setOpenId(null)}
-          />
         </>
       )}
     </div>
