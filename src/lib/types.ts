@@ -48,6 +48,18 @@ export type Reservation = {
   confirmed?: boolean;
   /** ISO timestamp when admin confirmed. */
   confirmedAt?: string;
+  /** True once Korail issues an actual ticket (=결제 완료 + 좌석 배정).
+   *  The Korail reservation row disappears at this point; we detect this
+   *  by matching the train/date against `korail.tickets()`. */
+  ticketed?: boolean;
+  /** ISO timestamp when we observed the ticketing. */
+  ticketedAt?: string;
+  /** 호차 — e.g. "04". Only present once ticketed. */
+  carNo?: string;
+  /** 좌석번호 — e.g. "7A". */
+  seatNo?: string;
+  /** 다구간 좌석의 끝 좌석. 단일 좌석이면 undefined. */
+  seatNoEnd?: string;
   raw?: unknown;
 };
 

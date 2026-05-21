@@ -5,7 +5,12 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { loadOrders, updateOrder } from "../../../lib/storage";
 import { fmtTime, fmtDateTime, durationMinutes } from "../../../lib/format";
-import { fmtDateDots, durationL, krwL } from "../../../lib/format-i18n";
+import {
+  fmtDateDots,
+  durationL,
+  krwL,
+  fmtCarSeatL,
+} from "../../../lib/format-i18n";
 import { useI18n, stationLabel, type Lang } from "../../../lib/i18n";
 import { countryLabel } from "../../../lib/countries";
 import { summarizeFares } from "../../../lib/fareCalc";
@@ -18,11 +23,12 @@ import type {
   TrainSchedule,
 } from "../../../lib/types";
 
-type StatusKey = "pending" | "confirmed" | "cancelled";
+type StatusKey = "pending" | "confirmed" | "ticketed" | "cancelled";
 
 function rsvStatus(r: Reservation | undefined): StatusKey {
   if (!r) return "cancelled";
   if (r.cancelled) return "cancelled";
+  if (r.ticketed) return "ticketed";
   if (r.confirmed) return "confirmed";
   return "pending";
 }
@@ -36,7 +42,9 @@ function orderStatus(o: Order): StatusKey {
   if (out === "cancelled" && (inn === null || inn === "cancelled")) {
     return "cancelled";
   }
-  // Confirmed only when every present leg is confirmed.
+  if (out === "ticketed" && (inn === null || inn === "ticketed")) {
+    return "ticketed";
+  }
   if (out === "confirmed" && (inn === null || inn === "confirmed")) {
     return "confirmed";
   }
@@ -434,20 +442,22 @@ function StatusText({
   t: (k: string) => string;
 }) {
   const cls =
-    status === "confirmed"
-      ? "text-emerald-700"
-      : status === "pending"
-        ? "text-sky-700"
-        : "text-slate-400";
-  return (
-    <span className={`text-xs font-semibold ${cls}`}>
-      {status === "confirmed"
+    status === "ticketed"
+      ? "text-violet-700"
+      : status === "confirmed"
+        ? "text-emerald-700"
+        : status === "pending"
+          ? "text-sky-700"
+          : "text-slate-400";
+  const label =
+    status === "ticketed"
+      ? t("bk.status.ticketed")
+      : status === "confirmed"
         ? t("bk.status.confirmed")
         : status === "pending"
           ? t("bk.status.pending")
-          : t("bk.status.cancelled")}
-    </span>
-  );
+          : t("bk.status.cancelled");
+  return <span className={`text-xs font-semibold ${cls}`}>{label}</span>;
 }
 
 /** Same layout as the list card's LegBlock, with an optional in-block
@@ -500,6 +510,17 @@ function LegBlock({
             </span>
           </>
         )}
+        {(() => {
+          const cs = fmtCarSeatL(rsv?.carNo, rsv?.seatNo, rsv?.seatNoEnd, lang);
+          return cs ? (
+            <>
+              <span className="text-slate-300">·</span>
+              <span className={`text-xs font-semibold ${muted("text-violet-700")}`}>
+                {cs}
+              </span>
+            </>
+          ) : null;
+        })()}
       </div>
 
       <div className="flex items-baseline justify-between gap-2 pt-3">

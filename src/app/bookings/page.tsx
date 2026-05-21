@@ -4,16 +4,19 @@ import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { loadOrders, updateOrder } from "../../lib/storage";
 import { fmtTime, durationMinutes } from "../../lib/format";
-import { fmtDateDots, durationL, krwL } from "../../lib/format-i18n";
+import { fmtDateDots, durationL, krwL, fmtCarSeatL } from "../../lib/format-i18n";
 import { useI18n, stationLabel, type Lang } from "../../lib/i18n";
 import { TrainLogo } from "../../components/TrainLogo";
 import type { Order, Reservation, TrainSchedule } from "../../lib/types";
 
-type StatusKey = "pending" | "confirmed" | "cancelled";
+type StatusKey = "pending" | "confirmed" | "ticketed" | "cancelled";
 
 function rsvStatus(r: Reservation | undefined): StatusKey {
   if (!r) return "cancelled";
   if (r.cancelled) return "cancelled";
+  // Ticketed takes precedence over confirmed — once Korail issues a
+  // ticket the seat is locked in regardless of admin's confirm flag.
+  if (r.ticketed) return "ticketed";
   if (r.confirmed) return "confirmed";
   return "pending";
 }
@@ -44,13 +47,33 @@ export default function BookingsListPage() {
    */
   async function syncReservations(currentOrders: Order[]) {
     const live: { orderId: string; leg: "out" | "in"; rsvId: string }[] = [];
+    const matchers: {
+      rsvId: string;
+      trainNo: string;
+      depDate: string;
+      depTime: string;
+    }[] = [];
     for (const o of currentOrders) {
       const r1 = o.reservation;
       const r2 = o.inboundReservation;
-      if (r1?.mode === "live" && r1.rsvId && !r1.cancelled)
+      if (r1?.mode === "live" && r1.rsvId && !r1.cancelled) {
         live.push({ orderId: o.id, leg: "out", rsvId: r1.rsvId });
-      if (r2?.mode === "live" && r2.rsvId && !r2.cancelled)
+        matchers.push({
+          rsvId: r1.rsvId,
+          trainNo: o.outbound.trainNo,
+          depDate: o.outbound.depPlandTime.slice(0, 8),
+          depTime: o.outbound.depPlandTime.slice(8, 12),
+        });
+      }
+      if (r2?.mode === "live" && r2.rsvId && !r2.cancelled && o.inbound) {
         live.push({ orderId: o.id, leg: "in", rsvId: r2.rsvId });
+        matchers.push({
+          rsvId: r2.rsvId,
+          trainNo: o.inbound.trainNo,
+          depDate: o.inbound.depPlandTime.slice(0, 8),
+          depTime: o.inbound.depPlandTime.slice(8, 12),
+        });
+      }
     }
     if (live.length === 0) return;
     setSyncing(true);
@@ -58,30 +81,53 @@ export default function BookingsListPage() {
       const res = await fetch("/api/booking/sync", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ rsvIds: live.map((x) => x.rsvId) }),
+        body: JSON.stringify({ rsvIds: live.map((x) => x.rsvId), matchers }),
       });
       const j = (await res.json()) as {
         ok: boolean;
         cancelled?: string[];
+        ticketed?: {
+          rsvId: string;
+          carNo: string | null;
+          seatNo: string | null;
+          seatNoEnd: string | null;
+        }[];
       };
       if (!j.ok) return;
       const cancelled = new Set(j.cancelled ?? []);
-      if (cancelled.size === 0) return;
-      // Mark each disappeared leg as cancelled — keep rsvId/deadline for history.
+      const ticketedById = new Map(
+        (j.ticketed ?? []).map((x) => [x.rsvId, x] as const),
+      );
+      if (cancelled.size === 0 && ticketedById.size === 0) return;
+      // Apply per-leg patches: ticketed wins over cancelled (shouldn't
+      // appear in both buckets, but be defensive).
       const nowIso = new Date().toISOString();
       const orderById = new Map(currentOrders.map((o) => [o.id, o] as const));
       const patches = new Map<string, Partial<Order>>();
       for (const e of live) {
-        if (!cancelled.has(e.rsvId)) continue;
         const order = orderById.get(e.orderId);
         if (!order) continue;
         const src = e.leg === "out" ? order.reservation : order.inboundReservation;
         if (!src) continue;
-        const flagged: Reservation = {
-          ...src,
-          cancelled: true,
-          cancelledAt: src.cancelledAt ?? nowIso,
-        };
+        let flagged: Reservation | null = null;
+        const tk = ticketedById.get(e.rsvId);
+        if (tk) {
+          flagged = {
+            ...src,
+            ticketed: true,
+            ticketedAt: src.ticketedAt ?? nowIso,
+            carNo: tk.carNo ?? undefined,
+            seatNo: tk.seatNo ?? undefined,
+            seatNoEnd: tk.seatNoEnd ?? undefined,
+          };
+        } else if (cancelled.has(e.rsvId)) {
+          flagged = {
+            ...src,
+            cancelled: true,
+            cancelledAt: src.cancelledAt ?? nowIso,
+          };
+        }
+        if (!flagged) continue;
         const cur = patches.get(e.orderId) ?? {};
         if (e.leg === "out") cur.reservation = flagged;
         else cur.inboundReservation = flagged;
@@ -318,6 +364,17 @@ function LegBlock({
             </span>
           </>
         )}
+        {(() => {
+          const cs = fmtCarSeatL(rsv?.carNo, rsv?.seatNo, rsv?.seatNoEnd, lang);
+          return cs ? (
+            <>
+              <span className="text-slate-300">·</span>
+              <span className={`text-xs font-semibold ${muted("text-violet-700")}`}>
+                {cs}
+              </span>
+            </>
+          ) : null;
+        })()}
       </div>
 
       {/* Row 2: logo + train no ─── date */}
@@ -377,18 +434,20 @@ function StatusText({
   t: (k: string) => string;
 }) {
   const cls =
-    status === "confirmed"
-      ? "text-emerald-700"
-      : status === "pending"
-        ? "text-sky-700"
-        : "text-slate-400";
-  return (
-    <span className={`text-xs font-semibold ${cls}`}>
-      {status === "confirmed"
+    status === "ticketed"
+      ? "text-violet-700"
+      : status === "confirmed"
+        ? "text-emerald-700"
+        : status === "pending"
+          ? "text-sky-700"
+          : "text-slate-400";
+  const label =
+    status === "ticketed"
+      ? t("bk.status.ticketed")
+      : status === "confirmed"
         ? t("bk.status.confirmed")
         : status === "pending"
           ? t("bk.status.pending")
-          : t("bk.status.cancelled")}
-    </span>
-  );
+          : t("bk.status.cancelled");
+  return <span className={`text-xs font-semibold ${cls}`}>{label}</span>;
 }

@@ -20,3 +20,17 @@ export function fmtDateDots(plandTime: string): string {
   if (plandTime.length < 8) return plandTime;
   return `${plandTime.slice(0, 4)}.${plandTime.slice(4, 6)}.${plandTime.slice(6, 8)}`;
 }
+
+/** Localised "N호 7A" / "Car N · 7A" from Reservation car/seat fields.
+ *  Returns null when either piece is missing. */
+export function fmtCarSeatL(
+  carNo: string | undefined,
+  seatNo: string | undefined,
+  seatNoEnd: string | undefined,
+  lang: Lang,
+): string | null {
+  if (!carNo || !seatNo) return null;
+  const car = String(Number(carNo) || carNo);
+  const seats = seatNoEnd ? `${seatNo}~${seatNoEnd}` : seatNo;
+  return lang === "ko" ? `${car}호 ${seats}` : `Car ${car} · ${seats}`;
+}

@@ -61,13 +61,33 @@ export default function AdminPage() {
   async function syncReservations(opts: { silent?: boolean } = {}) {
     const all = await loadOrders();
     const ids: { orderId: string; leg: "out" | "in"; rsvId: string }[] = [];
+    const matchers: {
+      rsvId: string;
+      trainNo: string;
+      depDate: string;
+      depTime: string;
+    }[] = [];
     for (const o of all) {
       const r1 = o.reservation;
       const r2 = o.inboundReservation;
-      if (r1?.mode === "live" && r1.rsvId && !r1.cancelled)
+      if (r1?.mode === "live" && r1.rsvId && !r1.cancelled) {
         ids.push({ orderId: o.id, leg: "out", rsvId: r1.rsvId });
-      if (r2?.mode === "live" && r2.rsvId && !r2.cancelled)
+        matchers.push({
+          rsvId: r1.rsvId,
+          trainNo: o.outbound.trainNo,
+          depDate: o.outbound.depPlandTime.slice(0, 8),
+          depTime: o.outbound.depPlandTime.slice(8, 12),
+        });
+      }
+      if (r2?.mode === "live" && r2.rsvId && !r2.cancelled && o.inbound) {
         ids.push({ orderId: o.id, leg: "in", rsvId: r2.rsvId });
+        matchers.push({
+          rsvId: r2.rsvId,
+          trainNo: o.inbound.trainNo,
+          depDate: o.inbound.depPlandTime.slice(0, 8),
+          depTime: o.inbound.depPlandTime.slice(8, 12),
+        });
+      }
     }
     if (ids.length === 0) {
       setLastSyncAt(new Date().toISOString());
@@ -79,12 +99,18 @@ export default function AdminPage() {
       const res = await fetch("/api/booking/sync", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ rsvIds: ids.map((x) => x.rsvId) }),
+        body: JSON.stringify({ rsvIds: ids.map((x) => x.rsvId), matchers }),
       });
       const j = (await res.json()) as {
         ok: boolean;
         cancelled?: string[];
         active?: string[];
+        ticketed?: {
+          rsvId: string;
+          carNo: string | null;
+          seatNo: string | null;
+          seatNoEnd: string | null;
+        }[];
         error?: string;
         stage?: string;
       };
@@ -93,28 +119,42 @@ export default function AdminPage() {
         return;
       }
       const cancelled = new Set(j.cancelled ?? []);
-      if (cancelled.size === 0) {
+      const ticketedById = new Map(
+        (j.ticketed ?? []).map((x) => [x.rsvId, x] as const),
+      );
+      if (cancelled.size === 0 && ticketedById.size === 0) {
         setSyncError(null);
         setLastSyncAt(new Date().toISOString());
         return;
       }
-      // Mark each disappeared leg as cancelled — keep rsvId/deadline for
-      // history rather than nulling the reservation entirely.
       const nowIso = new Date().toISOString();
       const patches = new Map<string, Partial<Order>>();
       const orderById = new Map(all.map((o) => [o.id, o] as const));
       for (const entry of ids) {
-        if (!cancelled.has(entry.rsvId)) continue;
         const order = orderById.get(entry.orderId);
         if (!order) continue;
         const src =
           entry.leg === "out" ? order.reservation : order.inboundReservation;
         if (!src) continue;
-        const flagged: Reservation = {
-          ...src,
-          cancelled: true,
-          cancelledAt: src.cancelledAt ?? nowIso,
-        };
+        let flagged: Reservation | null = null;
+        const tk = ticketedById.get(entry.rsvId);
+        if (tk) {
+          flagged = {
+            ...src,
+            ticketed: true,
+            ticketedAt: src.ticketedAt ?? nowIso,
+            carNo: tk.carNo ?? undefined,
+            seatNo: tk.seatNo ?? undefined,
+            seatNoEnd: tk.seatNoEnd ?? undefined,
+          };
+        } else if (cancelled.has(entry.rsvId)) {
+          flagged = {
+            ...src,
+            cancelled: true,
+            cancelledAt: src.cancelledAt ?? nowIso,
+          };
+        }
+        if (!flagged) continue;
         const cur = patches.get(entry.orderId) ?? {};
         if (entry.leg === "out") cur.reservation = flagged;
         else cur.inboundReservation = flagged;
@@ -164,10 +204,10 @@ export default function AdminPage() {
     const patch: Partial<Order> = {};
     const out = order.reservation;
     const inn = order.inboundReservation;
-    if (out && !out.cancelled && !out.confirmed) {
+    if (out && !out.cancelled && !out.ticketed && !out.confirmed) {
       patch.reservation = { ...out, confirmed: true, confirmedAt: nowIso };
     }
-    if (inn && !inn.cancelled && !inn.confirmed) {
+    if (inn && !inn.cancelled && !inn.ticketed && !inn.confirmed) {
       patch.inboundReservation = { ...inn, confirmed: true, confirmedAt: nowIso };
     }
     if (Object.keys(patch).length === 0) return;
@@ -616,13 +656,16 @@ function OrderCard({
       !!order.inboundReservation.rsvId &&
       !order.inboundReservation.cancelled);
   const hasAnyReservation = !!order.reservation || !!order.inboundReservation;
-  // Any active leg that admin hasn't confirmed yet → show 확정 button.
+  // Any active leg that admin hasn't confirmed yet AND isn't already
+  // ticketed (ticketing implies Korail-side payment, no need to confirm).
   const hasUnconfirmedLeg =
     (!!order.reservation &&
       !order.reservation.cancelled &&
+      !order.reservation.ticketed &&
       !order.reservation.confirmed) ||
     (!!order.inboundReservation &&
       !order.inboundReservation.cancelled &&
+      !order.inboundReservation.ticketed &&
       !order.inboundReservation.confirmed);
   // Unreserved order whose departure date has already passed → expired.
   const todayYmd = (() => {
