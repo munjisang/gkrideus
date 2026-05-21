@@ -150,6 +150,11 @@ const DICT: Record<string, Entry> = {
   "ord.totalAmount": { ko: "총 결제 금액", en: "Total Amount" },
   "ord.pay": { ko: "결제하기", en: "Pay" },
   "ord.paying": { ko: "처리 중…", en: "Processing…" },
+  "ord.processing.title": { ko: "결제 처리 중", en: "Processing your payment" },
+  "ord.processing.sub": {
+    ko: "코레일에 좌석을 확보하고 있어요. 잠시만 기다려 주세요.",
+    en: "Reserving your seat with Korail. Please hold on.",
+  },
   "ord.perPerson": { ko: "1인", en: "/person" },
   "ord.noTrain": { ko: "선택된 열차 정보가 없습니다.", en: "No train selected." },
   "ord.toHome": { ko: "처음으로", en: "Home" },

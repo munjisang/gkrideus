@@ -59,6 +59,7 @@ export default function BookingDetailPage({
       order.tripType === "roundtrip" ? order.inbound ?? null : null,
       order.inboundSeatType ?? order.seatType,
       order.passengerCount,
+      order.paxBreakdown ?? null,
     );
   }, [order]);
 
@@ -257,37 +258,45 @@ export default function BookingDetailPage({
           </section>
         )}
 
-        {/* 5. Payment summary */}
+        {/* 5. Payment summary — sums of the per-pax fare blocks. */}
         {fareSummary && (
           <section className="bg-white border border-slate-200 p-5">
             <h2 className="font-semibold mb-3 text-slate-800">{t("ord.payInfo")}</h2>
             <div className="space-y-1.5 text-sm">
               <KvLine
                 label={t("ord.fare.regular")}
-                value={krwL(fareSummary.ppRegular * order.passengerCount, lang)}
+                value={krwL(
+                  fareSummary.rows.reduce((s, r) => s + r.regular, 0),
+                  lang,
+                )}
               />
               <KvLine
                 label={t("ord.fare.discount")}
-                value={
-                  fareSummary.ppDiscount > 0
-                    ? `-${krwL(fareSummary.ppDiscount * order.passengerCount, lang)}`
-                    : krwL(0, lang)
-                }
+                value={(() => {
+                  const d = fareSummary.rows.reduce((s, r) => s + r.discount, 0);
+                  return d > 0 ? `-${krwL(d, lang)}` : krwL(0, lang);
+                })()}
               />
               <KvLine
                 label={t("ord.fare.netPay")}
-                value={krwL(fareSummary.ppDiscounted * order.passengerCount, lang)}
+                value={krwL(
+                  fareSummary.rows.reduce((s, r) => s + r.netPay, 0),
+                  lang,
+                )}
               />
               <KvLine
                 label={t("ord.fare.fee")}
-                value={krwL(fareSummary.ppFee * order.passengerCount, lang)}
+                value={krwL(
+                  fareSummary.rows.reduce((s, r) => s + r.fee, 0),
+                  lang,
+                )}
               />
               <div className="pt-2 mt-1 border-t border-slate-100 flex items-center justify-between">
                 <span className="text-sm font-semibold text-slate-800">
                   {t("ord.total")}
                 </span>
                 <span className="text-base font-bold text-sky-700 tabular-nums">
-                  {krwL(order.totalPrice, lang)}
+                  {krwL(fareSummary.total, lang)}
                 </span>
               </div>
             </div>

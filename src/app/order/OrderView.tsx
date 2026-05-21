@@ -6,9 +6,10 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { countryLabel } from "../../lib/countries";
 import CountryPicker from "../../components/CountryPicker";
 import LegSummary from "../../components/LegSummary";
+import PaymentLoading from "../../components/PaymentLoading";
 import { newOrderId, saveOrder } from "../../lib/storage";
 import { durationL, krwL } from "../../lib/format-i18n";
-import { legFares } from "../../lib/fareCalc";
+import { legFares, summarizeFares, type PaxType } from "../../lib/fareCalc";
 import { useI18n, type Lang } from "../../lib/i18n";
 import type {
   Order,
@@ -158,29 +159,45 @@ export default function OrderView() {
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
-  const outFares = legFares(outbound, outboundSeat);
-  const inFares = legFares(inbound, inboundSeat);
+  // Fare summary respects per-passenger-type discounts (어른 100% /
+   // 어린이 50% / 유아 0% / 경로 70%). `rows` is one block per seat,
+   // ordered: adults → children → toddlers → seniors.
+  const fareSummary = summarizeFares(
+    outbound,
+    outboundSeat,
+    tripType === "roundtrip" ? inbound ?? null : null,
+    inboundSeat,
+    passengerCount,
+    {
+      adults:
+        paxAdults || (paxChildren + paxToddlers + paxSeniors === 0
+          ? passengerCount
+          : 0),
+      children: paxChildren,
+      toddlers: paxToddlers,
+      seniors: paxSeniors,
+    },
+  );
+  const totalPrice = fareSummary.total;
 
-  /** Per-person totals across both legs. */
-  const ppRegular = outFares.regular + inFares.regular;
-  const ppDiscounted = outFares.discounted + inFares.discounted;
-  const ppDiscount = Math.max(0, ppRegular - ppDiscounted);
-  /** 발권수수료: (정상운임 − 할인) × 20%, 백원 단위 올림. */
-  const ppFee = Math.ceil((ppDiscounted * 0.2) / 100) * 100;
-  /** 총 운임 per person = 할인운임 + 수수료. */
-  const ppLegTotal = ppDiscounted + ppFee;
-  const totalPrice = ppLegTotal * passengerCount;
-
-  // One block per passenger (성인1, 성인2, 어린이1 …) — they all pay the
-  // same per-person amount today but keep separate lines for readability.
-  const breakdownRows: { label: string }[] = (() => {
-    const rows: { label: string }[] = [];
-    for (const r of paxRows) {
-      for (let i = 1; i <= r.count; i++) {
-        rows.push({ label: `${r.label}${i}` });
-      }
-    }
-    return rows;
+  // Label per passenger ("성인 1", "어린이 1" …) aligned with fareSummary.rows.
+  const PAX_TYPE_KEY: Record<PaxType, string> = {
+    adult: "pax.adult",
+    child: "pax.child",
+    toddler: "pax.toddler",
+    senior: "pax.senior",
+  };
+  const breakdownRows = (() => {
+    const counters: Record<PaxType, number> = {
+      adult: 0,
+      child: 0,
+      toddler: 0,
+      senior: 0,
+    };
+    return fareSummary.rows.map((r) => {
+      counters[r.type] += 1;
+      return { label: `${t(PAX_TYPE_KEY[r.type])}${counters[r.type]}`, fare: r };
+    });
   })();
 
   const allAgreed = AGREEMENTS.every((a) => agreed[a.id]);
@@ -421,11 +438,11 @@ export default function OrderView() {
               <PaxFareBlock
                 key={`${r.label}-${i}`}
                 label={r.label}
-                regular={ppRegular}
-                discount={ppDiscount}
-                netPay={ppDiscounted}
-                fee={ppFee}
-                legTotal={ppLegTotal}
+                regular={r.fare.regular}
+                discount={r.fare.discount}
+                netPay={r.fare.netPay}
+                fee={r.fare.fee}
+                legTotal={r.fare.legTotal}
                 lang={lang}
                 tt={t}
               />
@@ -590,6 +607,11 @@ export default function OrderView() {
           setCountrySheetOpen(false);
         }}
       />
+
+      {/* Fullscreen Lottie overlay while [결제하기] is in flight. It stays
+          mounted through the reserve → save → redirect chain and disappears
+          when the navigation to /order/complete unmounts this view. */}
+      {submitting && <PaymentLoading />}
     </div>
   );
 }
