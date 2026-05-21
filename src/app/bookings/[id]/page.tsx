@@ -492,7 +492,13 @@ function LegBlock({
   const mins = durationMinutes(train.depPlandTime, train.arrPlandTime);
   const dim = status === "cancelled";
   const muted = (cls: string) => (dim ? "text-slate-400" : cls);
-  const showCancel = status !== "cancelled" && !!rsv && rsv.mode === "live" && !!rsv.rsvId;
+  // After ticketing the seat is locked in on Korail's side; cancellation
+  // must go through their refund flow rather than our in-app cancel API.
+  const showCancel =
+    (status === "pending" || status === "confirmed") &&
+    !!rsv &&
+    rsv.mode === "live" &&
+    !!rsv.rsvId;
   // Detail page intentionally keeps cancelled legs on the white card
   // background — only the text/logo dim, no slate-100 shade like the list.
   return (
@@ -572,13 +578,6 @@ function LegBlock({
           {stationLabel(train.arrPlaceName, lang)}
         </span>
       </div>
-
-      {rsv?.deadline && status !== "cancelled" && (
-        <div className="flex items-center justify-between pt-2 text-xs text-slate-500">
-          <span>{t("bk.deadline")}</span>
-          <span className="tabular-nums">{rsv.deadline}</span>
-        </div>
-      )}
 
       {showCancel && (
         <div className="pt-3">
