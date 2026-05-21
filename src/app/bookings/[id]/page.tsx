@@ -15,6 +15,7 @@ import type {
   PayMethod,
   Reservation,
   SeatPref,
+  SeatType,
   TrainSchedule,
 } from "../../../lib/types";
 
@@ -278,6 +279,7 @@ export default function BookingDetailPage({
             cancelling={cancelling === "out"}
             onCancel={() => cancelLeg("out")}
             paxLabels={seatedPaxLabels(order, t)}
+            seatType={order.seatType}
           />
           {order.tripType === "roundtrip" && order.inbound && inStatus !== null && (
             <>
@@ -293,6 +295,7 @@ export default function BookingDetailPage({
                 cancelling={cancelling === "in"}
                 onCancel={() => cancelLeg("in")}
                 paxLabels={seatedPaxLabels(order, t)}
+                seatType={order.inboundSeatType ?? order.seatType}
               />
             </>
           )}
@@ -537,6 +540,7 @@ function LegBlock({
   cancelling,
   onCancel,
   paxLabels,
+  seatType,
 }: {
   leg: "out" | "in";
   label: string;
@@ -550,6 +554,8 @@ function LegBlock({
   /** All passengers on this order. Toddlers carry isSeated=false so we
    *  can render an em-dash instead of pretending they have a seat. */
   paxLabels: { label: string; isSeated: boolean }[];
+  /** Seat class picked at checkout for this leg (standard / first). */
+  seatType: SeatType;
 }) {
   const mins = durationMinutes(train.depPlandTime, train.arrPlandTime);
   const dim = status === "cancelled";
@@ -627,6 +633,21 @@ function LegBlock({
         </span>
         <span className={`text-sm whitespace-nowrap ${muted("text-slate-600")}`}>
           {stationLabel(train.arrPlaceName, lang)}
+        </span>
+      </div>
+
+      {/* Seat class chosen at checkout — small row right under stations. */}
+      <div className="flex items-center justify-end pt-2">
+        <span
+          className={`inline-flex items-center h-6 px-2 text-[11px] font-bold rounded-full border ${
+            dim
+              ? "bg-slate-100 text-slate-400 border-slate-200"
+              : seatType === "first"
+                ? "bg-amber-50 text-amber-700 border-amber-200"
+                : "bg-slate-50 text-slate-700 border-slate-200"
+          }`}
+        >
+          {seatType === "first" ? t("sr.first") : t("sr.standard")}
         </span>
       </div>
 
