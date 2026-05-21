@@ -155,6 +155,85 @@ export default function BookingDetailPage({
     );
   }, [order]);
 
+  /** Tracking-only per-pax cancel: just append the index to
+   *  cancelledPaxIndexes. Caller is responsible for deciding whether
+   *  this is the "last" pax — that branch goes through cancelLeg. */
+  async function cancelPaxLocal(leg: "out" | "in", paxIdx: number) {
+    if (!order) return;
+    const src = leg === "out" ? order.reservation : order.inboundReservation;
+    if (!src) return;
+    const prev = src.cancelledPaxIndexes ?? [];
+    if (prev.includes(paxIdx)) return;
+    const next: Reservation = {
+      ...src,
+      cancelledPaxIndexes: [...prev, paxIdx],
+    };
+    const patch: Partial<Order> = {};
+    if (leg === "out") patch.reservation = next;
+    else patch.inboundReservation = next;
+    const updated = await updateOrder(order.id, patch);
+    setOrder(updated ?? { ...order, ...patch });
+  }
+
+  /** Undo a tracking-only cancel. No KORAIL side-effect. */
+  async function restorePax(leg: "out" | "in", paxIdx: number) {
+    if (!order) return;
+    const src = leg === "out" ? order.reservation : order.inboundReservation;
+    if (!src) return;
+    const prev = src.cancelledPaxIndexes ?? [];
+    if (!prev.includes(paxIdx)) return;
+    const next: Reservation = {
+      ...src,
+      cancelledPaxIndexes: prev.filter((i) => i !== paxIdx),
+    };
+    const patch: Partial<Order> = {};
+    if (leg === "out") patch.reservation = next;
+    else patch.inboundReservation = next;
+    const updated = await updateOrder(order.id, patch);
+    setOrder(updated ?? { ...order, ...patch });
+  }
+
+  /** Last-pax branch: explicit confirm + real KORAIL cancel. On failure
+   *  we leave both the cancelledPaxIndexes and reservation.cancelled
+   *  flag untouched so the user can retry. */
+  async function cancelPaxLast(leg: "out" | "in", paxIdx: number) {
+    if (!order) return;
+    const rsv = leg === "out" ? order.reservation : order.inboundReservation;
+    if (!rsv || rsv.mode !== "live" || !rsv.rsvId || rsv.cancelled) return;
+    if (!confirm(t("bk.pax.lastCancelConfirm"))) return;
+    setCancelling(leg);
+    try {
+      const res = await fetch("/api/booking/cancel", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ rsvId: rsv.rsvId }),
+      });
+      const j = (await res.json()) as { ok: boolean; error?: string; stage?: string };
+      if (!res.ok || !j.ok) {
+        alert(t("bk.cancelFail", { m: j.error ?? j.stage ?? `HTTP ${res.status}` }));
+        return;
+      }
+      const flagged: Reservation = {
+        ...rsv,
+        cancelled: true,
+        cancelledAt: new Date().toISOString(),
+        cancelledPaxIndexes: [
+          ...new Set([...(rsv.cancelledPaxIndexes ?? []), paxIdx]),
+        ],
+      };
+      const patch: Partial<Order> = {};
+      if (leg === "out") patch.reservation = flagged;
+      else patch.inboundReservation = flagged;
+      const updated = await updateOrder(order.id, patch);
+      setOrder(updated ?? { ...order, ...patch });
+      alert(t("bk.cancelDone"));
+    } catch (e) {
+      alert(t("bk.cancelFail", { m: (e as Error).message }));
+    } finally {
+      setCancelling(null);
+    }
+  }
+
   async function cancelLeg(leg: "out" | "in") {
     if (!order) return;
     const rsv = leg === "out" ? order.reservation : order.inboundReservation;
@@ -280,6 +359,9 @@ export default function BookingDetailPage({
             onCancel={() => cancelLeg("out")}
             paxLabels={seatedPaxLabels(order, t)}
             seatType={order.seatType}
+            onPaxCancelLocal={(idx) => cancelPaxLocal("out", idx)}
+            onPaxCancelLast={(idx) => cancelPaxLast("out", idx)}
+            onPaxRestore={(idx) => restorePax("out", idx)}
           />
           {order.tripType === "roundtrip" && order.inbound && inStatus !== null && (
             <>
@@ -296,6 +378,9 @@ export default function BookingDetailPage({
                 onCancel={() => cancelLeg("in")}
                 paxLabels={seatedPaxLabels(order, t)}
                 seatType={order.inboundSeatType ?? order.seatType}
+                onPaxCancelLocal={(idx) => cancelPaxLocal("in", idx)}
+                onPaxCancelLast={(idx) => cancelPaxLast("in", idx)}
+                onPaxRestore={(idx) => restorePax("in", idx)}
               />
             </>
           )}
@@ -541,6 +626,9 @@ function LegBlock({
   onCancel,
   paxLabels,
   seatType,
+  onPaxCancelLocal,
+  onPaxCancelLast,
+  onPaxRestore,
 }: {
   leg: "out" | "in";
   label: string;
@@ -556,6 +644,12 @@ function LegBlock({
   paxLabels: { label: string; isSeated: boolean }[];
   /** Seat class picked at checkout for this leg (standard / first). */
   seatType: SeatType;
+  /** DB-only cancel for a non-last pax. */
+  onPaxCancelLocal: (paxIdx: number) => void;
+  /** Real KORAIL PNR cancel — triggered only on the last active pax. */
+  onPaxCancelLast: (paxIdx: number) => void;
+  /** Restore a tracking-only cancelled pax. */
+  onPaxRestore: (paxIdx: number) => void;
 }) {
   const mins = durationMinutes(train.depPlandTime, train.arrPlandTime);
   const dim = status === "cancelled";
@@ -686,18 +780,93 @@ function LegBlock({
         </ul>
       )}
 
-      {showCancel && (
-        <div className="pt-3">
-          <button
-            type="button"
-            onClick={onCancel}
-            disabled={cancelling}
-            className="h-9 px-4 rounded-lg border border-red-200 bg-white text-red-600 text-sm font-semibold hover:bg-red-50 disabled:opacity-50 transition"
-          >
-            {cancelling ? t("bk.cancelling") : t("bk.cancel")}
-          </button>
-        </div>
-      )}
+      {/* Per-passenger 예매 관리 — only meaningful for multi-seat
+       *  bookings still in pending/confirmed state. KORAIL itself only
+       *  cancels at PNR granularity, so non-last cancels are stored as
+       *  tracking-only flags (DB) and only the last active pax triggers
+       *  the real KORAIL cancel via onPaxCancelLast. */}
+      {(() => {
+        const isManageable =
+          (status === "pending" || status === "confirmed") &&
+          !!rsv?.rsvId &&
+          !rsv.cancelled;
+        const seatedIndexes = paxLabels
+          .map((p, i) => (p.isSeated ? i : -1))
+          .filter((i) => i >= 0);
+        const seatedCount = seatedIndexes.length;
+        if (!isManageable || seatedCount < 2) return null;
+        const cancelledSet = new Set(rsv!.cancelledPaxIndexes ?? []);
+        const activeSeated = seatedIndexes.filter((i) => !cancelledSet.has(i));
+        return (
+          <ul className="mt-3 pt-3 border-t border-slate-100 space-y-1.5">
+            {paxLabels.map((p, idx) => {
+              const isCancelled = cancelledSet.has(idx);
+              const isLast =
+                p.isSeated && !isCancelled && activeSeated.length === 1 && activeSeated[0] === idx;
+              return (
+                <li
+                  key={`mgmt-${p.label}-${idx}`}
+                  className="flex items-center justify-between text-sm"
+                >
+                  <span
+                    className={
+                      isCancelled
+                        ? "text-slate-400 line-through"
+                        : "text-slate-700"
+                    }
+                  >
+                    {p.label}
+                  </span>
+                  {!p.isSeated ? (
+                    <span className="text-xs text-slate-400">—</span>
+                  ) : isCancelled ? (
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs font-semibold text-red-600">
+                        {t("bk.pax.cancelled")}
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => onPaxRestore(idx)}
+                        disabled={cancelling}
+                        className="h-7 px-2 rounded-md border border-slate-200 text-xs text-slate-600 hover:bg-slate-50 disabled:opacity-50"
+                      >
+                        {t("bk.pax.restore")}
+                      </button>
+                    </div>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() =>
+                        isLast ? onPaxCancelLast(idx) : onPaxCancelLocal(idx)
+                      }
+                      disabled={cancelling}
+                      className="h-7 px-2 rounded-md border border-red-200 text-xs font-semibold text-red-600 hover:bg-red-50 disabled:opacity-50"
+                    >
+                      {t("bk.pax.cancel")}
+                    </button>
+                  )}
+                </li>
+              );
+            })}
+          </ul>
+        );
+      })()}
+
+      {/* Single-seat bookings keep the original "예매 취소" button —
+       *  per-pax controls would be redundant for one passenger. */}
+      {showCancel &&
+        paxLabels.filter((p) => p.isSeated).length < 2 && (
+          <div className="pt-3">
+            <button
+              type="button"
+              onClick={onCancel}
+              disabled={cancelling}
+              className="h-9 px-4 rounded-lg border border-red-200 bg-white text-red-600 text-sm font-semibold hover:bg-red-50 disabled:opacity-50 transition"
+            >
+              {cancelling ? t("bk.cancelling") : t("bk.cancel")}
+            </button>
+          </div>
+        )}
       {/* keep fmtDateTime referenced to silence unused-import warnings
           when 결제일시 is the only timestamp displayed. */}
       <input
