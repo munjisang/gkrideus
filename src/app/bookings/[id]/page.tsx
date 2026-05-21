@@ -599,6 +599,17 @@ function LegBlock({
           <span className={`text-sm font-semibold ${muted("text-slate-500")}`}>
             {Number(train.trainNo) || train.trainNo}
           </span>
+          <span
+            className={`self-center inline-flex items-center h-5 px-2 text-[11px] font-bold rounded-full border ${
+              dim
+                ? "bg-slate-100 text-slate-400 border-slate-200"
+                : seatType === "first"
+                  ? "bg-amber-50 text-amber-700 border-amber-200"
+                  : "bg-slate-50 text-slate-700 border-slate-200"
+            }`}
+          >
+            {seatType === "first" ? t("sr.first") : t("sr.standard")}
+          </span>
         </div>
         <span className={`text-sm tabular-nums shrink-0 ${muted("text-slate-500")}`}>
           {fmtDateDots(train.depPlandTime)}
@@ -633,21 +644,6 @@ function LegBlock({
         </span>
         <span className={`text-sm whitespace-nowrap ${muted("text-slate-600")}`}>
           {stationLabel(train.arrPlaceName, lang)}
-        </span>
-      </div>
-
-      {/* Seat class chosen at checkout — small row right under stations. */}
-      <div className="flex items-center justify-end pt-2">
-        <span
-          className={`inline-flex items-center h-6 px-2 text-[11px] font-bold rounded-full border ${
-            dim
-              ? "bg-slate-100 text-slate-400 border-slate-200"
-              : seatType === "first"
-                ? "bg-amber-50 text-amber-700 border-amber-200"
-                : "bg-slate-50 text-slate-700 border-slate-200"
-          }`}
-        >
-          {seatType === "first" ? t("sr.first") : t("sr.standard")}
         </span>
       </div>
 
