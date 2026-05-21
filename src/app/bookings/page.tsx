@@ -122,6 +122,20 @@ export default function BookingsListPage() {
         patches.set(e.orderId, cur);
       }
       for (const [id, p] of patches) await updateOrder(id, p);
+      // Fire-and-forget ticketed email per newly ticketed leg.
+      // Endpoint is idempotent via Reservation.notifiedTicketedAt.
+      for (const e of live) {
+        const tk = ticketedById.get(e.rsvId);
+        if (!tk) continue;
+        void fetch("/api/notify/ticketed", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ orderId: e.orderId, leg: e.leg }),
+          keepalive: true,
+        }).catch(() => {
+          /* silent — notifications are best-effort */
+        });
+      }
       await refresh();
     } catch {
       /* silent — sync is best-effort UX */

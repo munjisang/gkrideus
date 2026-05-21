@@ -220,6 +220,21 @@ export default function AdminPage() {
       for (const [id, p] of patches) {
         await updateOrder(id, p);
       }
+      // Fire-and-forget ticketed email for every leg that just flipped.
+      // /api/notify/ticketed is idempotent (notifiedTicketedAt guard),
+      // so concurrent syncs from admin + bookings page won't duplicate.
+      for (const entry of ids) {
+        const tk = ticketedById.get(entry.rsvId);
+        if (!tk) continue;
+        void fetch("/api/notify/ticketed", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ orderId: entry.orderId, leg: entry.leg }),
+          keepalive: true,
+        }).catch(() => {
+          /* silent */
+        });
+      }
       setSyncError(null);
       setLastSyncAt(new Date().toISOString());
       refresh();

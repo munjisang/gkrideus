@@ -80,6 +80,10 @@ export type Reservation = {
   /** 인원별 호차/좌석 — Korail의 `tk_seat_info` 배열을 통째로 보관.
    *  예약시 인원 순서(어른→어린이→경로→유아)와 매칭. */
   seats?: { carNo: string; seatNo: string }[];
+  /** ISO timestamp once we've emailed the booker about this leg being
+   *  ticketed. Used as an idempotency guard so concurrent sync calls
+   *  from admin + user pages can't blast duplicate emails. */
+  notifiedTicketedAt?: string;
   raw?: unknown;
 };
 
