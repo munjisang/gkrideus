@@ -441,14 +441,19 @@ function StatusText({
   status: StatusKey;
   t: (k: string) => string;
 }) {
+  // Color scheme per spec:
+  //   pending   → green
+  //   confirmed → blue
+  //   cancelled → red
+  //   ticketed  → violet (unchanged — not in spec)
   const cls =
     status === "ticketed"
       ? "text-violet-700"
       : status === "confirmed"
-        ? "text-emerald-700"
+        ? "text-sky-600"
         : status === "pending"
-          ? "text-sky-700"
-          : "text-slate-400";
+          ? "text-emerald-600"
+          : "text-red-600";
   const label =
     status === "ticketed"
       ? t("bk.status.ticketed")
@@ -488,8 +493,10 @@ function LegBlock({
   const dim = status === "cancelled";
   const muted = (cls: string) => (dim ? "text-slate-400" : cls);
   const showCancel = status !== "cancelled" && !!rsv && rsv.mode === "live" && !!rsv.rsvId;
+  // Detail page intentionally keeps cancelled legs on the white card
+  // background — only the text/logo dim, no slate-100 shade like the list.
   return (
-    <div className={`px-5 py-4 ${dim ? "bg-slate-100/60" : ""}`} data-leg={leg}>
+    <div className="px-5 py-4" data-leg={leg}>
       <div className="flex items-center gap-2 flex-wrap">
         <span
           className={`text-xs font-bold rounded px-2 py-0.5 leading-tight border ${

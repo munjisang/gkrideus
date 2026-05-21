@@ -433,14 +433,19 @@ function StatusText({
   status: StatusKey;
   t: (k: string) => string;
 }) {
+  // Color scheme per spec:
+  //   pending   → green
+  //   confirmed → blue
+  //   cancelled → red
+  //   ticketed  → violet (unchanged — not in spec)
   const cls =
     status === "ticketed"
       ? "text-violet-700"
       : status === "confirmed"
-        ? "text-emerald-700"
+        ? "text-sky-600"
         : status === "pending"
-          ? "text-sky-700"
-          : "text-slate-400";
+          ? "text-emerald-600"
+          : "text-red-600";
   const label =
     status === "ticketed"
       ? t("bk.status.ticketed")
