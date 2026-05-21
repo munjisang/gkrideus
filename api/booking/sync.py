@@ -310,7 +310,7 @@ def _process(body: dict[str, Any]) -> dict[str, Any]:
         # conservative and report everything as cancelled (legacy behaviour).
         cancelled = list(disappeared)
 
-    return {
+    response: dict[str, Any] = {
         "ok": True,
         "active": active,
         "cancelled": cancelled,
@@ -318,6 +318,33 @@ def _process(body: dict[str, Any]) -> dict[str, Any]:
         "totalActive": len(reservations),
         "totalTickets": total_tickets,
     }
+    if body.get("debug"):
+        # Surface the matcher key vs. every fetched ticket so we can see
+        # why nothing matched (leading zeros, time format mismatch, …).
+        response["_debugMatchers"] = [
+            {
+                "rsvId": rid,
+                "key": list(
+                    _ticket_key(m.get("trainNo"), m.get("depDate"), m.get("depTime"))
+                ),
+            }
+            for rid, m in matchers.items()
+        ]
+        response["_debugTickets"] = [
+            {
+                "trainNo": t.get("trainNo"),
+                "depDate": t.get("depDate"),
+                "depTime": t.get("depTime"),
+                "key": list(
+                    _ticket_key(t.get("trainNo"), t.get("depDate"), t.get("depTime"))
+                ),
+                "seats": t.get("seats"),
+                "carNo": t.get("carNo"),
+                "buyerName": t.get("buyerName"),
+            }
+            for t in (tickets_with_seats if disappeared and matchers else [])
+        ]
+    return response
 
 
 class handler(BaseHTTPRequestHandler):
