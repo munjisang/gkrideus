@@ -5,16 +5,17 @@ import Link from "next/link";
 import { loadOrders, updateOrder } from "../../lib/storage";
 import { fmtTime, durationMinutes } from "../../lib/format";
 import { fmtDateDots, durationL, krwL } from "../../lib/format-i18n";
-import { legFares } from "../../lib/fareCalc";
 import { useI18n, stationLabel, type Lang } from "../../lib/i18n";
 import { TrainLogo } from "../../components/TrainLogo";
-import type { Order, Reservation, SeatType, TrainSchedule } from "../../lib/types";
+import type { Order, Reservation, TrainSchedule } from "../../lib/types";
 
 type StatusKey = "live" | "dry" | "cancelled";
 
 function rsvStatus(r: Reservation | undefined): StatusKey {
-  if (r?.mode === "live" && r.rsvId) return "live";
-  if (r?.mode === "dry") return "dry";
+  if (!r) return "cancelled";
+  if (r.cancelled) return "cancelled";
+  if (r.mode === "live" && r.rsvId) return "live";
+  if (r.mode === "dry") return "dry";
   return "cancelled";
 }
 
@@ -45,10 +46,12 @@ export default function BookingsListPage() {
   async function syncReservations(currentOrders: Order[]) {
     const live: { orderId: string; leg: "out" | "in"; rsvId: string }[] = [];
     for (const o of currentOrders) {
-      if (o.reservation?.mode === "live" && o.reservation.rsvId)
-        live.push({ orderId: o.id, leg: "out", rsvId: o.reservation.rsvId });
-      if (o.inboundReservation?.mode === "live" && o.inboundReservation.rsvId)
-        live.push({ orderId: o.id, leg: "in", rsvId: o.inboundReservation.rsvId });
+      const r1 = o.reservation;
+      const r2 = o.inboundReservation;
+      if (r1?.mode === "live" && r1.rsvId && !r1.cancelled)
+        live.push({ orderId: o.id, leg: "out", rsvId: r1.rsvId });
+      if (r2?.mode === "live" && r2.rsvId && !r2.cancelled)
+        live.push({ orderId: o.id, leg: "in", rsvId: r2.rsvId });
     }
     if (live.length === 0) return;
     setSyncing(true);
@@ -65,13 +68,24 @@ export default function BookingsListPage() {
       if (!j.ok) return;
       const cancelled = new Set(j.cancelled ?? []);
       if (cancelled.size === 0) return;
-      // Group cleared legs by order so we hit storage once per order.
+      // Mark each disappeared leg as cancelled — keep rsvId/deadline for history.
+      const nowIso = new Date().toISOString();
+      const orderById = new Map(currentOrders.map((o) => [o.id, o] as const));
       const patches = new Map<string, Partial<Order>>();
       for (const e of live) {
         if (!cancelled.has(e.rsvId)) continue;
+        const order = orderById.get(e.orderId);
+        if (!order) continue;
+        const src = e.leg === "out" ? order.reservation : order.inboundReservation;
+        if (!src) continue;
+        const flagged: Reservation = {
+          ...src,
+          cancelled: true,
+          cancelledAt: src.cancelledAt ?? nowIso,
+        };
         const cur = patches.get(e.orderId) ?? {};
-        if (e.leg === "out") cur.reservation = undefined;
-        else cur.inboundReservation = undefined;
+        if (e.leg === "out") cur.reservation = flagged;
+        else cur.inboundReservation = flagged;
         patches.set(e.orderId, cur);
       }
       for (const [id, p] of patches) await updateOrder(id, p);
@@ -215,8 +229,6 @@ function BookingCard({
         label={t("ord.legOut")}
         status={outStatus}
         train={order.outbound}
-        seat={order.seatType}
-        passengerCount={order.passengerCount}
         rsv={order.reservation}
         lang={lang}
         t={t}
@@ -229,26 +241,42 @@ function BookingCard({
             label={t("ord.legIn")}
             status={inStatus}
             train={order.inbound}
-            seat={order.inboundSeatType ?? order.seatType}
-            passengerCount={order.passengerCount}
             rsv={order.inboundReservation}
             lang={lang}
             t={t}
           />
         </>
       )}
+
+      {/* Card-level footer: 총인원 + 결제금액 (once per order). */}
+      <div className="border-t border-slate-200" />
+      <div className="px-5 py-3 flex items-center justify-between">
+        <span
+          className={`text-xs ${
+            wholeCancelled ? "text-slate-400" : "text-slate-500"
+          }`}
+        >
+          {t("bk.legPax", { n: order.passengerCount })}
+        </span>
+        <span
+          className={`text-sm font-bold tabular-nums ${
+            wholeCancelled ? "text-slate-400 line-through" : "text-slate-900"
+          }`}
+        >
+          {krwL(order.totalPrice, lang)}
+        </span>
+      </div>
     </Link>
   );
 }
 
-/** Single-leg block matching the spec layout. */
+/** Single-leg block matching the spec layout (header / train / times /
+ *  stations). The card-level footer renders 총인원 + 결제금액 once. */
 function LegBlock({
   leg,
   label,
   status,
   train,
-  seat,
-  passengerCount,
   rsv,
   lang,
   t,
@@ -257,25 +285,20 @@ function LegBlock({
   label: string;
   status: StatusKey;
   train: TrainSchedule;
-  seat: SeatType;
-  passengerCount: number;
   rsv: Reservation | undefined;
   lang: Lang;
   t: (k: string, p?: Record<string, string | number>) => string;
 }) {
   const mins = durationMinutes(train.depPlandTime, train.arrPlandTime);
-  const fares = legFares(train, seat);
-  const legTotal = fares.discounted * Math.max(1, passengerCount);
   const dim = status === "cancelled";
   const muted = (cls: string) => (dim ? "text-slate-400" : cls);
   return (
     <div
-      className={`px-5 py-4 ${
-        dim ? "bg-slate-100/60 first:rounded-t-xl last:rounded-b-xl" : ""
-      }`}
+      className={`px-5 py-4 ${dim ? "bg-slate-100/60" : ""}`}
       data-leg={leg}
     >
-      {/* Row 1: badge · status · rsvId */}
+      {/* Row 1: badge · status · rsvId (rsvId shown whenever we have one,
+          even after cancellation, so users can reference past bookings) */}
       <div className="flex items-center gap-2 flex-wrap">
         <span
           className={`text-xs font-bold rounded px-2 py-0.5 leading-tight border ${
@@ -288,7 +311,7 @@ function LegBlock({
         </span>
         <span className="text-slate-300">·</span>
         <StatusText status={status} t={t} />
-        {status !== "cancelled" && rsv?.rsvId && (
+        {rsv?.rsvId && (
           <>
             <span className="text-slate-300">·</span>
             <span className={`text-xs font-semibold tabular-nums ${muted("text-slate-600")}`}>
@@ -341,20 +364,6 @@ function LegBlock({
         </span>
         <span className={`text-sm whitespace-nowrap ${muted("text-slate-600")}`}>
           {stationLabel(train.arrPlaceName, lang)}
-        </span>
-      </div>
-
-      {/* Row 5: 총 인원 ········ 금액 */}
-      <div className="flex items-center justify-between pt-3">
-        <span className={`text-xs ${muted("text-slate-500")}`}>
-          {t("bk.legPax", { n: passengerCount })}
-        </span>
-        <span
-          className={`text-sm font-bold tabular-nums ${
-            dim ? "text-slate-400 line-through" : "text-slate-900"
-          }`}
-        >
-          {krwL(legTotal, lang)}
         </span>
       </div>
     </div>

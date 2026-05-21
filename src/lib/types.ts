@@ -37,6 +37,12 @@ export type Reservation = {
   seatLabel?: string;
   /** Server-side mode that actually ran. "live" hit Korail; "dry" only matched. */
   mode: "live" | "dry";
+  /** True once the reservation is no longer active (user-cancelled,
+   *  payment-deadline expired, or any other Korail-side disappearance).
+   *  We keep the row + rsvId for history rather than wiping the field. */
+  cancelled?: boolean;
+  /** ISO timestamp when we observed the cancellation. */
+  cancelledAt?: string;
   raw?: unknown;
 };
 

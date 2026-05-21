@@ -15,9 +15,11 @@ import type { Order, Reservation, SeatPref } from "../../../lib/types";
 type StatusKey = "live" | "dry" | "cancelled";
 
 function statusOf(o: Order): StatusKey {
-  const live = o.reservation?.mode === "live" && !!o.reservation.rsvId;
-  if (live) return "live";
-  if (o.reservation?.mode === "dry") return "dry";
+  const r = o.reservation;
+  if (!r) return "cancelled";
+  if (r.cancelled) return "cancelled";
+  if (r.mode === "live" && !!r.rsvId) return "live";
+  if (r.mode === "dry") return "dry";
   return "cancelled";
 }
 
@@ -63,7 +65,7 @@ export default function BookingDetailPage({
   async function cancelLeg(leg: "out" | "in") {
     if (!order) return;
     const rsv = leg === "out" ? order.reservation : order.inboundReservation;
-    if (!rsv || rsv.mode !== "live" || !rsv.rsvId) return;
+    if (!rsv || rsv.mode !== "live" || !rsv.rsvId || rsv.cancelled) return;
     if (!confirm(t("bk.cancelConfirm"))) return;
     setCancelling(leg);
     try {
@@ -77,11 +79,15 @@ export default function BookingDetailPage({
         alert(t("bk.cancelFail", { m: j.error ?? j.stage ?? `HTTP ${res.status}` }));
         return;
       }
-      // Wipe the cancelled leg from the order — `key in patch` lets the
-      // storage layer clear it to null even when the value is undefined.
+      // Flag the leg as cancelled but keep rsvId/deadline for history.
+      const flagged: Reservation = {
+        ...rsv,
+        cancelled: true,
+        cancelledAt: new Date().toISOString(),
+      };
       const patch: Partial<Order> = {};
-      if (leg === "out") patch.reservation = undefined;
-      else patch.inboundReservation = undefined;
+      if (leg === "out") patch.reservation = flagged;
+      else patch.inboundReservation = flagged;
       const next = await updateOrder(order.id, patch);
       setOrder(next ?? { ...order, ...patch });
       alert(t("bk.cancelDone"));
@@ -375,17 +381,21 @@ function RsvBlock({
           {statusText}
         </span>
       </div>
-      {rsv && status !== "cancelled" && (
+      {rsv && (
         <ul className="text-sm space-y-1">
           {rsv.rsvId && (
             <li className="flex items-center justify-between">
               <span className="text-slate-600">{t("bk.rsvId")}</span>
-              <span className="font-semibold text-slate-900 tabular-nums">
+              <span
+                className={`font-semibold tabular-nums ${
+                  status === "cancelled" ? "text-slate-400" : "text-slate-900"
+                }`}
+              >
                 {rsv.rsvId}
               </span>
             </li>
           )}
-          {rsv.deadline && (
+          {rsv.deadline && status !== "cancelled" && (
             <li className="flex items-center justify-between">
               <span className="text-slate-600">{t("bk.deadline")}</span>
               <span className="font-semibold text-slate-900 tabular-nums">
@@ -396,7 +406,11 @@ function RsvBlock({
           {rsv.reservedAt && (
             <li className="flex items-center justify-between">
               <span className="text-slate-600">{t("bk.bookedAt")}</span>
-              <span className="font-semibold text-slate-900 tabular-nums">
+              <span
+                className={`font-semibold tabular-nums ${
+                  status === "cancelled" ? "text-slate-400" : "text-slate-900"
+                }`}
+              >
                 {fmtDateTime(toPlandTime(rsv.reservedAt))}
               </span>
             </li>

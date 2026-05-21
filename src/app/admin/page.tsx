@@ -62,10 +62,12 @@ export default function AdminPage() {
     const all = await loadOrders();
     const ids: { orderId: string; leg: "out" | "in"; rsvId: string }[] = [];
     for (const o of all) {
-      if (o.reservation?.mode === "live" && o.reservation.rsvId)
-        ids.push({ orderId: o.id, leg: "out", rsvId: o.reservation.rsvId });
-      if (o.inboundReservation?.mode === "live" && o.inboundReservation.rsvId)
-        ids.push({ orderId: o.id, leg: "in", rsvId: o.inboundReservation.rsvId });
+      const r1 = o.reservation;
+      const r2 = o.inboundReservation;
+      if (r1?.mode === "live" && r1.rsvId && !r1.cancelled)
+        ids.push({ orderId: o.id, leg: "out", rsvId: r1.rsvId });
+      if (r2?.mode === "live" && r2.rsvId && !r2.cancelled)
+        ids.push({ orderId: o.id, leg: "in", rsvId: r2.rsvId });
     }
     if (ids.length === 0) {
       setLastSyncAt(new Date().toISOString());
@@ -96,13 +98,26 @@ export default function AdminPage() {
         setLastSyncAt(new Date().toISOString());
         return;
       }
-      // Group cleared legs by order.
+      // Mark each disappeared leg as cancelled — keep rsvId/deadline for
+      // history rather than nulling the reservation entirely.
+      const nowIso = new Date().toISOString();
       const patches = new Map<string, Partial<Order>>();
+      const orderById = new Map(all.map((o) => [o.id, o] as const));
       for (const entry of ids) {
         if (!cancelled.has(entry.rsvId)) continue;
+        const order = orderById.get(entry.orderId);
+        if (!order) continue;
+        const src =
+          entry.leg === "out" ? order.reservation : order.inboundReservation;
+        if (!src) continue;
+        const flagged: Reservation = {
+          ...src,
+          cancelled: true,
+          cancelledAt: src.cancelledAt ?? nowIso,
+        };
         const cur = patches.get(entry.orderId) ?? {};
-        if (entry.leg === "out") cur.reservation = undefined;
-        else cur.inboundReservation = undefined;
+        if (entry.leg === "out") cur.reservation = flagged;
+        else cur.inboundReservation = flagged;
         patches.set(entry.orderId, cur);
       }
       for (const [id, p] of patches) {
@@ -308,8 +323,10 @@ export default function AdminPage() {
   async function onCancel(order: Order) {
     const outRsv = order.reservation;
     const inRsv = order.inboundReservation;
-    const outLive = outRsv?.mode === "live" && !!outRsv.rsvId;
-    const inLive = inRsv?.mode === "live" && !!inRsv.rsvId;
+    const outLive =
+      outRsv?.mode === "live" && !!outRsv.rsvId && !outRsv.cancelled;
+    const inLive =
+      inRsv?.mode === "live" && !!inRsv.rsvId && !inRsv.cancelled;
 
     if (!outLive && !inLive) return;
 
@@ -331,11 +348,14 @@ export default function AdminPage() {
     try {
       const failures: string[] = [];
 
+      const nowIso = new Date().toISOString();
       if (outLive) {
         const j = await callCancel(outRsv!.rsvId);
         setResultBy((m) => ({ ...m, [order.id]: j }));
         if (j.ok) {
-          await updateOrder(order.id, { reservation: undefined });
+          await updateOrder(order.id, {
+            reservation: { ...outRsv!, cancelled: true, cancelledAt: nowIso },
+          });
         } else {
           failures.push(describeFailure(j, "가는 편 취소"));
         }
@@ -345,7 +365,9 @@ export default function AdminPage() {
         const j = await callCancel(inRsv!.rsvId);
         setResultBy((m) => ({ ...m, [order.id]: j }));
         if (j.ok) {
-          await updateOrder(order.id, { inboundReservation: undefined });
+          await updateOrder(order.id, {
+            inboundReservation: { ...inRsv!, cancelled: true, cancelledAt: nowIso },
+          });
         } else {
           failures.push(describeFailure(j, "오는 편 취소"));
         }
