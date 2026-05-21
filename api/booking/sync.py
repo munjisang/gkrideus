@@ -271,10 +271,27 @@ def _process(body: dict[str, Any]) -> dict[str, Any]:
         except Exception:  # noqa: BLE001
             tickets_with_seats = []
         total_tickets = len(tickets_with_seats)
+        # KORAIL splits multi-pax bookings into one `reservation_list`
+        # entry PER PASSENGER — same train/date/time, different seat.
+        # Aggregate by (train, date, time) so all seats are collected.
         by_key: dict[tuple[str, str, str], dict[str, Any]] = {}
         for t in tickets_with_seats:
             key = _ticket_key(t.get("trainNo"), t.get("depDate"), t.get("depTime"))
-            by_key.setdefault(key, t)
+            if key in by_key:
+                existing = by_key[key]
+                existing_seats: list[dict[str, Any]] = existing.get("seats") or []
+                seen_pairs = {
+                    (s.get("carNo"), s.get("seatNo")) for s in existing_seats
+                }
+                for s in t.get("seats") or []:
+                    sig = (s.get("carNo"), s.get("seatNo"))
+                    if sig not in seen_pairs:
+                        existing_seats.append(s)
+                        seen_pairs.add(sig)
+                existing["seats"] = existing_seats
+            else:
+                # Shallow copy so we don't mutate the original list element.
+                by_key[key] = {**t, "seats": list(t.get("seats") or [])}
 
         for rid in disappeared:
             m = matchers.get(rid)
