@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { sendEmail } from "../../../../lib/mailer";
 import { supabaseConfig, supaFetch } from "../../../../lib/supabaseAdmin";
 import { durationMinutes } from "../../../../lib/format";
+import { stationLabel, gradeLabel } from "../../../../lib/i18n";
 import type {
   Order,
   Reservation,
@@ -110,38 +111,38 @@ async function patchReservation(
 
 type SeatedPax = { label: string; isSeated: boolean };
 
-/** Per-passenger labels in display order (어른→어린이→경로→유아).
+/** Per-passenger labels in display order (Adult→Child→Senior→Toddler).
  *  Toddlers carry isSeated=false — they ride without a dedicated seat. */
 function seatedPaxLabels(order: Order): SeatedPax[] {
   const b = order.paxBreakdown;
   const out: SeatedPax[] = [];
-  const add = (n: number | undefined, ko: string, seated: boolean) => {
+  const add = (n: number | undefined, en: string, seated: boolean) => {
     for (let i = 1; i <= (n ?? 0); i++) {
-      out.push({ label: `${ko}${i}`, isSeated: seated });
+      out.push({ label: `${en} ${i}`, isSeated: seated });
     }
   };
   if (b) {
-    add(b.adults, "어른", true);
-    add(b.children, "어린이", true);
-    add(b.seniors, "경로", true);
-    add(b.toddlers, "유아", false);
+    add(b.adults, "Adult", true);
+    add(b.children, "Child", true);
+    add(b.seniors, "Senior", true);
+    add(b.toddlers, "Toddler", false);
   }
   if (out.length === 0) {
     for (let i = 1; i <= Math.max(1, order.passengerCount); i++) {
-      out.push({ label: `어른${i}`, isSeated: true });
+      out.push({ label: `Adult ${i}`, isSeated: true });
     }
   }
   return out;
 }
 
-function durationKo(min: number): string {
+function durationEn(min: number): string {
   const h = Math.floor(min / 60);
   const m = min % 60;
-  return h > 0 ? `${h}시간 ${m}분` : `${m}분`;
+  return h > 0 ? `${h}h ${m}m` : `${m}m`;
 }
 
 /** One itinerary card — mirrors the /bookings/[id] 여정 LegBlock layout:
- *  badge·상태·예약번호 / 열차+등급+날짜 / 시간 / 역 / 인원별 호차·좌석. */
+ *  badge·status·rsvId / train+class+date / times / stations / per-pax seats. */
 function legHtml(
   label: string,
   train: TrainSchedule,
@@ -149,10 +150,13 @@ function legHtml(
   seatType: SeatType,
   paxLabels: SeatedPax[],
 ): string {
-  const dur = durationKo(durationMinutes(train.depPlandTime, train.arrPlandTime));
-  const classLabel = seatType === "first" ? "특실" : "일반실";
+  const dur = durationEn(durationMinutes(train.depPlandTime, train.arrPlandTime));
+  const classLabel = seatType === "first" ? "First" : "Standard";
+  const depStation = stationLabel(train.depPlaceName, "en");
+  const arrStation = stationLabel(train.arrPlaceName, "en");
+  const trainName = gradeLabel(train.trainGradeName, "en");
 
-  // Per-passenger 호차/좌석 rows (rsv.seats is the full tk_seat_info list).
+  // Per-passenger car/seat rows (rsv.seats is the full tk_seat_info list).
   let seatRows = "";
   if (rsv?.seats && rsv.seats.length > 0) {
     let idx = 0;
@@ -160,7 +164,7 @@ function legHtml(
       .map((p) => {
         const seat = p.isSeated ? rsv.seats![idx++] : null;
         const val = seat
-          ? `${Number(seat.carNo) || seat.carNo}호 ${esc(seat.seatNo)}`
+          ? `Car ${Number(seat.carNo) || seat.carNo} · ${esc(seat.seatNo)}`
           : "—";
         return `<tr>
           <td style="padding:3px 0;color:#475569;font-size:13px">${esc(p.label)}</td>
@@ -173,24 +177,24 @@ function legHtml(
 
   return `
     <div style="border:1px solid #e2e8f0;border-radius:12px;padding:16px;background:#fff">
-      <!-- badge · 상태 · 예약번호 -->
+      <!-- badge · status · reservation no -->
       <div style="font-size:12px">
         <span style="font-weight:700;color:#0369a1;background:#f0f9ff;border:1px solid #bae6fd;padding:2px 8px;border-radius:6px">${esc(label)}</span>
         <span style="color:#cbd5e1"> · </span>
-        <span style="font-weight:700;color:#6d28d9">발권완료</span>
+        <span style="font-weight:700;color:#6d28d9">Ticketed</span>
         ${
           rsv?.rsvId
             ? `<span style="color:#cbd5e1"> · </span><span style="font-weight:600;color:#475569">${esc(rsv.rsvId)}</span>`
             : ""
         }
       </div>
-      <!-- 열차명 + 좌석등급 ········ 날짜 -->
+      <!-- train + class ········ date -->
       <div style="margin-top:12px;font-size:14px;color:#0f172a">
-        <strong>${esc(train.trainGradeName)} ${Number(train.trainNo) || train.trainNo}</strong>
+        <strong>${esc(trainName)} ${Number(train.trainNo) || train.trainNo}</strong>
         <span style="font-size:11px;font-weight:700;color:#475569;background:#f8fafc;border:1px solid #e2e8f0;padding:1px 6px;border-radius:9999px;margin-left:4px">${classLabel}</span>
         <span style="float:right;color:#64748b;font-size:13px">${fmtDateDots(train.depPlandTime)}</span>
       </div>
-      <!-- 출발/도착 시간 + 소요시간 -->
+      <!-- departure / arrival times + duration -->
       <table style="width:100%;border-collapse:collapse;margin-top:12px">
         <tbody>
           <tr>
@@ -199,9 +203,9 @@ function legHtml(
             <td style="text-align:right;font-size:16px;font-weight:700;color:#0f172a">${fmtTime(train.arrPlandTime)}</td>
           </tr>
           <tr>
-            <td style="font-size:13px;color:#475569;padding-top:2px">${esc(train.depPlaceName)}</td>
+            <td style="font-size:13px;color:#475569;padding-top:2px">${esc(depStation)}</td>
             <td></td>
-            <td style="font-size:13px;color:#475569;text-align:right;padding-top:2px">${esc(train.arrPlaceName)}</td>
+            <td style="font-size:13px;color:#475569;text-align:right;padding-top:2px">${esc(arrStation)}</td>
           </tr>
         </tbody>
       </table>
@@ -218,7 +222,7 @@ function buildEmail(order: Order, triggerLeg: "out" | "in") {
   const legCards: string[] = [];
   if (order.reservation?.ticketed) {
     legCards.push(
-      legHtml("가는 편", order.outbound, order.reservation, order.seatType, paxLabels),
+      legHtml("Outbound", order.outbound, order.reservation, order.seatType, paxLabels),
     );
   }
   if (
@@ -228,7 +232,7 @@ function buildEmail(order: Order, triggerLeg: "out" | "in") {
   ) {
     legCards.push(
       legHtml(
-        "오는 편",
+        "Inbound",
         order.inbound,
         order.inboundReservation,
         order.inboundSeatType ?? order.seatType,
@@ -239,7 +243,7 @@ function buildEmail(order: Order, triggerLeg: "out" | "in") {
 
   // Subject keys off the leg that triggered this send.
   const subjTrain = triggerLeg === "out" ? order.outbound : order.inbound!;
-  const subject = `🎫 KTX 예매 발권완료 — ${subjTrain.depPlaceName} → ${subjTrain.arrPlaceName} (${fmtDateDots(subjTrain.depPlandTime)})`;
+  const subject = `🎫 KTX Ticket Issued — ${stationLabel(subjTrain.depPlaceName, "en")} → ${stationLabel(subjTrain.arrPlaceName, "en")} (${fmtDateDots(subjTrain.depPlandTime)})`;
 
   // Absolute link to the booking detail — emails can't use relative URLs.
   const siteUrl = (
@@ -248,11 +252,10 @@ function buildEmail(order: Order, triggerLeg: "out" | "in") {
   const detailUrl = `${siteUrl}/bookings/${encodeURIComponent(order.id)}`;
 
   const boardingGuide = [
-    "원활한 탑승을 위해 최소 15분 일찍 역에 도착해주세요.",
-    "출발편 안내 전광판에서 열차, 출발 시간, 목적지, 플랫폼 번호를 확인해주세요.",
-    "표지판을 따라 해당 플랫폼으로 이동해주세요.",
-    "열차에 탑승한 후 클룩 E-티켓으로 좌석을 찾아주세요. 직원의 요청이 있을 경우, 티켓을 제시해주세요.",
-    "ITX-청춘의 경우, 플랫폼 게이트 통과를 위해 역 카운터의 직원에게 도움을 요청해주세요.",
+    "Please arrive at the station at least 30 minutes early for a smooth ride.",
+    "Please check the train, departure time, destination, and platform number on the departure information board.",
+    "Please follow the sign to the appropriate platform.",
+    "Please find your seat by E-ticket after boarding the train. If there is a request from the staff, please present your ticket.",
   ]
     .map(
       (line, i) =>
@@ -262,27 +265,27 @@ function buildEmail(order: Order, triggerLeg: "out" | "in") {
 
   const html = `
     <div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;max-width:560px;margin:0 auto;padding:24px;color:#0f172a">
-      <h2 style="margin:0 0 12px 0">발권이 완료되었습니다</h2>
+      <h2 style="margin:0 0 12px 0">Your tickets have been issued</h2>
       <p style="color:#475569;margin:0 0 20px 0">
-        ${esc(booker?.name ?? "고객")}님, 예매하신 승차권이 KORAIL에서 발권되었어요.
+        ${esc(booker?.name ?? "Customer")}, your train tickets have been issued by KORAIL.
       </p>
 
       <div style="display:flex;flex-direction:column;gap:12px">
         ${legCards.join("")}
       </div>
 
-      <!-- 예매내역 상세 페이지로 이동 -->
+      <!-- Link to the booking detail page -->
       <div style="margin-top:20px;text-align:center">
         <a href="${detailUrl}"
            style="display:inline-block;background:#0f172a;color:#ffffff;text-decoration:none;font-size:14px;font-weight:600;padding:12px 28px;border-radius:10px">
-          예매내역
+          View Booking
         </a>
       </div>
 
-      <!-- 열차 승차 안내 -->
+      <!-- Boarding guide -->
       <div style="margin-top:24px;padding:16px;background:#f8fafc;border-radius:12px">
         <div style="font-size:14px;font-weight:700;color:#0f172a;margin-bottom:10px">
-          열차 승차 안내
+          Boarding Guide
         </div>
         <ol style="margin:0;padding:0;list-style:none;color:#475569;font-size:13px;line-height:1.5">
           ${boardingGuide}
@@ -290,7 +293,7 @@ function buildEmail(order: Order, triggerLeg: "out" | "in") {
       </div>
 
       <p style="color:#94a3b8;font-size:12px;margin-top:24px;line-height:1.5">
-        본 메일은 자동 발송 메일입니다.
+        This is an automated email.
       </p>
     </div>`;
   return { subject, html };
