@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { sendEmail } from "../../../../lib/mailer";
 import { supabaseConfig, supaFetch } from "../../../../lib/supabaseAdmin";
 import { durationMinutes } from "../../../../lib/format";
-import { stationLabel, gradeLabel } from "../../../../lib/i18n";
+import { stationLabel, gradeLabel } from "../../../../lib/labels";
 import type {
   Order,
   Reservation,
