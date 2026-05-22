@@ -121,7 +121,10 @@ export default function AdminPage() {
       trainNo: string;
       depDate: string;
       depTime: string;
+      service: "korail" | "srt";
     }[] = [];
+    const serviceOf = (gradeName: string): "korail" | "srt" =>
+      gradeName.toUpperCase().startsWith("SRT") ? "srt" : "korail";
     for (const o of all) {
       const r1 = o.reservation;
       const r2 = o.inboundReservation;
@@ -132,6 +135,7 @@ export default function AdminPage() {
           trainNo: o.outbound.trainNo,
           depDate: o.outbound.depPlandTime.slice(0, 8),
           depTime: o.outbound.depPlandTime.slice(8, 12),
+          service: serviceOf(o.outbound.trainGradeName),
         });
       }
       if (r2?.mode === "live" && r2.rsvId && !r2.cancelled && o.inbound) {
@@ -141,6 +145,7 @@ export default function AdminPage() {
           trainNo: o.inbound.trainNo,
           depDate: o.inbound.depPlandTime.slice(0, 8),
           depTime: o.inbound.depPlandTime.slice(8, 12),
+          service: serviceOf(o.inbound.trainGradeName),
         });
       }
     }
@@ -350,12 +355,15 @@ export default function AdminPage() {
     }
   }
 
-  async function callCancel(rsvId: string): Promise<BookingResult> {
+  async function callCancel(
+    rsvId: string,
+    trainGradeName?: string,
+  ): Promise<BookingResult> {
     try {
       const res = await fetch("/api/booking/cancel", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ rsvId }),
+        body: JSON.stringify({ rsvId, trainGradeName }),
       });
       return (await res.json()) as BookingResult;
     } catch (e) {
@@ -416,7 +424,10 @@ export default function AdminPage() {
             : "";
         setResultBy((m) => ({ ...m, [order.id]: inRes }));
         if (outRsv.mode === "live" && outRsv.rsvId) {
-          const rb = await callCancel(outRsv.rsvId);
+          const rb = await callCancel(
+            outRsv.rsvId,
+            order.outbound.trainGradeName,
+          );
           if (!rb.ok) {
             alert(
               describeFailure(inRes, "오는 편") +
@@ -480,7 +491,7 @@ export default function AdminPage() {
 
       const nowIso = new Date().toISOString();
       if (outLive) {
-        const j = await callCancel(outRsv!.rsvId);
+        const j = await callCancel(outRsv!.rsvId, order.outbound.trainGradeName);
         setResultBy((m) => ({ ...m, [order.id]: j }));
         if (j.ok) {
           await updateOrder(order.id, {
@@ -492,7 +503,10 @@ export default function AdminPage() {
       }
 
       if (inLive) {
-        const j = await callCancel(inRsv!.rsvId);
+        const j = await callCancel(
+          inRsv!.rsvId,
+          (order.inbound ?? order.outbound).trainGradeName,
+        );
         setResultBy((m) => ({ ...m, [order.id]: j }));
         if (j.ok) {
           await updateOrder(order.id, {

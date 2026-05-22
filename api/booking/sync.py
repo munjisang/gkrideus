@@ -46,7 +46,10 @@ for path in (
     if path not in sys.path:
         sys.path.insert(0, path)
 
-from _lib.creds import load_korail_creds  # type: ignore  # noqa: E402
+from _lib.creds import (  # type: ignore  # noqa: E402
+    load_korail_creds,
+    load_service_creds_all,
+)
 
 
 def _login_or_error() -> tuple[Any | None, dict[str, Any] | None]:
@@ -207,6 +210,112 @@ def _ticket_key(train_no: Any, dep_date: Any, dep_time: Any) -> tuple[str, str, 
     return (_norm_train_no(train_no), str(dep_date or "").strip(), _norm_time(dep_time))
 
 
+def _sync_srt(srt_ids: list[str]) -> dict[str, Any] | None:
+    """Reconcile SRT reservation IDs against SR's live list.
+
+    SRT keeps a reservation visible in `get_reservations()` even after
+    payment (with a `.paid` flag), so classification is simpler than
+    KORAIL:
+      • present + paid     → ticketed (seats from the reservation)
+      • present + unpaid   → active (still pending payment)
+      • absent             → cancelled (user-cancelled or deadline expired)
+
+    A reservation belongs to exactly one SRT account, and `reserve.py`
+    retries across every enabled account — so we MUST query them ALL
+    and union the results, otherwise a reservation made on account #2
+    looks "absent" when we only checked account #1 → false cancel.
+
+    Returns None when SRT can't be verified at all (no account, library
+    missing, every account failed to log in). The caller then leaves
+    those IDs UNTOUCHED. If only SOME accounts fail, IDs that aren't
+    found are also left untouched (not cancelled) — we can only declare
+    a reservation cancelled when every account was successfully checked.
+    """
+    accounts = load_service_creds_all("srt")
+    if not accounts:
+        return None
+    try:
+        from SRT import SRT  # type: ignore
+    except Exception:  # noqa: BLE001
+        return None
+
+    rsvs: list[Any] = []
+    ok_count = 0
+    for srt_id, srt_pw in accounts:
+        try:
+            srt = SRT(srt_id, srt_pw, auto_login=False)
+            srt.login()
+            acct_rsvs = srt.get_reservations(paid_only=False)
+        except Exception:  # noqa: BLE001
+            continue
+        ok_count += 1
+        rsvs.extend(acct_rsvs or [])
+    if ok_count == 0:
+        # Every SRT account failed — can't verify anything.
+        return None
+    # Only trust an "absent → cancelled" verdict when EVERY account was
+    # reachable; a partial check could miss a reservation on a down one.
+    checked_all = ok_count == len(accounts)
+
+    by_id: dict[str, dict[str, Any]] = {}
+    for r in rsvs:
+        rid = str(getattr(r, "reservation_number", "") or "").strip()
+        if not rid:
+            continue
+        seats: list[dict[str, Any]] = []
+        for tk in getattr(r, "tickets", None) or []:
+            car = str(getattr(tk, "car", "") or "")
+            seat = str(getattr(tk, "seat", "") or "")
+            if seat:
+                seats.append({"carNo": car, "seatNo": seat})
+        by_id[rid] = {
+            "paid": bool(getattr(r, "paid", False)),
+            "seats": seats,
+            "trainNo": str(getattr(r, "train_number", "") or ""),
+            "depDate": str(getattr(r, "dep_date", "") or ""),
+            "depTime": str(getattr(r, "dep_time", "") or ""),
+        }
+
+    active: list[str] = []
+    cancelled: list[str] = []
+    ticketed: list[dict[str, Any]] = []
+    for rid in srt_ids:
+        info = by_id.get(rid)
+        if info is None:
+            # Absent — only flag cancelled when every account was checked.
+            if checked_all:
+                cancelled.append(rid)
+        elif info["paid"]:
+            seats = info["seats"]
+            first = seats[0] if seats else {}
+            ticketed.append({
+                "rsvId": rid,
+                "carNo": first.get("carNo") or None,
+                "seatNo": first.get("seatNo") or None,
+                "seatNoEnd": None,
+                "seats": seats,
+                "trainNo": info["trainNo"],
+                "depDate": info["depDate"],
+                "depTime": info["depTime"],
+            })
+        else:
+            active.append(rid)
+    return {
+        "active": active,
+        "cancelled": cancelled,
+        "ticketed": ticketed,
+        "totalReservations": len(rsvs),
+        # Diagnostics — surfaced only when the request sets `debug: true`.
+        "_debug": {
+            "requestedIds": list(srt_ids),
+            "foundIds": list(by_id.keys()),
+            "accountsTotal": len(accounts),
+            "accountsOk": ok_count,
+            "checkedAll": checked_all,
+        },
+    }
+
+
 def _process(body: dict[str, Any]) -> dict[str, Any]:
     raw_ids = body.get("rsvIds", [])
     if not isinstance(raw_ids, list):
@@ -236,6 +345,49 @@ def _process(body: dict[str, Any]) -> dict[str, Any]:
             "totalTickets": 0,
         }
 
+    # Split IDs by operator. A matcher with service="srt" routes to SR;
+    # everything else (or no matcher) defaults to KORAIL.
+    def _service_of(rid: str) -> str:
+        m = matchers.get(rid)
+        s = str((m or {}).get("service") or "").lower()
+        return "srt" if s == "srt" else "korail"
+
+    korail_ids = [r for r in rsv_ids if _service_of(r) == "korail"]
+    srt_ids = [r for r in rsv_ids if _service_of(r) == "srt"]
+
+    active: list[str] = []
+    cancelled: list[str] = []
+    ticketed: list[dict[str, Any]] = []
+    total_active = 0
+    total_tickets = 0
+    tickets_with_seats: list[dict[str, Any]] = []
+
+    # ── SRT branch — verified separately; unverifiable IDs left untouched.
+    srt_debug: dict[str, Any] | None = None
+    if srt_ids:
+        srt_result = _sync_srt(srt_ids)
+        if srt_result is not None:
+            active += srt_result["active"]
+            cancelled += srt_result["cancelled"]
+            ticketed += srt_result["ticketed"]
+            srt_debug = srt_result.get("_debug")
+        else:
+            srt_debug = {"unverifiable": True}
+
+    # ── KORAIL branch
+    if not korail_ids:
+        out: dict[str, Any] = {
+            "ok": True,
+            "active": active,
+            "cancelled": cancelled,
+            "ticketed": ticketed,
+            "totalActive": total_active,
+            "totalTickets": total_tickets,
+        }
+        if body.get("debug"):
+            out["_debugSrt"] = srt_debug
+        return out
+
     korail, err = _login_or_error()
     if err is not None or korail is None:
         return err or {"ok": False, "stage": "login", "error": "unknown login failure"}
@@ -245,6 +397,7 @@ def _process(body: dict[str, Any]) -> dict[str, Any]:
         reservations = korail.reservations()
     except Exception as e:  # noqa: BLE001
         return {"ok": False, "stage": "list", "error": str(e)}
+    total_active = len(reservations)
 
     active_set: set[str] = set()
     for r in reservations:
@@ -253,8 +406,8 @@ def _process(body: dict[str, Any]) -> dict[str, Any]:
             if v:
                 active_set.add(v)
 
-    active = [x for x in rsv_ids if x in active_set]
-    disappeared = [x for x in rsv_ids if x not in active_set]
+    active += [x for x in korail_ids if x in active_set]
+    disappeared = [x for x in korail_ids if x not in active_set]
 
     # ── tickets — only if any rsvId disappeared AND we have matchers.
     #
@@ -262,9 +415,10 @@ def _process(body: dict[str, Any]) -> dict[str, Any]:
     # `tk_seat_info[0]` per ticket, losing per-passenger seats for
     # multi-pax bookings. We do the two underlying calls ourselves and
     # keep the full `tk_seat_info[]` array.
-    ticketed: list[dict[str, Any]] = []
-    cancelled: list[str] = []
-    total_tickets = 0
+    #
+    # NOTE: `ticketed` / `cancelled` / `total_tickets` / `tickets_with_seats`
+    # are the SHARED lists declared above — KORAIL results are appended so
+    # any SRT results merged earlier are preserved.
     if disappeared and matchers:
         try:
             tickets_with_seats = _fetch_my_tickets_with_seats(korail)
@@ -325,17 +479,18 @@ def _process(body: dict[str, Any]) -> dict[str, Any]:
     else:
         # No matchers → can't distinguish ticketed from cancelled. Be
         # conservative and report everything as cancelled (legacy behaviour).
-        cancelled = list(disappeared)
+        cancelled += list(disappeared)
 
     response: dict[str, Any] = {
         "ok": True,
         "active": active,
         "cancelled": cancelled,
         "ticketed": ticketed,
-        "totalActive": len(reservations),
+        "totalActive": total_active,
         "totalTickets": total_tickets,
     }
     if body.get("debug"):
+        response["_debugSrt"] = srt_debug
         # Surface the matcher key vs. every fetched ticket so we can see
         # why nothing matched (leading zeros, time format mismatch, …).
         response["_debugMatchers"] = [

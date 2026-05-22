@@ -164,12 +164,17 @@ export default function BookingDetailPage({
     const rsv = leg === "out" ? order.reservation : order.inboundReservation;
     if (!rsv || rsv.mode !== "live" || !rsv.rsvId || rsv.cancelled) return;
     if (!confirm(t("bk.cancelConfirm"))) return;
+    const train =
+      leg === "out" ? order.outbound : (order.inbound ?? order.outbound);
     setCancelling(leg);
     try {
       const res = await fetch("/api/booking/cancel", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ rsvId: rsv.rsvId }),
+        body: JSON.stringify({
+          rsvId: rsv.rsvId,
+          trainGradeName: train.trainGradeName,
+        }),
       });
       const j = (await res.json()) as { ok: boolean; error?: string; stage?: string };
       if (!res.ok || !j.ok) {

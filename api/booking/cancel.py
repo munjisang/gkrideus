@@ -23,7 +23,10 @@ for path in (
     if path not in sys.path:
         sys.path.insert(0, path)
 
-from _lib.creds import load_korail_creds  # type: ignore  # noqa: E402
+from _lib.creds import (  # type: ignore  # noqa: E402
+    load_korail_creds,
+    load_service_creds_all,
+)
 
 
 def _reservation_to_dict(r: Any) -> dict[str, Any]:
@@ -92,6 +95,88 @@ def _login_or_error() -> tuple[Any | None, dict[str, Any] | None]:
     return korail, None
 
 
+def _resolve_service(body: dict[str, Any]) -> str:
+    """korail vs srt — explicit `service` wins, else inferred from the
+    train grade name the front-end sends."""
+    explicit = str(body.get("service") or "").lower()
+    if explicit in ("korail", "srt"):
+        return explicit
+    grade = str(body.get("trainGradeName") or "").upper()
+    return "srt" if grade.startswith("SRT") else "korail"
+
+
+def _cancel_srt(rsv_id: str) -> dict[str, Any]:
+    """Cancel an SRT reservation. A reservation belongs to exactly one
+    SRT account, so we iterate enabled accounts and look it up in each
+    one's `get_reservations()` list until we find the holder."""
+    accounts = load_service_creds_all("srt")
+    if not accounts:
+        return {
+            "ok": False,
+            "stage": "env",
+            "error": "SRT 계정이 등록되어 있지 않습니다.",
+        }
+    try:
+        from SRT import SRT  # type: ignore
+    except Exception as e:  # noqa: BLE001
+        return {
+            "ok": False,
+            "stage": "import",
+            "error": f"SRT library not importable: {e}",
+        }
+
+    login_failures = 0
+    last_login_err: str | None = None
+    for srt_id, srt_pw in accounts:
+        try:
+            srt = SRT(srt_id, srt_pw, auto_login=False)
+            srt.login()
+        except Exception as e:  # noqa: BLE001
+            login_failures += 1
+            last_login_err = str(e)
+            continue
+        try:
+            rsvs = srt.get_reservations(paid_only=False)
+        except Exception as e:  # noqa: BLE001
+            return {"ok": False, "stage": "list", "error": str(e)}
+        target = None
+        for r in rsvs:
+            rid = str(getattr(r, "reservation_number", "") or "").strip()
+            if rid == rsv_id:
+                target = r
+                break
+        if target is None:
+            # Not this account's reservation — try the next one.
+            continue
+        try:
+            srt.cancel(target)
+        except Exception as e:  # noqa: BLE001
+            return {
+                "ok": False,
+                "stage": "cancel",
+                "error": str(e),
+                "trace": traceback.format_exc(limit=2),
+            }
+        return {
+            "ok": True,
+            "stage": "cancelled",
+            "rsv_id": rsv_id,
+            "service": "srt",
+        }
+
+    if login_failures == len(accounts):
+        return {
+            "ok": False,
+            "stage": "login",
+            "error": f"SRT login failed for all accounts: {last_login_err}",
+        }
+    return {
+        "ok": False,
+        "stage": "match",
+        "error": f"SRT reservation {rsv_id} not found in any account",
+    }
+
+
 def _process(body: dict[str, Any]) -> dict[str, Any]:
     rsv_id = str(body.get("rsvId") or body.get("rsvNo") or "").strip()
     if not rsv_id:
@@ -104,6 +189,9 @@ def _process(body: dict[str, Any]) -> dict[str, Any]:
             "error": "취소도 KORAIL_RESERVE_LIVE=1 이어야 실제 호출됩니다.",
             "liveAllowed": False,
         }
+
+    if _resolve_service(body) == "srt":
+        return _cancel_srt(rsv_id)
 
     korail, err = _login_or_error()
     if err is not None or korail is None:

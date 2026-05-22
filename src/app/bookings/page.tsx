@@ -39,7 +39,10 @@ export default function BookingsListPage() {
       trainNo: string;
       depDate: string;
       depTime: string;
+      service: "korail" | "srt";
     }[] = [];
+    const serviceOf = (gradeName: string): "korail" | "srt" =>
+      gradeName.toUpperCase().startsWith("SRT") ? "srt" : "korail";
     for (const o of currentOrders) {
       const r1 = o.reservation;
       const r2 = o.inboundReservation;
@@ -50,6 +53,7 @@ export default function BookingsListPage() {
           trainNo: o.outbound.trainNo,
           depDate: o.outbound.depPlandTime.slice(0, 8),
           depTime: o.outbound.depPlandTime.slice(8, 12),
+          service: serviceOf(o.outbound.trainGradeName),
         });
       }
       if (r2?.mode === "live" && r2.rsvId && !r2.cancelled && o.inbound) {
@@ -59,6 +63,7 @@ export default function BookingsListPage() {
           trainNo: o.inbound.trainNo,
           depDate: o.inbound.depPlandTime.slice(0, 8),
           depTime: o.inbound.depPlandTime.slice(8, 12),
+          service: serviceOf(o.inbound.trainGradeName),
         });
       }
     }
