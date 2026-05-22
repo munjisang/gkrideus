@@ -606,7 +606,7 @@ export default function AdminPage() {
                 disabled={syncing}
                 className="text-xs text-slate-500 hover:text-slate-900 disabled:opacity-50"
               >
-                {syncing ? "동기화 중…" : "코레일 동기화"}
+                {syncing ? "동기화 중…" : "예매 동기화"}
               </button>
               <button
                 onClick={refresh}
