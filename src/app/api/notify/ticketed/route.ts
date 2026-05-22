@@ -22,9 +22,6 @@ function fmtDateDots(p: string): string {
   if (p.length < 8) return p;
   return `${p.slice(0, 4)}.${p.slice(4, 6)}.${p.slice(6, 8)}`;
 }
-function krw(n: number): string {
-  return `${(n ?? 0).toLocaleString("ko-KR")}원`;
-}
 function esc(s: string): string {
   return s.replace(
     /[&<>"']/g,
@@ -244,6 +241,25 @@ function buildEmail(order: Order, triggerLeg: "out" | "in") {
   const subjTrain = triggerLeg === "out" ? order.outbound : order.inbound!;
   const subject = `🎫 KTX 예매 발권완료 — ${subjTrain.depPlaceName} → ${subjTrain.arrPlaceName} (${fmtDateDots(subjTrain.depPlandTime)})`;
 
+  // Absolute link to the booking detail — emails can't use relative URLs.
+  const siteUrl = (
+    process.env.NEXT_PUBLIC_SITE_URL ?? "https://mykorailproject.vercel.app"
+  ).replace(/\/$/, "");
+  const detailUrl = `${siteUrl}/bookings/${encodeURIComponent(order.id)}`;
+
+  const boardingGuide = [
+    "원활한 탑승을 위해 최소 15분 일찍 역에 도착해주세요.",
+    "출발편 안내 전광판에서 열차, 출발 시간, 목적지, 플랫폼 번호를 확인해주세요.",
+    "표지판을 따라 해당 플랫폼으로 이동해주세요.",
+    "열차에 탑승한 후 클룩 E-티켓으로 좌석을 찾아주세요. 직원의 요청이 있을 경우, 티켓을 제시해주세요.",
+    "ITX-청춘의 경우, 플랫폼 게이트 통과를 위해 역 카운터의 직원에게 도움을 요청해주세요.",
+  ]
+    .map(
+      (line, i) =>
+        `<li style="margin-bottom:6px">${i + 1}. ${esc(line)}</li>`,
+    )
+    .join("");
+
   const html = `
     <div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;max-width:560px;margin:0 auto;padding:24px;color:#0f172a">
       <h2 style="margin:0 0 12px 0">발권이 완료되었습니다</h2>
@@ -255,22 +271,25 @@ function buildEmail(order: Order, triggerLeg: "out" | "in") {
         ${legCards.join("")}
       </div>
 
+      <!-- 예매내역 상세 페이지로 이동 -->
+      <div style="margin-top:20px;text-align:center">
+        <a href="${detailUrl}"
+           style="display:inline-block;background:#0f172a;color:#ffffff;text-decoration:none;font-size:14px;font-weight:600;padding:12px 28px;border-radius:10px">
+          예매내역
+        </a>
+      </div>
+
+      <!-- 열차 승차 안내 -->
       <div style="margin-top:24px;padding:16px;background:#f8fafc;border-radius:12px">
-        <div style="display:flex;justify-content:space-between;font-size:14px">
-          <span style="color:#475569">결제 금액</span>
-          <strong style="color:#0369a1">${krw(order.totalPrice)}</strong>
+        <div style="font-size:14px;font-weight:700;color:#0f172a;margin-bottom:10px">
+          열차 승차 안내
         </div>
-        ${
-          order.payMethod
-            ? `<div style="display:flex;justify-content:space-between;font-size:12px;color:#64748b;margin-top:4px">
-                 <span>결제수단</span><span>${order.payMethod === "card" ? "신용카드" : "Paypal"}</span>
-               </div>`
-            : ""
-        }
+        <ol style="margin:0;padding:0;list-style:none;color:#475569;font-size:13px;line-height:1.5">
+          ${boardingGuide}
+        </ol>
       </div>
 
       <p style="color:#94a3b8;font-size:12px;margin-top:24px;line-height:1.5">
-        자세한 정보는 KORAIL 모바일 앱 또는 letskorail.com에서 확인하실 수 있습니다.<br>
         본 메일은 자동 발송 메일입니다.
       </p>
     </div>`;
