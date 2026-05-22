@@ -152,6 +152,184 @@ def _normalize_time(t: str) -> str:
     return digits.ljust(6, "0")[:6]
 
 
+# ─────────────────────────────────────────────── SRT support
+#
+# SRT runs on a separate operator (SR, etk.srail.kr) with its own
+# `SRTrain` library. The API shape mirrors korail2 closely enough that
+# we can branch inside _process and reuse the same retry loop.
+
+
+def _srt_passengers(count: int, breakdown: dict[str, Any] | None):
+    """Build an SRT passenger list. SRTrain has Adult / Child / Senior
+    (no Toddler — under-6 ride free without a seat, so they're omitted)."""
+    from SRT import Adult, Child, Senior  # type: ignore
+
+    if not breakdown:
+        return [Adult(max(1, count))]
+    adults = int(breakdown.get("adults") or 0)
+    children = int(breakdown.get("children") or 0)
+    seniors = int(breakdown.get("seniors") or 0)
+    ps: list[Any] = []
+    if adults:
+        ps.append(Adult(adults))
+    if children:
+        ps.append(Child(children))
+    if seniors:
+        ps.append(Senior(seniors))
+    if not ps:
+        ps = [Adult(max(1, count))]
+    return ps
+
+
+def _srt_seat_type(seat_type: str):
+    from SRT import SeatType  # type: ignore
+
+    # *_FIRST means "prefer that class, fall back if full".
+    return SeatType.SPECIAL_FIRST if seat_type == "first" else SeatType.GENERAL_FIRST
+
+
+def _srt_reservation_to_dict(rsv: Any) -> dict[str, Any]:
+    """Map an SRTReservation onto the same reservation dict shape the
+    front-end's buildReservation() already parses (rsv_id, buy_limit_*,
+    price …) so the client needs no SRT-specific branch."""
+
+    def _int(v: Any) -> int:
+        try:
+            return int(str(v).strip() or "0")
+        except (TypeError, ValueError):
+            return 0
+
+    return {
+        "rsv_id": str(getattr(rsv, "reservation_number", "") or ""),
+        "buy_limit_date": str(getattr(rsv, "payment_date", "") or ""),
+        "buy_limit_time": str(getattr(rsv, "payment_time", "") or ""),
+        "price": _int(getattr(rsv, "total_cost", 0)),
+        "seat_no_count": _int(getattr(rsv, "seat_count", 0)),
+        "train_type_name": str(getattr(rsv, "train_name", "SRT") or "SRT"),
+        "dep_name": str(getattr(rsv, "dep_station_name", "") or ""),
+        "arr_name": str(getattr(rsv, "arr_station_name", "") or ""),
+        "dep_date": str(getattr(rsv, "dep_date", "") or ""),
+        "dep_time": str(getattr(rsv, "dep_time", "") or ""),
+        "arr_time": str(getattr(rsv, "arr_time", "") or ""),
+    }
+
+
+def _attempt_with_account_srt(
+    body: dict[str, Any],
+    srt_id: str,
+    srt_pw: str,
+    live: bool,
+    env_live: bool,
+) -> dict[str, Any]:
+    """One full SRT search + reserve flow with a single account.
+    Returns the same response shape as the Korail attempt function."""
+    try:
+        from SRT import SRT  # type: ignore
+    except Exception as e:  # noqa: BLE001
+        return {
+            "ok": False,
+            "stage": "import",
+            "error": f"SRT library not importable: {e}",
+            "hint": "ensure SRTrain is in requirements.txt",
+        }
+    try:
+        srt = SRT(srt_id, srt_pw, auto_login=False)
+    except Exception as e:  # noqa: BLE001
+        return {"ok": False, "stage": "init", "error": str(e)}
+    try:
+        srt.login()
+    except Exception as e:  # noqa: BLE001
+        return {
+            "ok": False,
+            "stage": "login",
+            "error": f"SRT login failed: {e}",
+            "trace": traceback.format_exc(limit=2),
+        }
+
+    try:
+        trains = srt.search_train(
+            body["depName"],
+            body["arrName"],
+            body["date"],
+            _normalize_time(body["time"]),
+            available_only=False,
+        )
+    except Exception as e:  # noqa: BLE001
+        return {"ok": False, "stage": "search", "error": f"SRT search_train failed: {e}"}
+
+    target_no = str(body["trainNo"]).lstrip("0") or "0"
+    candidates = [
+        t
+        for t in trains
+        if (str(getattr(t, "train_number", "")).lstrip("0") or "0") == target_no
+    ]
+    if not candidates:
+        return {
+            "ok": False,
+            "stage": "match",
+            "error": f"SRT train {body['trainNo']} not in {len(trains)} search results",
+        }
+    train = candidates[0]
+    train_dict = {
+        "train_no": str(getattr(train, "train_number", "")),
+        "train_type_name": str(getattr(train, "train_name", "SRT")),
+        "dep_name": str(getattr(train, "dep_station_name", "")),
+        "arr_name": str(getattr(train, "arr_station_name", "")),
+        "dep_date": str(getattr(train, "dep_date", "")),
+        "dep_time": str(getattr(train, "dep_time", "")),
+        "arr_time": str(getattr(train, "arr_time", "")),
+        "general_seat_state": str(getattr(train, "general_seat_state", "")),
+        "special_seat_state": str(getattr(train, "special_seat_state", "")),
+    }
+
+    if not live:
+        return {
+            "ok": True,
+            "stage": "dry-run",
+            "mode": "dry",
+            "train": train_dict,
+            "liveAllowed": env_live,
+            "effectiveLive": False,
+            "requestedLive": bool(body.get("live")),
+        }
+
+    try:
+        rsv = srt.reserve(
+            train,
+            passengers=_srt_passengers(int(body["passengers"]), body.get("paxBreakdown")),
+            special_seat=_srt_seat_type(body["seatType"]),
+        )
+    except Exception as e:  # noqa: BLE001
+        return {
+            "ok": False,
+            "stage": "reserve",
+            "error": f"SRT reserve failed: {e}",
+            "train": train_dict,
+            "trace": traceback.format_exc(limit=2),
+        }
+
+    return {
+        "ok": True,
+        "stage": "reserved",
+        "mode": "live",
+        "liveAllowed": True,
+        "effectiveLive": True,
+        "requestedLive": True,
+        "train": train_dict,
+        "reservation": _srt_reservation_to_dict(rsv),
+    }
+
+
+def _resolve_service(body: dict[str, Any]) -> str:
+    """korail vs srt — explicit `service` wins, else inferred from the
+    train grade name the front-end sends."""
+    explicit = str(body.get("service") or "").lower()
+    if explicit in ("korail", "srt"):
+        return explicit
+    grade = str(body.get("trainGradeName") or "").upper()
+    return "srt" if grade.startswith("SRT") else "korail"
+
+
 def _login_or_error(
     korail_id: str | None = None, korail_pw: str | None = None
 ) -> tuple[Any | None, dict[str, Any] | None]:
@@ -318,22 +496,32 @@ def _process(body: dict[str, Any]) -> dict[str, Any]:
     env_live = os.environ.get("KORAIL_RESERVE_LIVE") == "1"
     live = env_live and bool(body.get("live"))
 
-    accounts = load_service_creds_all("korail")
+    # Route to the right operator. SRT trains go through the SRTrain
+    # library; everything else (KTX family) through korail2.
+    service = _resolve_service(body)
+    attempt_fn = (
+        _attempt_with_account_srt if service == "srt" else _attempt_with_account
+    )
+    service_ko = "SRT" if service == "srt" else "코레일"
+
+    accounts = load_service_creds_all(service)
     if not accounts:
         return {
             "ok": False,
             "stage": "env",
-            "error": "Korail 계정이 설정되어 있지 않습니다.",
+            "error": f"{service_ko} 계정이 설정되어 있지 않습니다.",
+            "service": service,
         }
 
     attempts: list[dict[str, Any]] = []
     for idx, (aid, pw) in enumerate(accounts):
-        result = _attempt_with_account(body, aid, pw, live, env_live)
+        result = attempt_fn(body, aid, pw, live, env_live)
         # Successful (live reservation or dry-run) → return immediately.
         if result.get("ok"):
             result["accountIndex"] = idx
             result["accountId"] = aid
             result["accountTried"] = idx + 1
+            result["service"] = service
             if attempts:
                 # Surface prior failures so the admin can see which
                 # accounts were retried before success.

@@ -1,2 +1,3 @@
 korail2-ncard==0.1.0
 pycryptodome>=3.20.0
+SRTrain>=2.0.7

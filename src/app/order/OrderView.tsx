@@ -255,6 +255,8 @@ export default function OrderView() {
       date: tr.depPlandTime.slice(0, 8),
       time: tr.depPlandTime.slice(8, 12),
       trainNo: tr.trainNo,
+      // Lets the reserve endpoint route to KORAIL vs SRT.
+      trainGradeName: tr.trainGradeName,
       passengers: passengerCount,
       paxBreakdown: {
         adults:
