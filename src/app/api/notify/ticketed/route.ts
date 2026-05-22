@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { sendEmail } from "../../../../lib/resend";
+import { sendEmail } from "../../../../lib/mailer";
 import { supabaseConfig, supaFetch } from "../../../../lib/supabaseAdmin";
 import type {
   Order,
@@ -191,8 +191,8 @@ function buildEmail(order: Order, leg: "out" | "in") {
 /* ─────────────────────────────── route */
 
 export async function POST(req: Request) {
-  if (!process.env.RESEND_API_KEY) {
-    return NextResponse.json({ ok: true, skipped: "no RESEND_API_KEY" });
+  if (!process.env.GMAIL_USER || !process.env.GMAIL_APP_PASSWORD) {
+    return NextResponse.json({ ok: true, skipped: "no GMAIL credentials" });
   }
   let body: { orderId?: string; leg?: "out" | "in" } = {};
   try {
