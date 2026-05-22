@@ -4,8 +4,8 @@ import { LangProvider } from "../lib/i18n";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "KTX 예매 PoC",
-  description: "KTX 조회·예매 데모",
+  title: "GROUNDK Transportation Reservation",
+  description: "Transportation Reservation",
 };
 
 export default function RootLayout({
