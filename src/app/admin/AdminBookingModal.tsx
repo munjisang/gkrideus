@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useMemo } from "react";
-import Link from "next/link";
 import BookingCard from "../../components/bookings/BookingCard";
 import { countryLabel } from "../../lib/countries";
 import { summarizeFares } from "../../lib/fareCalc";
@@ -22,7 +21,6 @@ type Props = {
   order: Order | null;
   flags: Flags;
   onClose: () => void;
-  onBook: () => void;
   onConfirm: () => void;
   onCancel: () => void;
   onDelete: () => void;
@@ -42,7 +40,6 @@ export default function AdminBookingModal({
   order,
   flags,
   onClose,
-  onBook,
   onConfirm,
   onCancel,
   onDelete,
@@ -221,16 +218,6 @@ export default function AdminBookingModal({
             </section>
           )}
 
-          {/* Optional: link to the standalone detail page for the full
-              (cancellation-section, etc.) view. */}
-          <div className="text-center">
-            <Link
-              href={`/bookings/${encodeURIComponent(order.id)}`}
-              className="inline-block text-xs text-slate-500 hover:text-slate-900 underline"
-            >
-              전체 상세 페이지로 이동
-            </Link>
-          </div>
         </div>
 
         {/* Admin actions footer */}
@@ -243,16 +230,6 @@ export default function AdminBookingModal({
               className="h-10 px-4 rounded-lg text-sm font-semibold text-emerald-700 bg-emerald-50 hover:bg-emerald-100 disabled:opacity-50 transition"
             >
               확정
-            </button>
-          )}
-          {!flags.hasLiveReservation && !flags.isExpired && (
-            <button
-              type="button"
-              onClick={onBook}
-              disabled={flags.busy}
-              className="h-10 px-4 rounded-lg text-sm font-semibold text-white bg-red-600 hover:bg-red-700 disabled:opacity-50 transition"
-            >
-              {flags.busy ? "예매중…" : "예매하기"}
             </button>
           )}
           {flags.hasLiveReservation && (

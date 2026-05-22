@@ -14,6 +14,13 @@ import AccountsTab from "./AccountsTab";
 import SettingsTab from "./SettingsTab";
 import BookingCard from "../../components/bookings/BookingCard";
 import AdminBookingModal from "./AdminBookingModal";
+import BookingFilters from "./BookingFilters";
+import {
+  EMPTY_FILTERS,
+  filterOrders,
+  hasActiveFilter,
+  type BookingFilterState,
+} from "./bookingFilterModel";
 import { useI18n } from "../../lib/i18n";
 
 type AdminTab = "bookings" | "accounts" | "settings";
@@ -97,6 +104,7 @@ export default function AdminPage() {
   const [syncing, setSyncing] = useState(false);
   const [lastSyncAt, setLastSyncAt] = useState<string | null>(null);
   const [syncError, setSyncError] = useState<string | null>(null);
+  const [filters, setFilters] = useState<BookingFilterState>(EMPTY_FILTERS);
   const initialSyncRef = useRef(false);
 
   function refresh() {
@@ -526,6 +534,10 @@ export default function AdminPage() {
     }
   }
 
+  // Apply the 예매내역 filter bar to the loaded orders.
+  const shownOrders = orders ? filterOrders(orders, filters) : null;
+  const filterActive = hasActiveFilter(filters);
+
   return (
     <div className="mx-auto max-w-5xl px-4 py-6 pb-10">
       {/* Top tab nav + logout */}
@@ -569,7 +581,16 @@ export default function AdminPage() {
         <>
           <div className="flex items-center justify-between mb-4 gap-3 flex-wrap">
             <p className="text-sm text-slate-500">
-              주문 <span className="font-semibold text-slate-700">{orders?.length ?? 0}</span>건
+              주문{" "}
+              <span className="font-semibold text-slate-700">
+                {shownOrders?.length ?? 0}
+              </span>
+              건
+              {filterActive && orders && (
+                <span className="ml-1 text-xs text-slate-400">
+                  (전체 {orders.length})
+                </span>
+              )}
               {lastSyncAt && (
                 <span className="ml-2 text-xs text-slate-400">
                   · 최근 동기화 {fmtTime(toPlandTime(lastSyncAt))}
@@ -596,12 +617,13 @@ export default function AdminPage() {
             </div>
           </div>
 
-          <div className="flex items-center gap-2 mb-5 px-4 py-3 rounded-xl border border-red-200 bg-red-50 text-red-700 text-sm">
-            <span className="text-base">🚨</span>
-            <span className="font-medium">
-              실 예약 모드 — [예매하기] 클릭 시 실제 좌석이 점유됩니다.
-            </span>
-          </div>
+          {orders && orders.length > 0 && (
+            <BookingFilters
+              value={filters}
+              onChange={setFilters}
+              onReset={() => setFilters(EMPTY_FILTERS)}
+            />
+          )}
 
           {orders === null && (
             <div className="py-16 text-center text-slate-500 text-sm">불러오는 중…</div>
@@ -619,8 +641,16 @@ export default function AdminPage() {
             </div>
           )}
 
+          {orders && orders.length > 0 && shownOrders?.length === 0 && (
+            <div className="bg-white border border-dashed border-slate-200 rounded-2xl py-12 text-center">
+              <p className="text-sm text-slate-500">
+                조건에 맞는 예매내역이 없습니다.
+              </p>
+            </div>
+          )}
+
           <div className="space-y-2">
-            {orders?.map((o) => (
+            {shownOrders?.map((o) => (
               <BookingCard
                 key={o.id}
                 order={o}
@@ -659,7 +689,6 @@ export default function AdminPage() {
                 order={open}
                 flags={flags}
                 onClose={() => setOpenId(null)}
-                onBook={() => onBook(open)}
                 onConfirm={() => onConfirm(open)}
                 onCancel={() => onCancel(open)}
                 onDelete={() => {
