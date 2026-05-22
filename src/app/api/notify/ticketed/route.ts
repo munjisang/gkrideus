@@ -267,7 +267,7 @@ function buildEmail(order: Order, triggerLeg: "out" | "in") {
     <div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;max-width:560px;margin:0 auto;padding:24px;color:#0f172a">
       <h2 style="margin:0 0 12px 0">Your tickets have been issued</h2>
       <p style="color:#475569;margin:0 0 20px 0">
-        ${esc(booker?.name ?? "Customer")}, your train tickets have been issued by KORAIL.
+        ${esc(booker?.name ?? "Customer")}, your train tickets have been issued by GROUNDK.
       </p>
 
       <div style="display:flex;flex-direction:column;gap:12px">
