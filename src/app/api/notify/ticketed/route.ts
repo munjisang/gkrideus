@@ -302,6 +302,24 @@ function buildEmail(order: Order, triggerLeg: "out" | "in") {
 /* ─────────────────────────────── route */
 
 export async function POST(req: Request) {
+  // Top-level guard so any unexpected throw surfaces as readable JSON
+  // instead of an opaque 500.
+  try {
+    return await handle(req);
+  } catch (e) {
+    return NextResponse.json(
+      {
+        ok: false,
+        stage: "crash",
+        error: (e as Error)?.message ?? String(e),
+        trace: (e as Error)?.stack?.split("\n").slice(0, 4).join("\n"),
+      },
+      { status: 500 },
+    );
+  }
+}
+
+async function handle(req: Request) {
   if (!process.env.GMAIL_USER || !process.env.GMAIL_APP_PASSWORD) {
     return NextResponse.json({ ok: true, skipped: "no GMAIL credentials" });
   }

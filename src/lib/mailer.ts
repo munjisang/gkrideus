@@ -49,17 +49,19 @@ function getTransport(): nodemailer.Transporter | null {
 export async function sendEmail(
   input: SendEmailInput,
 ): Promise<SendEmailResult> {
-  const transport = getTransport();
-  if (!transport) {
-    return {
-      ok: false,
-      error: "GMAIL_USER / GMAIL_APP_PASSWORD not set",
-      skipped: "no_credentials",
-    };
-  }
   const user = process.env.GMAIL_USER as string;
   const fromName = process.env.GMAIL_FROM_NAME || "Korail Booking";
   try {
+    // getTransport() is inside the try so a nodemailer load / config
+    // failure becomes a returned error rather than an uncaught throw.
+    const transport = getTransport();
+    if (!transport) {
+      return {
+        ok: false,
+        error: "GMAIL_USER / GMAIL_APP_PASSWORD not set",
+        skipped: "no_credentials",
+      };
+    }
     const info = await transport.sendMail({
       // Gmail rewrites the address to the authenticated account anyway,
       // so we only customise the display name.
