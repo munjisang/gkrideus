@@ -84,13 +84,17 @@ export default function StationPicker({ open, groups, onPick, onClose }: Props) 
   }, [tab, recent, majorStations, groups]);
 
   // When user types in the search box, search across ALL stations regardless of tab.
-  // Otherwise show whatever the current tab is filtered to.
+  // Match against Korean name, station ID, and the English label (curated map +
+  // romanized fallback) so users can find stations by either name in any UI lang.
   const list: Station[] = useMemo(() => {
     const q = query.trim().toLowerCase();
     if (!q) return stationsForTab;
-    return allStations.filter(
-      (s) => s.name.toLowerCase().includes(q) || s.id.toLowerCase().includes(q),
-    );
+    return allStations.filter((s) => {
+      if (s.name.toLowerCase().includes(q)) return true;
+      if (s.id.toLowerCase().includes(q)) return true;
+      if (stationLabel(s.name, "en").toLowerCase().includes(q)) return true;
+      return false;
+    });
   }, [query, stationsForTab, allStations]);
 
   if (!mounted) return null;
