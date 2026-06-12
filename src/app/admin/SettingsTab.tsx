@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import type { FeeSettings } from "../../lib/types";
+import { readJson } from "../../lib/safeJson";
 
 type BasisKey = FeeSettings["bookingFeeBasis"];
 
@@ -38,11 +39,11 @@ export default function SettingsTab() {
       const res = await fetch("/api/admin/service-settings", {
         cache: "no-store",
       });
-      const j = (await res.json()) as {
+      const j = await readJson<{
         ok: boolean;
         settings?: FeeSettings & { updatedAt?: string | null };
         error?: string;
-      };
+      }>(res);
       if (!res.ok || !j.ok || !j.settings) {
         setLoadErr(j.error ?? `HTTP ${res.status}`);
         return;
@@ -95,7 +96,7 @@ export default function SettingsTab() {
           cancelFeeRate: Number(cancelFeePct) / 100,
         }),
       });
-      const j = (await res.json()) as { ok: boolean; error?: string };
+      const j = await readJson<{ ok: boolean; error?: string }>(res);
       if (!res.ok || !j.ok) {
         setSaveErr(j.error ?? `HTTP ${res.status}`);
         return;

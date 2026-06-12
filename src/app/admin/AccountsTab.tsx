@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { readJson } from "../../lib/safeJson";
 
 type ServiceKey = "korail" | "srt";
 
@@ -35,11 +36,11 @@ export default function AccountsTab() {
     setErr(null);
     try {
       const res = await fetch("/api/admin/accounts", { cache: "no-store" });
-      const j = (await res.json()) as {
+      const j = await readJson<{
         ok: boolean;
         accounts?: Account[];
         error?: string;
-      };
+      }>(res);
       if (!res.ok || !j.ok) {
         setErr(j.error ?? `HTTP ${res.status}`);
         return;
@@ -69,12 +70,14 @@ export default function AccountsTab() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ enabled: !acct.enabled }),
       });
-      const j = (await res.json()) as { ok: boolean; error?: string };
+      const j = await readJson<{ ok: boolean; error?: string }>(res);
       if (!res.ok || !j.ok) {
         alert(j.error ?? `HTTP ${res.status}`);
       } else {
         await load();
       }
+    } catch (e) {
+      alert((e as Error).message);
     } finally {
       setBusyId(null);
     }
@@ -93,12 +96,14 @@ export default function AccountsTab() {
       const res = await fetch(`/api/admin/accounts/${acct.id}`, {
         method: "DELETE",
       });
-      const j = (await res.json()) as { ok: boolean; error?: string };
+      const j = await readJson<{ ok: boolean; error?: string }>(res);
       if (!res.ok || !j.ok) {
         alert(j.error ?? `HTTP ${res.status}`);
       } else {
         await load();
       }
+    } catch (e) {
+      alert((e as Error).message);
     } finally {
       setBusyId(null);
     }
@@ -410,7 +415,7 @@ function AddAccountModal({
           enabled,
         }),
       });
-      const j = (await res.json()) as { ok: boolean; error?: string };
+      const j = await readJson<{ ok: boolean; error?: string }>(res);
       if (!res.ok || !j.ok) {
         setErr(j.error ?? `HTTP ${res.status}`);
         setSubmitting(false);

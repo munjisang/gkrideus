@@ -22,6 +22,7 @@ import {
   type BookingFilterState,
 } from "./bookingFilterModel";
 import { useI18n } from "../../lib/i18n";
+import { readJson } from "../../lib/safeJson";
 
 type AdminTab = "bookings" | "accounts" | "settings";
 
@@ -169,7 +170,7 @@ export default function AdminPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ rsvIds: ids.map((x) => x.rsvId), matchers }),
       });
-      const j = (await res.json()) as {
+      const j = await readJson<{
         ok: boolean;
         cancelled?: string[];
         active?: string[];
@@ -182,7 +183,7 @@ export default function AdminPage() {
         }[];
         error?: string;
         stage?: string;
-      };
+      }>(res);
       if (!j.ok) {
         setSyncError(`${j.stage ?? "오류"}: ${j.error ?? "동기화 실패"}`);
         return;
@@ -357,7 +358,7 @@ export default function AdminPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
-      return (await res.json()) as BookingResult;
+      return await readJson<BookingResult>(res);
     } catch (e) {
       return { ok: false, error: (e as Error).message, stage: "network" };
     }
@@ -373,7 +374,7 @@ export default function AdminPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ rsvId, trainGradeName }),
       });
-      return (await res.json()) as BookingResult;
+      return await readJson<BookingResult>(res);
     } catch (e) {
       return { ok: false, error: (e as Error).message, stage: "network" };
     }
