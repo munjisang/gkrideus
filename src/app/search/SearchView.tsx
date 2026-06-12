@@ -148,8 +148,20 @@ export default function SearchView() {
     setLoading(true);
     setAvailability(new Map());
     // Primary fetch: TAGO (fast, has pricing).
+    // Read as text first so an empty body or non-JSON error page surfaces as a
+    // friendly message instead of the raw "Unexpected end of JSON input" string.
     fetch(`/api/trains?from=${fromId}&to=${toId}&date=${date}`, { cache: "no-store" })
-      .then((r) => r.json())
+      .then(async (r) => {
+        const text = await r.text();
+        if (!text.trim()) {
+          throw new Error(r.ok ? t("sr.serverError") : `HTTP ${r.status}`);
+        }
+        try {
+          return JSON.parse(text) as ApiResponse;
+        } catch {
+          throw new Error(r.ok ? t("sr.serverError") : `HTTP ${r.status}`);
+        }
+      })
       .then((j: ApiResponse) => setData(j))
       .catch((e: Error) => setData({ ok: false, error: e.message }))
       .finally(() => setLoading(false));

@@ -118,6 +118,10 @@ const DICT: Record<string, Entry> = {
     en: "Live TAGO data unavailable — showing demo mock schedule.",
   },
   "sr.searchAgain": { ko: "검색 조건이 부족합니다.", en: "Missing search parameters." },
+  "sr.serverError": {
+    ko: "서버 응답에 문제가 있습니다. 잠시 후 다시 시도해 주세요.",
+    en: "The server response was malformed. Please try again in a moment.",
+  },
   "sr.totalPax": { ko: "총 {n}명", en: "Total {n}" },
 
   // order
