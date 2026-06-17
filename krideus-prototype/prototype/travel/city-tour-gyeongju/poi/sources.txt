@@ -1,0 +1,14 @@
+# 경주 시티투어 POI 데모 이미지 출처 (위키백과/위키미디어 — 데모용, 배포 전 라이선스 확인)
+# slug	source(page)	image_url
+02-daereungwon.jpg	ko:대릉원	https://upload.wikimedia.org/wikipedia/commons/e/ef/%EB%8C%80%EB%A6%89%EC%9B%90.jpg
+02-cheomseongdae.jpg	ko:첨성대	https://upload.wikimedia.org/wikipedia/commons/e/e2/Cheomseongdae-1.jpg
+04-museum.jpg	ko:국립경주박물관	https://upload.wikimedia.org/wikipedia/commons/a/a8/Korea-Gyeongju.National.Museum-02.jpg
+05-bulguksa	DLERR	https://upload.wikimedia.org/wikipedia/commons/e/eb/Lotus_Flower_Bridge_and_Seven_Treasure_Bridge_at_Bulguksa_in_Gyeongju%2C_Korea.jpg
+06-seokguram	DLERR	https://upload.wikimedia.org/wikipedia/commons/f/fb/Front_view_of_Seokguram_from_front_chamber.jpg
+07-bomun	DLERR	https://upload.wikimedia.org/wikipedia/commons/d/d1/View_of_Gyeongju-Korea-01.jpg
+08-hwangnidangil	DLERR	https://upload.wikimedia.org/wikipedia/commons/a/a2/Hwanglidangil_Flea_Market.jpg
+05-bulguksa.jpg	ko:불국사	https://upload.wikimedia.org/wikipedia/commons/e/eb/Lotus_Flower_Bridge_and_Seven_Treasure_Bridge_at_Bulguksa_in_Gyeongju%2C_Korea.jpg
+06-seokguram.jpg	ko:석굴암	https://upload.wikimedia.org/wikipedia/commons/f/fb/Front_view_of_Seokguram_from_front_chamber.jpg
+07-bomun.jpg	ko:보문관광단지	https://upload.wikimedia.org/wikipedia/commons/d/d1/View_of_Gyeongju-Korea-01.jpg
+08-hwangnidangil.jpg	ko:황리단길	https://upload.wikimedia.org/wikipedia/commons/a/a2/Hwanglidangil_Flea_Market.jpg
+03-donggung-wolji.jpg	ko:동궁과 월지	https://upload.wikimedia.org/wikipedia/commons/3/3f/%EB%8F%99%EA%B6%81%EA%B3%BC_%EC%9B%94%EC%A7%80.jpg08-hwangnidangil.jpg (교체)	commons:File:Hwangnidan-gil 01.jpg	https://commons.wikimedia.org/wiki/File:Hwangnidan-gil_01.jpg

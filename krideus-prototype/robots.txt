@@ -1,0 +1,15 @@
+# robots.txt for k.rideus.net
+# Generated: 2026-04-10
+
+User-agent: *
+Allow: /
+
+# 비프로덕션/실험 영역 차단
+Disallow: /concepts/
+Disallow: /docs/
+Disallow: /node_modules/
+Disallow: /t-ride2/
+Disallow: /skills/
+
+# 사이트맵
+Sitemap: https://k.rideus.net/sitemap.xml

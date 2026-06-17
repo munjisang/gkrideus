@@ -1,0 +1,612 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <link rel="icon" href="https://cdn.rideus.net/uploads/0003/3016/2023/07/07/favicon.png" type="image/png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#0F1115">
+  <meta name="description" content="라이더스 - 목적지별 셔틀 & 프라이빗 이동 서비스. 공항, 레저, 쇼핑, 테마파크, 공연까지.">
+  <title>라이더스 — 목적지별 셔틀 & 프라이빗 이동 서비스</title>
+  <link rel="canonical" href="https://k.rideus.net/">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="RIDEUS">
+  <meta property="og:title" content="라이더스 — 목적지별 셔틀 & 프라이빗 이동 서비스">
+  <meta property="og:description" content="라이더스 - 목적지별 셔틀 & 프라이빗 이동 서비스. 공항, 레저, 쇼핑, 테마파크, 공연까지.">
+  <meta property="og:url" content="https://k.rideus.net/">
+  <meta property="og:image" content="https://k.rideus.net/assets/og-default.webp">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:locale" content="ko_KR">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="라이더스 — 목적지별 셔틀 & 프라이빗 이동 서비스">
+  <meta name="twitter:description" content="라이더스 - 목적지별 셔틀 & 프라이빗 이동 서비스. 공항, 레저, 쇼핑, 테마파크, 공연까지.">
+  <meta name="twitter:image" content="https://k.rideus.net/assets/og-default.webp">
+
+  <!-- Fonts: Pretendard (body) + Outfit (display) + Montserrat (fallback) -->
+  <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Montserrat:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="css/style.css?v=20260427">
+</head>
+<body>
+
+  <div data-include="navbar"></div>
+
+  <main id="main">
+  <!-- ============================================================
+       HERO
+       ============================================================ -->
+  <section class="hero" id="hero">
+    <!-- Background -->
+    <div class="hero-bg" id="heroBg">
+      <div class="hero-dimmer"></div>
+      <div class="hero-gradient"></div>
+      <canvas id="heroCanvas"></canvas>
+      <img width="1920" height="1072" src="assets/hero_img05.webp" alt="Rideus 배경" loading="eager" decoding="async" id="heroFallbackImg">
+    </div>
+
+    <!-- Content -->
+    <div class="hero-content" id="heroContent">
+      <div class="hero-inner">
+        <h1 class="text-hero hero-title anim-slide-right anim-delay-0" data-lang="ko">라이더스</h1>
+        <h1 class="text-hero hero-title anim-slide-right anim-delay-0" data-lang="en" hidden>RIDEUS</h1>
+
+        <h2 class="hero-subtitle anim-fade-up anim-delay-1" data-lang="ko">
+          목적지에 맞게,<br>
+          <span class="accent">이동을 선택하다.</span>
+        </h2>
+        <h2 class="hero-subtitle anim-fade-up anim-delay-1" data-lang="en" hidden>
+          Choose Your Ride,<br>
+          <span class="accent">Match Your Destination.</span>
+        </h2>
+
+        <p class="hero-desc anim-fade-up anim-delay-2" data-lang="ko">
+          목적지를 정했다면, 나에게 딱 맞는 이동 서비스를 선택해보세요
+        </p>
+        <p class="hero-desc anim-fade-up anim-delay-2" data-lang="en" hidden>
+          The right transfer, matched to your destination
+        </p>
+
+        <div class="hero-cta anim-fade-up anim-delay-3">
+          <a href="#inventory" class="btn btn-primary">
+            <span data-lang="ko">카테고리 둘러보기</span><span data-lang="en" hidden>Browse Categories</span>
+            <svg aria-hidden="true" class="arrow" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
+          </a>
+          <a href="support/" class="btn btn-secondary">
+            <span data-lang="ko">지금 예약 상담 받기</span><span data-lang="en" hidden>Book a Consultation</span>
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Scroll Indicator -->
+    <div class="scroll-indicator">
+      <span>Scroll</span>
+      <div class="line"></div>
+    </div>
+  </section>
+
+  <!-- Scroll spacer for hero frame animation -->
+  <div class="hero-scroll-spacer" id="heroScrollSpacer"></div>
+
+  <!-- ============================================================
+       MATCHING LOGIC — Shuttle vs Private
+       ============================================================ -->
+  <section class="matching" id="matching">
+    <div class="container">
+
+      <!-- Header -->
+      <div class="section-header section-header--center reveal">
+        <span class="section-overline section-overline--badge" data-lang="ko">서비스 비교</span>
+        <span class="section-overline section-overline--badge" data-lang="en" hidden>Compare Services</span>
+        <h2 class="text-h1">SHUTTLE <span class="vs-separator">VS</span> PRIVATE</h2>
+        <p class="section-desc" data-lang="ko">
+          여정의 목적과 예산에 맞는<br>최적의 이동 방식을 선택하세요.
+        </p>
+        <p class="section-desc" data-lang="en" hidden>
+          The right ride for every occasion and budget.
+        </p>
+      </div>
+
+      <!-- Cards -->
+      <div class="matching-grid stagger-children">
+
+        <!-- Shuttle -->
+        <div class="matching-card reveal">
+          <div class="matching-bg-icon">
+            <svg aria-hidden="true" fill="currentColor" viewBox="0 0 24 24"><path d="M4 16c0 .88.39 1.67 1 2.22V20c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-1h8v1c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-1.78c.61-.55 1-1.34 1-2.22V6c0-3.5-3.58-4-8-4s-8 .5-8 4v10zm3.5 1c-.83 0-1.5-.67-1.5-1.5S6.67 14 7.5 14s1.5.67 1.5 1.5S8.33 17 7.5 17zm9 0c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zm1.5-6H6V6h12v5z"/></svg>
+          </div>
+          <div class="z-stack">
+            <div class="matching-head">
+              <div class="matching-icon">
+                <svg aria-hidden="true" fill="currentColor" viewBox="0 0 24 24"><path d="M4 16c0 .88.39 1.67 1 2.22V20c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-1h8v1c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-1.78c.61-.55 1-1.34 1-2.22V6c0-3.5-3.58-4-8-4s-8 .5-8 4v10zm3.5 1c-.83 0-1.5-.67-1.5-1.5S6.67 14 7.5 14s1.5.67 1.5 1.5S8.33 17 7.5 17zm9 0c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zm1.5-6H6V6h12v5z"/></svg>
+              </div>
+              <h3 class="text-h3 text-on-dark" data-lang="ko">셔틀</h3>
+              <h3 class="text-h3 text-on-dark" data-lang="en" hidden>Shuttle</h3>
+            </div>
+            <span class="matching-type-tag" data-lang="ko">효율성 &amp; 스탠다드</span>
+            <span class="matching-type-tag" data-lang="en" hidden>Efficiency &amp; Standard</span>
+            <p class="matching-desc" data-lang="ko">정해진 노선과 시간표에 따라 운행. 예측 가능한 스케줄과 합리적인 비용의 이동 수단입니다.</p>
+            <p class="matching-desc" data-lang="en" hidden>Fixed routes, fixed times — reliable and affordable.</p>
+            <ul class="matching-features" data-lang="ko">
+              <li class="matching-feature"><span class="feature-dot"></span>정해진 시간 출발</li>
+              <li class="matching-feature"><span class="feature-dot"></span>지정된 정류장</li>
+              <li class="matching-feature"><span class="feature-dot"></span>합리적인 비용</li>
+              <li class="matching-feature"><span class="feature-dot"></span>단체 이동 적합</li>
+            </ul>
+            <ul class="matching-features" data-lang="en" hidden>
+              <li class="matching-feature"><span class="feature-dot"></span>Fixed departure times</li>
+              <li class="matching-feature"><span class="feature-dot"></span>Designated stops</li>
+              <li class="matching-feature"><span class="feature-dot"></span>Affordable pricing</li>
+              <li class="matching-feature"><span class="feature-dot"></span>Great for groups</li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- Private -->
+        <div class="matching-card reveal">
+          <div class="matching-bg-icon">
+            <svg aria-hidden="true" fill="currentColor" viewBox="0 0 24 24"><path d="M18.92 6.01C18.72 5.42 18.16 5 17.5 5h-11c-.66 0-1.21.42-1.42 1.01L3 12v8c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-1h12v1c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-8l-2.08-5.99zM6.5 16c-.83 0-1.5-.67-1.5-1.5S5.67 13 6.5 13s1.5.67 1.5 1.5S7.33 16 6.5 16zm11 0c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zM5 11l1.5-4.5h11L19 11H5z"/></svg>
+          </div>
+          <div class="z-stack">
+            <div class="matching-head">
+              <div class="matching-icon">
+                <svg aria-hidden="true" fill="currentColor" viewBox="0 0 24 24"><path d="M18.92 6.01C18.72 5.42 18.16 5 17.5 5h-11c-.66 0-1.21.42-1.42 1.01L3 12v8c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-1h12v1c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-8l-2.08-5.99zM6.5 16c-.83 0-1.5-.67-1.5-1.5S5.67 13 6.5 13s1.5.67 1.5 1.5S7.33 16 6.5 16zm11 0c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zM5 11l1.5-4.5h11L19 11H5z"/></svg>
+              </div>
+              <h3 class="text-h3 text-on-dark" data-lang="ko">프라이빗</h3>
+              <h3 class="text-h3 text-on-dark" data-lang="en" hidden>Private</h3>
+            </div>
+            <span class="matching-type-tag" data-lang="ko">프리미엄 &amp; 커스텀</span>
+            <span class="matching-type-tag" data-lang="en" hidden>Premium &amp; Custom</span>
+            <p class="matching-desc" data-lang="ko">원하는 시간, 원하는 장소로. 오직 당신만을 위한 단독 차량과 Door-to-Door VIP 서비스.</p>
+            <p class="matching-desc" data-lang="en" hidden>Your time, your destination. Exclusive vehicles with Door-to-Door VIP service just for you.</p>
+            <ul class="matching-features" data-lang="ko">
+              <li class="matching-feature"><span class="feature-dot"></span>자유로운 스케줄</li>
+              <li class="matching-feature"><span class="feature-dot"></span>도어 투 도어</li>
+              <li class="matching-feature"><span class="feature-dot"></span>VIP 의전 서비스</li>
+              <li class="matching-feature"><span class="feature-dot"></span>최적 경로 이동</li>
+            </ul>
+            <ul class="matching-features" data-lang="en" hidden>
+              <li class="matching-feature"><span class="feature-dot"></span>Flexible schedule</li>
+              <li class="matching-feature"><span class="feature-dot"></span>Door-to-door</li>
+              <li class="matching-feature"><span class="feature-dot"></span>VIP concierge service</li>
+              <li class="matching-feature"><span class="feature-dot"></span>Optimal route</li>
+            </ul>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ============================================================
+       CATEGORIES
+       ============================================================ -->
+  <section class="categories" id="inventory">
+    <div class="blob blob-1"></div>
+    <div class="blob blob-2"></div>
+
+    <div class="container">
+      <!-- Header -->
+      <div class="section-header reveal">
+        <div>
+          <span class="section-overline section-overline--accent" data-lang="ko">맞춤형 이동 서비스</span>
+          <span class="section-overline section-overline--accent" data-lang="en" hidden>Tailored Mobility</span>
+          <h2 class="text-h2" data-lang="ko">지금 어디로<br class="mobile-br"> 이동하시나요?</h2>
+          <h2 class="text-h2" data-lang="en" hidden>Where Are You<br class="mobile-br"> Headed?</h2>
+        </div>
+        <p class="section-desc section-desc--dark section-desc--spaced" data-lang="ko">
+          목적지에 맞는 이동 방식을 선택하세요. 라이더스는 모든 여정의 목적에 최적화된 차량과 서비스를 제공합니다.
+        </p>
+        <p class="section-desc section-desc--dark section-desc--spaced" data-lang="en" hidden>
+          Find the right way to get there. Rideus matches every destination with the perfect service.
+        </p>
+      </div>
+
+      <!-- Grid -->
+      <div class="cat-grid stagger-children">
+
+        <!-- 01 Airport & Port -->
+        <a href="airport/" class="cat-card reveal">
+          <div class="cat-card-bg">
+            <img width="1920" height="1280" src="assets/airport_cate_v2.webp" alt="공항·항만 이동" loading="lazy" decoding="async">
+            <div class="overlay"></div>
+          </div>
+          <div class="cat-number">01</div>
+          <div class="cat-content">
+            <h3 class="cat-title" data-lang="ko">공항·항만</h3>
+            <h3 class="cat-title" data-lang="en" hidden>Airport &amp; Port</h3>
+            <span class="cat-sub" data-lang="ko">글로벌 커넥션</span>
+            <span class="cat-sub" data-lang="en" hidden>Global Connection</span>
+            <p class="cat-desc" data-lang="ko">공항·항만과 도심을 잇는 가장 편안한 연결.</p>
+            <p class="cat-desc" data-lang="en" hidden>Seamless transfers between airports, ports, and the city.</p>
+            <div class="cat-view">
+              <span data-lang="ko">자세히 보기</span><span data-lang="en" hidden>View Details</span>
+              <svg aria-hidden="true" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M17 8l4 4m0 0l-4 4m4-4H3"/></svg>
+            </div>
+          </div>
+        </a>
+
+        <!-- 02 Leisure -->
+        <a href="leisure/" class="cat-card reveal">
+          <div class="cat-card-bg">
+            <img width="1920" height="1280" src="assets/leisure_cate_v2.webp" alt="레저" loading="lazy" decoding="async">
+            <div class="overlay"></div>
+          </div>
+          <div class="cat-number">02</div>
+          <div class="cat-content">
+            <h3 class="cat-title" data-lang="ko">레저</h3>
+            <h3 class="cat-title" data-lang="en" hidden>Leisure</h3>
+            <span class="cat-sub" data-lang="ko">시즌 탈출</span>
+            <span class="cat-sub" data-lang="en" hidden>Seasonal Escape</span>
+            <p class="cat-desc" data-lang="ko">스키장, 골프장 이동도 장비 걱정 없이.</p>
+            <p class="cat-desc" data-lang="en" hidden>Ski resorts & golf courses — no gear worries.</p>
+            <div class="cat-view">
+              <span data-lang="ko">자세히 보기</span><span data-lang="en" hidden>View Details</span>
+              <svg aria-hidden="true" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M17 8l4 4m0 0l-4 4m4-4H3"/></svg>
+            </div>
+          </div>
+        </a>
+
+        <!-- 03 Theme Parks & Shopping -->
+        <a href="shopping/" class="cat-card reveal">
+          <div class="cat-card-bg">
+            <img width="1920" height="1280" src="assets/shopping_cate_v2.webp" alt="테마파크·쇼핑" loading="lazy" decoding="async">
+            <div class="overlay"></div>
+          </div>
+          <div class="cat-number">03</div>
+          <div class="cat-content">
+            <h3 class="cat-title" data-lang="ko">테마파크·쇼핑</h3>
+            <h3 class="cat-title" data-lang="en" hidden>Theme Parks &amp; Shopping</h3>
+            <span class="cat-sub" data-lang="ko">즐거움과 라이프스타일</span>
+            <span class="cat-sub" data-lang="en" hidden>Fun &amp; Lifestyle</span>
+            <p class="cat-desc" data-lang="ko">에버랜드부터 신세계 프리미엄 아울렛까지 한 카테고리에서.</p>
+            <p class="cat-desc" data-lang="en" hidden>From Everland to Shinsegae Premium Outlets — all in one place.</p>
+            <div class="cat-view">
+              <span data-lang="ko">자세히 보기</span><span data-lang="en" hidden>View Details</span>
+              <svg aria-hidden="true" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M17 8l4 4m0 0l-4 4m4-4H3"/></svg>
+            </div>
+          </div>
+        </a>
+
+        <!-- 04 Event -->
+        <a href="event/" class="cat-card reveal">
+          <div class="cat-card-bg">
+            <img width="1920" height="1280" src="assets/event_cate_v2.webp" alt="공연·이벤트" loading="lazy" decoding="async">
+            <div class="overlay"></div>
+          </div>
+          <div class="cat-number">04</div>
+          <div class="cat-content">
+            <h3 class="cat-title" data-lang="ko">공연·이벤트</h3>
+            <h3 class="cat-title" data-lang="en" hidden>Events</h3>
+            <span class="cat-sub" data-lang="ko">나이트 라이브</span>
+            <span class="cat-sub" data-lang="en" hidden>Night Live</span>
+            <p class="cat-desc" data-lang="ko">콘서트, 페스티벌 이동을 위한 심야 전용 밴.</p>
+            <p class="cat-desc" data-lang="en" hidden>Safe late-night rides for concerts and festivals.</p>
+            <div class="cat-view">
+              <span data-lang="ko">자세히 보기</span><span data-lang="en" hidden>View Details</span>
+              <svg aria-hidden="true" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M17 8l4 4m0 0l-4 4m4-4H3"/></svg>
+            </div>
+          </div>
+        </a>
+
+        <!-- 05 Sports -->
+        <a href="sports-shuttle/" class="cat-card reveal">
+          <div class="cat-card-bg">
+            <img width="1920" height="1280" src="assets/sports_cate_v2.webp" alt="스포츠" loading="lazy" decoding="async">
+            <div class="overlay"></div>
+          </div>
+          <div class="cat-number">05</div>
+          <div class="cat-content">
+            <h3 class="cat-title" data-lang="ko">스포츠</h3>
+            <h3 class="cat-title" data-lang="en" hidden>Sports</h3>
+            <span class="cat-sub" data-lang="ko">응원의 현장</span>
+            <span class="cat-sub" data-lang="en" hidden>Game Day</span>
+            <p class="cat-desc" data-lang="ko">야구장, 경기장 직행 셔틀과 프라이빗 이동.</p>
+            <p class="cat-desc" data-lang="en" hidden>Direct shuttles and private rides to stadiums and arenas.</p>
+            <div class="cat-view">
+              <span data-lang="ko">자세히 보기</span><span data-lang="en" hidden>View Details</span>
+              <svg aria-hidden="true" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M17 8l4 4m0 0l-4 4m4-4H3"/></svg>
+            </div>
+          </div>
+        </a>
+
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ============================================================
+       BRAND VIDEO
+       ============================================================ -->
+  <section class="brand-video" id="brandVideo">
+    <div class="glow"></div>
+    <div class="container z-stack">
+
+      <!-- Header -->
+      <div class="section-header section-header--compact reveal">
+        <span class="section-overline section-overline--badge">Brand Film</span>
+        <h2 class="text-h2 text-on-dark" data-lang="ko">
+          라이더스가 꿈꾸는<br class="mobile-br"> 스마트한 이동
+        </h2>
+        <h2 class="text-h2 text-on-dark" data-lang="en" hidden>
+          Smart Mobility<br class="mobile-br"> by Rideus
+        </h2>
+        <p class="section-desc" data-lang="ko">
+          공항, 콘서트, 테마파크까지. 예약부터 탑승까지 1분이면 충분합니다.
+        </p>
+        <p class="section-desc" data-lang="en" hidden>
+          Airports, concerts, theme parks. From booking to boarding in just 1 minute.
+        </p>
+      </div>
+
+      <!-- Video -->
+      <div class="video-wrap reveal">
+        <div class="video-container" id="videoContainer">
+          <div id="brandVideoPlayer"></div>
+        </div>
+        <button type="button" class="mute-btn" id="muteBtn" aria-label="음소거 해제">
+          <!-- Muted icon (default) -->
+          <svg aria-hidden="true" id="mutedIcon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M17.25 9.75L19.5 12m0 0l2.25 2.25M19.5 12l2.25-2.25M19.5 12l-2.25 2.25m-10.5-6l4.72-3.15a.75.75 0 011.28.53v13.74a.75.75 0 01-1.28.53L6.75 14.25H3.75a.75.75 0 01-.75-.75v-3a.75.75 0 01.75-.75h3z"/>
+          </svg>
+          <!-- Unmuted icon (hidden) -->
+          <svg aria-hidden="true" id="unmutedIcon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5" style="display:none;">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M19.114 5.636a9 9 0 010 12.728M16.463 8.288a5.25 5.25 0 010 7.424M6.75 8.25l4.72-3.15a.75.75 0 011.28.53v12.74a.75.75 0 01-1.28.53l-4.72-3.15H3.75a.75.75 0 01-.75-.75v-3a.75.75 0 01.75-.75h3z"/>
+          </svg>
+        </button>
+      </div>
+
+    </div>
+  </section>
+
+
+  <!-- ============================================================
+       WHY US
+       ============================================================ -->
+  <section class="why-us" id="why">
+    <div class="grid-bg"></div>
+    <div class="container z-stack">
+      <div class="why-grid">
+
+        <!-- Left: Typography -->
+        <div class="reveal">
+          <span class="section-overline" data-lang="ko">우리의 철학</span>
+          <span class="section-overline" data-lang="en" hidden>Our Philosophy</span>
+          <h2 class="text-h2 text-h2--spaced" data-lang="ko">라이더스가<br>선택받는 이유</h2>
+          <h2 class="text-h2 text-h2--spaced" data-lang="en" hidden>Why Choose<br>Rideus</h2>
+
+          <p class="why-quote why-quote--spaced" data-lang="ko">
+            가장 합리적이고 편리한 목적지 도달, 라이더스가 제공하는 차별화된 이동 경험을 만나보세요.
+          </p>
+          <p class="why-quote why-quote--spaced" data-lang="en" hidden>
+            Experience the most affordable and convenient way to reach your destination with Rideus.
+          </p>
+
+          <div class="stats-row">
+            <div>
+              <span class="stat-val">19K</span>
+              <span class="stat-label" data-lang="ko">이용 고객</span>
+              <span class="stat-label" data-lang="en" hidden>Customers</span>
+            </div>
+            <div>
+              <span class="stat-val">10yrs</span>
+              <span class="stat-label" data-lang="ko">운영 경력</span>
+              <span class="stat-label" data-lang="en" hidden>Experience</span>
+            </div>
+            <div>
+              <span class="stat-val">50+</span>
+              <span class="stat-label" data-lang="ko">파트너사</span>
+              <span class="stat-label" data-lang="en" hidden>Partners</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right: Feature Cards -->
+        <div class="why-cards stagger-children">
+
+          <div class="why-card reveal">
+            <div class="why-card-icon">
+              <svg aria-hidden="true" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
+                <path stroke-linecap="round" stroke-linejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
+              </svg>
+            </div>
+            <div>
+              <h4 class="why-card-title" data-lang="ko">목적지 중심 설계</h4>
+              <h4 class="why-card-title" data-lang="en" hidden>Destination-First Design</h4>
+              <p class="why-card-desc" data-lang="ko">당신의 목적지에 딱 맞는 이동 옵션을 제안합니다.</p>
+              <p class="why-card-desc" data-lang="en" hidden>We suggest transfer options tailored to your destination.</p>
+            </div>
+          </div>
+
+          <div class="why-card reveal">
+            <div class="why-card-icon">
+              <svg aria-hidden="true" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/>
+              </svg>
+            </div>
+            <div>
+              <h4 class="why-card-title" data-lang="ko">하이브리드 플릿</h4>
+              <h4 class="why-card-title" data-lang="en" hidden>Hybrid Fleet</h4>
+              <p class="why-card-desc" data-lang="ko">셔틀과 프라이빗 밴의 장점만을 결합했습니다.</p>
+              <p class="why-card-desc" data-lang="en" hidden>Combining the best of shuttle and private van services.</p>
+            </div>
+          </div>
+
+          <div class="why-card reveal">
+            <div class="why-card-icon">
+              <svg aria-hidden="true" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/>
+              </svg>
+            </div>
+            <div>
+              <h4 class="why-card-title" data-lang="ko">실시간 지원</h4>
+              <h4 class="why-card-title" data-lang="en" hidden>Real-Time Support</h4>
+              <p class="why-card-desc" data-lang="ko">즉각적인 문제 해결을 위한 전담 채널을 운영합니다.</p>
+              <p class="why-card-desc" data-lang="en" hidden>Dedicated support channels for instant issue resolution.</p>
+            </div>
+          </div>
+
+          <div class="why-card reveal">
+            <div class="why-card-icon">
+              <svg aria-hidden="true" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
+              </svg>
+            </div>
+            <div>
+              <h4 class="why-card-title" data-lang="ko">검증된 파트너</h4>
+              <h4 class="why-card-title" data-lang="en" hidden>Verified Partners</h4>
+              <p class="why-card-desc" data-lang="ko">엄격한 기준을 통과한 프리미엄 운송 파트너와 함께합니다.</p>
+              <p class="why-card-desc" data-lang="en" hidden>Premium transport partners vetted to the highest standards.</p>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ============================================================
+       POPULAR DESTINATIONS
+       ============================================================ -->
+  <section class="destinations" id="process">
+    <div class="container">
+
+      <div class="section-header">
+        <span class="section-overline section-overline--accent" data-lang="ko">엄선된 여행지</span>
+        <span class="section-overline section-overline--accent" data-lang="en" hidden>Curated Destinations</span>
+        <h2 class="text-h2" data-lang="ko">인기 목적지</h2>
+        <h2 class="text-h2" data-lang="en" hidden>Popular Destinations</h2>
+      </div>
+
+      <div class="dest-grid">
+
+        <!-- 01 에버랜드 -->
+        <a href="./theme-park/everland/" class="dest-card">
+          <img width="1000" height="667" class="dest-card-bg" src="assets/shuttle_everland 1.webp" alt="에버랜드 리조트" loading="lazy" decoding="async">
+          <div class="dest-card-overlay">
+            <div class="dest-card-footer">
+              <div class="dest-card-info">
+                <h3 class="dest-card-title"><span data-lang="ko">에버랜드 리조트</span><span data-lang="en" hidden>Everland Resort</span></h3>
+                <p class="dest-card-desc" data-lang="ko">Door-to-Door 프라이빗 밴으로 편안하게, 끊김 없는 이동.</p>
+                <p class="dest-card-desc" data-lang="en" hidden>Door-to-Door private van, seamlessly from start to finish.</p>
+                <div class="dest-card-tags">
+                  <span class="dest-card-tag"><span data-lang="ko">프라이빗</span><span data-lang="en" hidden>Private</span></span>
+                </div>
+              </div>
+              <span class="dest-card-arrow" aria-hidden="true">
+                <svg aria-hidden="true" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
+              </span>
+            </div>
+          </div>
+        </a>
+
+        <!-- 02 하이원 -->
+        <a href="./leisure/high1/" class="dest-card">
+          <img width="1920" height="1059" class="dest-card-bg" src="assets/high1.webp" alt="하이원 스키 리조트" loading="lazy" decoding="async">
+          <div class="dest-card-overlay">
+            <div class="dest-card-footer">
+              <div class="dest-card-info">
+                <h3 class="dest-card-title"><span data-lang="ko">하이원 스키 리조트</span><span data-lang="en" hidden>High1 Ski Resort</span></h3>
+                <p class="dest-card-desc" data-lang="ko">강원도 정선, 스키 장비 그대로 편안하게 현장까지.</p>
+                <p class="dest-card-desc" data-lang="en" hidden>Direct to Jeongseon — ski gear welcome, no layovers.</p>
+                <div class="dest-card-tags">
+                  <span class="dest-card-tag"><span data-lang="ko">셔틀</span><span data-lang="en" hidden>Shuttle</span></span>
+                  <span class="dest-card-tag"><span data-lang="ko">프라이빗</span><span data-lang="en" hidden>Private</span></span>
+                </div>
+              </div>
+              <span class="dest-card-arrow" aria-hidden="true">
+                <svg aria-hidden="true" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
+              </span>
+            </div>
+          </div>
+        </a>
+
+        <!-- 03 인천공항 -->
+        <a href="./airport/icn/" class="dest-card">
+          <img width="1620" height="1080" class="dest-card-bg" src="assets/airport_icn_hero.webp" alt="인천국제공항" loading="lazy" decoding="async">
+          <div class="dest-card-overlay">
+            <div class="dest-card-footer">
+              <div class="dest-card-info">
+                <h3 class="dest-card-title"><span data-lang="ko">인천국제공항</span><span data-lang="en" hidden>Incheon Int'l Airport</span></h3>
+                <p class="dest-card-desc" data-lang="ko">항공편 연착 실시간 모니터링, 정확하게 대기합니다.</p>
+                <p class="dest-card-desc" data-lang="en" hidden>Real-time flight delay monitoring — we're there when you land.</p>
+                <div class="dest-card-tags">
+                  <span class="dest-card-tag"><span data-lang="ko">프라이빗</span><span data-lang="en" hidden>Private</span></span>
+                </div>
+              </div>
+              <span class="dest-card-arrow" aria-hidden="true">
+                <svg aria-hidden="true" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
+              </span>
+            </div>
+          </div>
+        </a>
+
+        <!-- 04 인스파이어 -->
+        <a href="./event/inspire-arena/" class="dest-card">
+          <img width="940" height="627" class="dest-card-bg" src="assets/ev_venue_inspire.webp" alt="인스파이어 아레나" loading="lazy" decoding="async">
+          <div class="dest-card-overlay">
+            <div class="dest-card-footer">
+              <div class="dest-card-info">
+                <h3 class="dest-card-title"><span data-lang="ko">인스파이어 아레나</span><span data-lang="en" hidden>Inspire Arena</span></h3>
+                <p class="dest-card-desc" data-lang="ko">영종도 K-pop 전용 아레나, 심야 이동까지 올인원 셔틀.</p>
+                <p class="dest-card-desc" data-lang="en" hidden>K-pop arena on Yeongjong Island — all-in-one, late-night returns.</p>
+                <div class="dest-card-tags">
+                  <span class="dest-card-tag"><span data-lang="ko">셔틀</span><span data-lang="en" hidden>Shuttle</span></span>
+                  <span class="dest-card-tag"><span data-lang="ko">프라이빗</span><span data-lang="en" hidden>Private</span></span>
+                </div>
+              </div>
+              <span class="dest-card-arrow" aria-hidden="true">
+                <svg aria-hidden="true" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
+              </span>
+            </div>
+          </div>
+        </a>
+
+        <!-- 05 잠실야구장 -->
+        <a href="./sports-shuttle/jamsil/" class="dest-card">
+          <img width="1200" height="468" class="dest-card-bg" src="./sports-shuttle/images/venue_jamsil.webp" alt="잠실야구장" loading="lazy" decoding="async">
+          <div class="dest-card-overlay">
+            <div class="dest-card-footer">
+              <div class="dest-card-info">
+                <h3 class="dest-card-title"><span data-lang="ko">잠실야구장</span><span data-lang="en" hidden>Jamsil Baseball Stadium</span></h3>
+                <p class="dest-card-desc" data-lang="ko">KBO 시즌 직행, 경기 종료 후 귀가까지 편안하게.</p>
+                <p class="dest-card-desc" data-lang="en" hidden>KBO season direct shuttles — comfortable return after the final out.</p>
+                <div class="dest-card-tags">
+                  <span class="dest-card-tag"><span data-lang="ko">셔틀</span><span data-lang="en" hidden>Shuttle</span></span>
+                  <span class="dest-card-tag"><span data-lang="ko">프라이빗</span><span data-lang="en" hidden>Private</span></span>
+                </div>
+              </div>
+              <span class="dest-card-arrow" aria-hidden="true">
+                <svg aria-hidden="true" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
+              </span>
+            </div>
+          </div>
+        </a>
+
+      </div><!-- /dest-grid -->
+    </div><!-- /container -->
+  </section>
+
+
+
+  <!-- ============================================================
+       FOOTER
+       ============================================================ -->
+  
+  </main>
+
+  <div data-include="footer"></div>
+
+  <!-- Scripts -->
+  <script src="js/includes.js?v=20260427"></script>
+  <script src="js/main.js?v=20260427"></script>
+
+</body>
+</html>

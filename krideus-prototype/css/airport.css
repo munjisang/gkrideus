@@ -1,0 +1,625 @@
+/* ============================================================
+   AIRPORT PAGE — Specific Styles
+   (Common subpage styles are in subpage.css)
+   Maximum design quality — editorial + functional
+   ============================================================ */
+
+
+/* Intro section removed 2026-04-14 v3 — .ap-intro* CSS was 0-usage dead code */
+
+
+/* ============================================================
+   ROUTES COLLECTION
+   ============================================================ */
+.ap-routes {
+  background: var(--color-cool-surface);
+  padding: 3.5rem 0 4rem;
+}
+@media (min-width: 768px) {
+  .ap-routes { padding: 4rem 0 4.5rem; }
+}
+
+.ap-routes-title {
+  font-family: var(--font-display);
+  font-size: var(--text-h2);
+  font-weight: 700;
+  color: var(--color-ink);
+  letter-spacing: -0.025em;
+  margin-bottom: 2rem;
+}
+
+.ap-routes-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.25rem;
+}
+@media (min-width: 640px) {
+  .ap-routes-grid { grid-template-columns: repeat(2, 1fr); }
+}
+@media (min-width: 1024px) {
+  .ap-routes-grid { grid-template-columns: repeat(3, 1fr); }
+}
+
+/* Route card — enhanced */
+.ap-route-card {
+  display: block;
+  background: #fff;
+  border: 1px solid var(--color-cool-border);
+  overflow: hidden;
+  text-decoration: none;
+  transition: border-color 0.4s, box-shadow 0.4s;
+}
+.ap-route-card:hover {
+  border-color: var(--color-cool-accent);
+  box-shadow: 0 16px 48px rgba(0,0,0,0.12);
+}
+
+.ap-route-img {
+  position: relative;
+  aspect-ratio: 16/10;
+  overflow: hidden;
+}
+.ap-route-img img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: filter 1.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.ap-route-card:hover .ap-route-img img {
+  filter: brightness(1.08);
+}
+
+.ap-route-badges {
+  position: absolute;
+  top: 0.625rem;
+  left: 0.625rem;
+  display: flex;
+  gap: 0.3rem;
+}
+.ap-badge {
+  font-size: var(--text-overline);
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  padding: 0.2rem 0.45rem;
+  text-transform: uppercase;
+  border-radius: 2px;
+}
+.ap-badge--shuttle {
+  background: var(--color-accent);
+  color: #fff;
+}
+.ap-badge--private {
+  background: #1a1a1a;
+  color: #fff;
+}
+.ap-badge--airport {
+  background: rgba(255,255,255,0.92);
+  color: var(--color-ink);
+  backdrop-filter: blur(4px);
+}
+/* Event status badges */
+.ap-badge--ended {
+  background: rgba(100,100,100,0.85);
+  color: #ddd;
+}
+.ap-badge--live {
+  background: var(--color-error);
+  color: #fff;
+  animation: badgePulse 2s ease-in-out infinite;
+}
+.ap-badge--upcoming {
+  background: #22c55e;
+  color: #fff;
+}
+@keyframes badgePulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.7; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .ap-badge--live { animation: none; }
+}
+
+/* ============================================================
+   EVENT SCHEDULE — Thumbnail card grid (2-col)
+   ============================================================ */
+.ev-schedule-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1rem;
+}
+@media (min-width: 768px) {
+  .ev-schedule-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.25rem;
+  }
+}
+
+.ev-schedule-card {
+  display: flex;
+  align-items: stretch;
+  gap: 1rem;
+  border: 1px solid var(--color-cool-border);
+  background: #fff;
+  padding: 1rem;
+  text-decoration: none;
+  transition: border-color 0.3s, box-shadow 0.3s;
+}
+.ev-schedule-card:hover {
+  border-color: var(--color-accent);
+  box-shadow: 0 4px 20px rgba(46, 92, 255, 0.08);
+}
+
+.ev-schedule-thumb {
+  flex-shrink: 0;
+  width: 96px;
+  aspect-ratio: 1 / 1;
+  overflow: hidden;
+  border-radius: var(--radius-sm);
+  background: var(--color-bg-slate);
+}
+.ev-schedule-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.ev-schedule-body {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.ev-schedule-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+.ev-schedule-date {
+  font-family: var(--font-display);
+  font-size: var(--text-body-lg);
+  font-weight: 700;
+  color: var(--color-accent);
+}
+.ev-schedule-badges {
+  display: flex;
+  gap: 0.35rem;
+  align-items: center;
+}
+.ev-schedule-type {
+  font-family: var(--font-display);
+  font-size: var(--text-overline);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  padding: 0.2rem 0.5rem;
+  border-radius: 2px;
+}
+.ev-schedule-type--concert {
+  background: rgba(46, 92, 255, 0.1);
+  color: var(--color-accent);
+}
+.ev-schedule-type--festival {
+  background: rgba(217, 119, 6, 0.1);
+  color: var(--color-amber-600);
+}
+
+.ev-schedule-name {
+  font-family: var(--font-body);
+  font-size: var(--text-body);
+  font-weight: 600;
+  color: var(--color-ink);
+  margin-bottom: 0.35rem;
+  line-height: 1.4;
+}
+.ev-schedule-venue {
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+  color: var(--color-ink-caption);
+}
+
+.ap-route-body {
+  padding: 1rem 1.125rem 1.125rem;
+}
+.ap-route-name {
+  font-family: var(--font-body);
+  font-size: 1rem;
+  font-weight: 500;
+  color: var(--color-ink);
+  margin-bottom: 0.25rem;
+}
+.ap-route-desc {
+  font-size: 0.8rem;
+  color: var(--color-text-secondary-cool);
+  margin-bottom: 0.75rem;
+  font-weight: 400;
+}
+
+/* Route meta — interval, duration, schedule */
+.ap-route-meta {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  margin-bottom: 0.625rem;
+}
+.ap-route-meta span {
+  font-size: var(--text-overline);
+  font-weight: 500;
+  color: var(--color-text-dim);
+  padding: 0.2rem 0.5rem;
+  background: var(--color-cool-surface);
+  border-radius: 2px;
+  letter-spacing: 0.02em;
+}
+
+/* Route price / "상세보기" CTA — display turned off site-wide until
+   product strategy decides whether to surface it. Markup and text are
+   kept (unified to "상세보기 →" / "View Details →") so we can re-enable
+   in one CSS change. */
+.ap-route-price {
+  display: none;
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--color-accent);
+  align-items: baseline;
+  gap: 0.5rem;
+}
+.ap-route-price small {
+  font-size: 0.7rem;
+  font-weight: 400;
+  color: var(--color-cool-muted);
+}
+
+
+/* ============================================================
+   WHY CHOOSE — Compact (Light)
+   ============================================================ */
+.ap-why {
+  background: var(--color-bg-light);
+  padding: 3.5rem 0;
+}
+@media (min-width: 768px) {
+  .ap-why { padding: 4.5rem 0; }
+}
+
+.ap-why-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 2.5rem;
+}
+@media (min-width: 768px) {
+  .ap-why-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 3rem;
+  }
+}
+
+.ap-why-left {
+  position: relative;
+}
+@media (min-width: 768px) {
+  .ap-why-left {
+    position: sticky;
+    top: 5rem;
+    align-self: start;
+  }
+}
+
+.ap-why-heading {
+  font-family: var(--font-display);
+  font-size: var(--text-h2);
+  font-weight: 700;
+  color: var(--color-text-dark);
+  line-height: 1.15;
+  letter-spacing: -0.025em;
+  margin: 0.75rem 0 1.25rem;
+}
+
+.ap-why-desc {
+  font-size: var(--text-body-lg);
+  color: var(--color-text-secondary-cool);
+  line-height: 1.7;
+  font-weight: 400;
+}
+
+.ap-why-divider {
+  width: 2.5rem;
+  height: 1px;
+  background: var(--color-border-light);
+  margin-top: 1.5rem;
+}
+
+/* Why items — compact */
+.ap-why-item {
+  display: flex;
+  gap: 1rem;
+  padding: 1.125rem;
+  border: 1px solid var(--color-border-light);
+  background: #fff;
+  transition: border-color 0.3s, background 0.3s, box-shadow 0.3s;
+}
+.ap-why-item:hover {
+  border-color: var(--color-cool-accent);
+  box-shadow: 0 8px 24px rgba(15, 17, 21, 0.06);
+}
+
+.ap-why-num {
+  font-family: var(--font-display);
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--color-cool-accent);
+  flex-shrink: 0;
+  width: 2.25rem;
+  height: 2.25rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--color-cool-accent);
+  transition: background 0.3s, color 0.3s, border-color 0.3s;
+}
+.ap-why-item:hover .ap-why-num {
+  background: var(--color-cool-accent);
+  color: #fff;
+}
+
+.ap-why-item-title {
+  font-family: var(--font-body);
+  font-size: 1.0625rem;
+  font-weight: 600;
+  color: var(--color-text-dark);
+  margin-bottom: 0.35rem;
+}
+.ap-why-item-desc {
+  font-size: 0.95rem;
+  color: var(--color-text-secondary-cool);
+  line-height: 1.6;
+  font-weight: 400;
+}
+
+
+/* ============================================================
+   SKI SPOTLIGHT BANNER — Compact Spotlight Card
+   ============================================================ */
+.ap-ski-spotlight {
+  background: var(--color-bg-light);
+  padding: 0 0 4rem;
+}
+
+.ap-ski-spotlight-card {
+  position: relative;
+  min-height: 240px;
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+}
+@media (min-width: 768px) {
+  .ap-ski-spotlight-card { min-height: 280px; }
+}
+
+.ap-ski-spotlight-media {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+}
+.ap-ski-spotlight-media img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.ap-ski-spotlight-media::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(100deg, transparent 30%, rgba(10,12,18,0.72) 58%);
+  pointer-events: none;
+}
+@media (max-width: 767px) {
+  .ap-ski-spotlight-media::after {
+    background: linear-gradient(to top, rgba(10,12,18,0.92) 50%, transparent 100%);
+  }
+}
+
+.ap-ski-spotlight-body {
+  position: relative;
+  z-index: 2;
+  margin-left: auto;
+  width: 52%;
+  max-width: 480px;
+  padding: 2.25rem 2.5rem;
+  background: rgba(15,17,21,0.26);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-height: inherit;
+}
+@media (max-width: 767px) {
+  .ap-ski-spotlight-body {
+    width: 100%;
+    max-width: none;
+    background: none;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    padding: 2rem 1.5rem 2rem;
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    min-height: auto;
+  }
+}
+
+.ap-ski-spotlight-meta {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.65rem;
+  margin-bottom: 0.65rem;
+  flex-wrap: wrap;
+}
+.ap-ski-spotlight-tag {
+  background: rgba(46,92,255,0.12);
+  color: var(--color-cool-accent-light);
+  font-family: var(--font-display);
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  padding: 0.3em 0.75em;
+  border-radius: 3px;
+  border: 1px solid rgba(46,92,255,0.35);
+}
+.ap-ski-spotlight-date {
+  color: rgba(255,255,255,0.5);
+  font-size: 0.76rem;
+  font-weight: 500;
+  font-family: var(--font-display);
+  letter-spacing: 0.08em;
+}
+.ap-ski-spotlight-title {
+  font-family: var(--font-display);
+  font-size: clamp(1.35rem, 2.4vw, 1.75rem);
+  font-weight: 700;
+  color: #fff;
+  margin: 0 0 0.3rem;
+  line-height: 1.2;
+}
+.ap-ski-spotlight-subtitle {
+  color: var(--color-cool-accent-light);
+  font-size: 0.88rem;
+  font-weight: 600;
+  margin: 0 0 0.65rem;
+  letter-spacing: 0.02em;
+}
+.ap-ski-spotlight-desc {
+  color: rgba(255,255,255,0.68);
+  line-height: 1.65;
+  font-size: 0.875rem;
+  margin: 0 0 1.35rem;
+}
+.ap-ski-spotlight-cta {
+  background: var(--color-accent);
+  color: #fff;
+  padding: 0.7rem 1.5rem;
+  border-radius: var(--radius-sm);
+  font-family: var(--font-display);
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  align-self: flex-start;
+  transition: filter 0.25s;
+}
+.ap-ski-spotlight-cta:hover {
+  filter: brightness(1.15);
+}
+
+
+/* ============================================================
+   USP — 3 Columns, Compact (Light)
+   ============================================================ */
+.ap-usp {
+  background: var(--color-bg-light);
+  padding: 3.5rem 0;
+}
+@media (min-width: 768px) {
+  .ap-usp { padding: 4rem 0; }
+}
+
+.ap-usp-heading {
+  font-family: var(--font-display);
+  font-size: var(--text-h2);
+  font-weight: 700;
+  letter-spacing: -0.025em;
+  color: var(--color-text-dark);
+  margin-bottom: 2rem;
+  text-align: center;
+}
+
+.ap-usp-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 2px;
+}
+@media (min-width: 768px) {
+  .ap-usp-grid { grid-template-columns: repeat(3, 1fr); }
+}
+
+.ap-usp-card {
+  background: #fff;
+  border: 1px solid var(--color-border-light);
+  padding: 2rem 1.75rem;
+  transition: border-color 0.5s var(--ease-spring), box-shadow 0.5s var(--ease-spring), transform 0.5s var(--ease-spring);
+  position: relative;
+  overflow: hidden;
+}
+.ap-usp-card::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 0;
+  height: 2px;
+  background: linear-gradient(to right, var(--color-cool-accent), var(--color-cool-accent-light));
+  transition: width 0.6s var(--ease-spring);
+}
+.ap-usp-card:hover {
+  border-color: var(--color-cool-accent);
+  box-shadow: 0 16px 40px rgba(15, 17, 21, 0.12);
+}
+.ap-usp-card:hover::after { width: 100%; }
+
+.ap-usp-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  border-radius: 50%;
+  border: 1px solid var(--color-cool-accent);
+  color: var(--color-cool-accent);
+  margin-bottom: 1.25rem;
+  transition: background 0.3s, border-color 0.3s;
+}
+.ap-usp-card:hover .ap-usp-icon {
+  background: rgba(123, 156, 204, 0.14);
+  border-color: var(--color-cool-accent-light);
+}
+
+.ap-usp-title {
+  font-family: var(--font-body);
+  font-size: 1.0625rem;
+  font-weight: 600;
+  color: var(--color-text-dark);
+  margin-bottom: 0.75rem;
+}
+
+.ap-usp-line {
+  font-size: 0.95rem;
+  color: var(--color-text-secondary-cool);
+  line-height: 1.8;
+  font-weight: 400;
+}
+.ap-usp-accent {
+  color: var(--color-cool-accent-light);
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+.ap-usp-card:hover .ap-usp-accent {
+  opacity: 1;
+}
+
+
+/* Bottom CTA section removed 2026-04-14 v3 — .ap-cta* CSS was 0-usage dead code */
+
+
+/* Filter Tabs removed 2026-04-14 — airport hub now shows 6 destinations
+   (ICN/GMP/PUS/CJU/Busan Port/Incheon Port) without filtering. */

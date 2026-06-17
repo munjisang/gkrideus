@@ -3,11 +3,27 @@
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
-import { useI18n, type Lang } from "../lib/i18n";
+import { useState } from "react";
+import { useI18n } from "../lib/i18n";
 
-const GROUNDK_LOGO =
-  "https://www.groundk.co.kr/ko/images/common/img_header_logo.png";
+const RIDEUS_LOGO = "/rideusLogo.webp";
+// Cross-site hubs of the unified K.Rideus site. This app IS the
+// "시외 이동(City to City)" service, so that item is the current page. The other
+// hubs are the static K.Rideus prototype, served from public/ (symlinked).
+type NavItem = {
+  key: string;
+  ko: string;
+  en: string;
+  href: string;
+  current?: boolean;
+  external?: boolean; // static/cross-site → full navigation via <a>
+};
+const NAV_ITEMS: NavItem[] = [
+  { key: "movement", ko: "공항", en: "Airport", href: "/prototype/movement/index.html", external: true },
+  { key: "city2city", ko: "시외 이동", en: "City to City", href: "/city", current: true },
+  { key: "travel", ko: "여행", en: "Travel", href: "/prototype/travel/index.html", external: true },
+  { key: "event", ko: "이벤트", en: "Events", href: "/prototype/event/index.html", external: true },
+];
 
 export default function AppFrame({ children }: { children: React.ReactNode }) {
   const pathname = usePathname() ?? "/";
@@ -17,180 +33,176 @@ export default function AppFrame({ children }: { children: React.ReactNode }) {
     pathname.startsWith("/order") ||
     pathname === "/bus" ||
     pathname.startsWith("/bookings");
-  // Home overlays a transparent nav on top of its full-bleed hero.
-  const isHome = pathname === "/";
-  const { lang, setLang, t } = useI18n();
 
   return (
     <div className="min-h-screen flex flex-col bg-white text-ink">
-      {!hideHeader && (
-        <header
-          className={
-            isHome
-              ? "absolute inset-x-0 top-0 z-30"
-              : "sticky top-0 z-30 frosted border-b border-hairline"
-          }
-        >
-          <div
-            className={`${
-              isHome
-                ? "mx-auto w-full max-w-[1280px] px-4 sm:px-8 lg:px-12"
-                : "mx-4 sm:mx-6 lg:mx-[470px]"
-            } h-[60px] flex items-center justify-between gap-3`}
-          >
-            {/* Left: logo */}
-            <Link href="/" className="flex items-center min-w-0" aria-label="GroundK">
-              <Image
-                src={GROUNDK_LOGO}
-                alt="GroundK"
-                width={69}
-                height={20}
-                className={`h-5 w-auto ${isHome ? "brightness-0 invert" : ""}`}
-                priority
-                unoptimized
-              />
-            </Link>
-
-            {/* Right: language · find booking · sign in */}
-            <div className="flex items-center gap-2 sm:gap-3 shrink-0">
-              <LangDropdown
-                lang={lang}
-                setLang={setLang}
-                label={t("nav.langMenu")}
-                onDark={isHome}
-              />
-              <Link
-                href="/bookings"
-                className={`inline-flex items-center h-8 px-3.5 rounded-pill text-[13px] font-semibold active:scale-95 transition-transform ${
-                  isHome ? "bg-white text-ink" : "bg-ink text-white"
-                }`}
-              >
-                {t("nav.bookingSearch")}
-              </Link>
-            </div>
-          </div>
-        </header>
-      )}
-      <main className={`flex-1 relative ${isHome ? "bg-white" : "bg-parchment"}`}>
-        {children}
-      </main>
+      {!hideHeader && <RideusNav />}
+      <main className="flex-1 relative bg-white">{children}</main>
     </div>
   );
 }
 
-/* ─────────────────────────────────────────── Language dropdown */
+/* ─────────────────────────── K.Rideus unified GNB */
 
-const LANG_OPTIONS: { code: Lang; flag: string; label: string }[] = [
-  { code: "ko", flag: "🇰🇷", label: "KO" },
-  { code: "en", flag: "🇺🇸", label: "EN" },
-];
-
-function LangDropdown({
-  lang,
-  setLang,
-  label,
-  onDark = false,
-}: {
-  lang: Lang;
-  setLang: (l: Lang) => void;
-  label: string;
-  onDark?: boolean;
-}) {
+function RideusNav() {
+  const { lang, setLang } = useI18n();
   const [open, setOpen] = useState(false);
-  const wrapRef = useRef<HTMLDivElement>(null);
+  const isKo = lang === "ko";
 
-  useClickOutside(wrapRef, () => setOpen(false));
+  const menuLabel = (it: NavItem) => (isKo ? it.ko : it.en);
 
-  const current = LANG_OPTIONS.find((o) => o.code === lang) ?? LANG_OPTIONS[0];
+  const NavLink = ({ it, drawer }: { it: NavItem; drawer?: boolean }) => {
+    const cls = drawer
+      ? `py-3.5 px-1 text-[1.05rem] font-semibold border-b border-[#F2F3F4] ${
+          it.current ? "text-[#2C51DB]" : "text-[#1B2027]"
+        }`
+      : `py-2 transition-colors ${
+          it.current
+            ? "text-[#1B2027] font-semibold"
+            : "text-[#5C6675] hover:text-[#1B2027]"
+        }`;
+    const onClick = drawer ? () => setOpen(false) : undefined;
+    return it.external ? (
+      <a href={it.href} className={cls} onClick={onClick}>
+        {menuLabel(it)}
+      </a>
+    ) : (
+      <Link
+        href={it.href}
+        aria-current={it.current ? "page" : undefined}
+        className={cls}
+        onClick={onClick}
+      >
+        {menuLabel(it)}
+      </Link>
+    );
+  };
 
   return (
-    <div ref={wrapRef} className="relative">
-      <button
-        type="button"
-        aria-haspopup="listbox"
-        aria-expanded={open}
-        aria-label={label}
-        onClick={() => setOpen((v) => !v)}
-        className={`inline-flex items-center gap-1.5 h-8 px-2.5 rounded-pill border text-[12px] font-semibold active:scale-95 transition-transform ${
-          onDark
-            ? "border-white/30 bg-white/10 text-white backdrop-blur-sm"
-            : "border-hairline bg-white text-ink"
-        }`}
-      >
-        <span aria-hidden className="text-base leading-none">
-          {current.flag}
-        </span>
-        <span>{current.label}</span>
-        <svg
-          className={onDark ? "text-white/70" : "text-ink-faint"}
-          width="12"
-          height="12"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          aria-hidden
-        >
-          <path d="M6 9l6 6 6-6" />
-        </svg>
-      </button>
+    <header
+      className="sticky top-0 z-[60] bg-[rgba(255,255,255,0.86)] backdrop-blur-md backdrop-saturate-150"
+      style={{ WebkitBackdropFilter: "saturate(140%) blur(12px)" }}
+    >
+      <div className="mx-auto max-w-[1280px] flex items-center gap-4 md:gap-11 py-5 px-6 sm:px-10 lg:px-14">
+        {/* Brand */}
+        <Link href="/" className="inline-flex items-center shrink-0" aria-label="K.Rideus">
+          <Image
+            src={RIDEUS_LOGO}
+            alt="K.Rideus"
+            width={117}
+            height={28}
+            className="h-7 w-auto block"
+            priority
+            unoptimized
+          />
+        </Link>
+
+        {/* Desktop menu */}
+        <nav className="hidden md:flex gap-8 text-[0.95rem]">
+          {NAV_ITEMS.map((it) => (
+            <NavLink key={it.key} it={it} />
+          ))}
+        </nav>
+
+        {/* Right cluster */}
+        <div className="ml-auto flex items-center gap-2 text-[#5C6675]">
+          {/* Language chip (KR / EN) */}
+          <span
+            role="group"
+            aria-label="언어"
+            className="hidden md:flex items-center gap-0.5 bg-[#F2F3F4] rounded-full p-1 text-[0.78rem] font-semibold"
+          >
+            <button
+              type="button"
+              onClick={() => setLang("ko")}
+              className={`px-3 py-1 rounded-full transition ${
+                isKo ? "bg-white text-[#2C51DB]" : "text-[#97A0AC]"
+              }`}
+            >
+              KR
+            </button>
+            <button
+              type="button"
+              onClick={() => setLang("en")}
+              className={`px-3 py-1 rounded-full transition ${
+                !isKo ? "bg-white text-[#2C51DB]" : "text-[#97A0AC]"
+              }`}
+            >
+              EN
+            </button>
+          </span>
+
+          {/* Search */}
+          <button
+            type="button"
+            aria-label="검색"
+            className="hidden md:grid w-10 h-10 place-items-center rounded-full hover:bg-[#F2F3F4] transition"
+          >
+            <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round">
+              <circle cx="11" cy="11" r="7" />
+              <path d="m20 20-3.6-3.6" />
+            </svg>
+          </button>
+
+          {/* Burger (mobile) */}
+          <button
+            type="button"
+            aria-label={open ? "메뉴 닫기" : "메뉴 열기"}
+            aria-expanded={open}
+            onClick={() => setOpen((v) => !v)}
+            className="flex md:hidden flex-col items-center justify-center gap-[5px] w-[42px] h-[42px]"
+          >
+            <span
+              className={`block w-[22px] h-[2px] rounded-sm bg-[#1B2027] transition-transform ${
+                open ? "translate-y-[7px] rotate-45" : ""
+              }`}
+            />
+            <span
+              className={`block w-[22px] h-[2px] rounded-sm bg-[#1B2027] transition-opacity ${
+                open ? "opacity-0" : ""
+              }`}
+            />
+            <span
+              className={`block w-[22px] h-[2px] rounded-sm bg-[#1B2027] transition-transform ${
+                open ? "-translate-y-[7px] -rotate-45" : ""
+              }`}
+            />
+          </button>
+        </div>
+      </div>
+
+      {/* Mobile drawer */}
       {open && (
-        <ul
-          role="listbox"
-          className="absolute right-0 top-[calc(100%+6px)] z-40 min-w-[96px] py-1 rounded-card border border-hairline bg-white shadow-lg overflow-hidden"
-        >
-          {LANG_OPTIONS.map((o) => {
-            const active = o.code === lang;
-            return (
-              <li key={o.code} role="option" aria-selected={active}>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setLang(o.code);
-                    setOpen(false);
-                  }}
-                  className={`w-full flex items-center gap-2 px-3 py-2 text-[13px] font-semibold transition ${
-                    active
-                      ? "bg-ink text-white"
-                      : "text-ink hover:bg-parchment"
-                  }`}
-                >
-                  <span aria-hidden className="text-base leading-none">
-                    {o.flag}
-                  </span>
-                  <span>{o.label}</span>
-                </button>
-              </li>
-            );
-          })}
-        </ul>
+        <div className="md:hidden flex flex-col max-w-[1280px] mx-auto px-6 pb-4 pt-1">
+          {NAV_ITEMS.map((it) => (
+            <NavLink key={it.key} it={it} drawer />
+          ))}
+          <span
+            role="group"
+            aria-label="언어"
+            className="inline-flex self-start mt-3.5 items-center gap-0.5 bg-[#F2F3F4] rounded-full p-1 text-[0.78rem] font-semibold"
+          >
+            <button
+              type="button"
+              onClick={() => setLang("ko")}
+              className={`px-3 py-1 rounded-full transition ${
+                isKo ? "bg-white text-[#2C51DB]" : "text-[#97A0AC]"
+              }`}
+            >
+              KR
+            </button>
+            <button
+              type="button"
+              onClick={() => setLang("en")}
+              className={`px-3 py-1 rounded-full transition ${
+                !isKo ? "bg-white text-[#2C51DB]" : "text-[#97A0AC]"
+              }`}
+            >
+              EN
+            </button>
+          </span>
+        </div>
       )}
-    </div>
+    </header>
   );
-}
-
-/* ─────────────────────────────────────────── Helpers */
-
-function useClickOutside(
-  ref: React.RefObject<HTMLElement | null>,
-  handler: () => void,
-) {
-  useEffect(() => {
-    function onDown(e: MouseEvent) {
-      const el = ref.current;
-      if (!el) return;
-      if (!el.contains(e.target as Node)) handler();
-    }
-    function onKey(e: KeyboardEvent) {
-      if (e.key === "Escape") handler();
-    }
-    document.addEventListener("mousedown", onDown);
-    document.addEventListener("keydown", onKey);
-    return () => {
-      document.removeEventListener("mousedown", onDown);
-      document.removeEventListener("keydown", onKey);
-    };
-  }, [ref, handler]);
 }

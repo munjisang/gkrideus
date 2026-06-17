@@ -1,0 +1,1067 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>에버랜드 — K.Rideus</title>
+<meta name="description" content="에버랜드까지, 셔틀과 프라이빗 중 골라서. 서울 거점 직행 셔틀 또는 도어투도어 전용 차량. K.Rideus 여행.">
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+/* ============================================================
+   K.Rideus 테마파크 상세 — 에버랜드 (컨셉 v0.1)
+   구조: 히어로 → 목적지 안내(공통) → 분기점[셔틀│프라이빗] → 2:1 전환 → 추천 → CTA
+   톤: 파주 계승 (Warm Cream·Cobalt·Outfit+Pretendard·optical inset)
+   색: 셔틀=오렌지 · 프라이빗=바이올렛 · 공통=코발트
+   ============================================================ */
+:root{
+  --bg:#FAF8F5;--surface:#FFFEFC;--card:#FFFFFF;
+  --ink:#1B2027;--ink-soft:#5C6675;--ink-faint:#97A0AC;
+  --accent:#2C51DB;--accent-soft:#E4E9FB;
+  --shuttle:#E8632F;--shuttle-soft:#F6E8DC;
+  --private:#5B45B8;--private-soft:#ECE6F7;
+  --hair:#ECE7DF;--hair-soft:#F3EFE8;
+  --shadow:18 24 33;--maxw:1280px;--text-inset:8px;
+  --fd:'Outfit','Pretendard',sans-serif;--fb:'Pretendard',-apple-system,BlinkMacSystemFont,sans-serif;
+  --e-out:cubic-bezier(.16,1,.3,1);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:var(--fb);background:var(--bg);color:var(--ink);line-height:1.45;letter-spacing:-.005em;-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;overflow-x:clip;word-break:keep-all;overflow-wrap:break-word}
+img{max-width:100%;display:block}
+a,button{color:inherit;text-decoration:none;font:inherit}
+button{background:none;border:none;cursor:pointer}
+ul,li{list-style:none}
+.wrap{max-width:var(--maxw);margin:0 auto;padding:0 clamp(24px,4vw,56px)}
+
+/* ---------- Nav — 이미지 히어로 일체화 ---------- */
+.nav{position:fixed;top:0;left:0;right:0;z-index:60;background:transparent;transition:background .35s var(--e-out);
+  --nav-ink:#fff;--nav-soft:rgba(255,255,255,.82);--nav-faint:rgba(255,255,255,.55);--nav-chip:rgba(255,255,255,.16);--nav-hover:rgba(255,255,255,.14)}
+.nav.is-solid,.nav.is-open{background:color-mix(in srgb, var(--bg) 92%, transparent);backdrop-filter:saturate(140%) blur(12px);-webkit-backdrop-filter:saturate(140%) blur(12px);
+  --nav-ink:var(--ink);--nav-soft:var(--ink-soft);--nav-faint:var(--ink-faint);--nav-chip:var(--hair-soft);--nav-hover:var(--hair-soft)}
+.nav__in{max-width:var(--maxw);margin:0 auto;padding:20px clamp(24px,4vw,56px);display:flex;align-items:center;gap:44px}
+.brand{display:inline-flex;align-items:center}.brand img{height:28px;width:auto;display:block;transition:filter .35s var(--e-out)}
+.nav:not(.is-solid):not(.is-open) .brand img{filter:brightness(0) invert(1)}
+.nav__menu{display:flex;gap:32px;font-size:.95rem;font-weight:500}
+.nav__menu a{color:var(--nav-soft);padding:8px 0;transition:color .25s var(--e-out)}
+.nav__menu a:hover{color:var(--nav-ink)}
+.nav__menu a[aria-current]{color:var(--nav-ink);font-weight:600}
+.nav__right{margin-left:auto;display:flex;align-items:center;gap:8px;color:var(--nav-soft)}
+.nav__lang{display:flex;align-items:center;gap:2px;background:var(--nav-chip);border-radius:999px;padding:4px;font-size:.78rem;font-weight:600}
+.nav__lang span{padding:4px 12px;border-radius:999px;color:var(--nav-faint)}
+.nav__lang span.on{background:#fff;color:var(--accent)}
+.nav__ic{width:40px;height:40px;display:grid;place-items:center;border-radius:50%;transition:background .25s var(--e-out)}
+.nav__ic:hover{background:var(--nav-hover)}
+.nav__burger{display:none;width:42px;height:42px;flex-direction:column;align-items:center;justify-content:center;gap:5px;border:none;background:none;cursor:pointer}
+.nav__burger span{display:block;width:22px;height:2px;background:var(--nav-ink);border-radius:2px;transition:transform .3s cubic-bezier(.16,1,.3,1),opacity .2s,background .35s}
+.nav.is-open .nav__burger span:nth-child(1){transform:translateY(7px) rotate(45deg)}
+.nav.is-open .nav__burger span:nth-child(2){opacity:0}
+.nav.is-open .nav__burger span:nth-child(3){transform:translateY(-7px) rotate(-45deg)}
+.nav__drawer{display:none;flex-direction:column;max-width:1280px;margin:0 auto;padding:4px clamp(24px,4vw,56px) 18px}
+.nav__drawer a{padding:14px 4px;font-size:1.05rem;font-weight:600;color:#1B2027;border-bottom:1px solid #F3EFE8;text-decoration:none}
+.nav__drawer a[aria-current]{color:#2C51DB}
+.nav__drawer-lang{display:inline-flex;align-self:flex-start;margin-top:14px;align-items:center;gap:2px;background:#F3EFE8;border-radius:999px;padding:4px;font-size:.78rem;font-weight:600}
+.nav__drawer-lang span{padding:4px 12px;border-radius:999px;color:#97A0AC}
+.nav__drawer-lang span.on{background:#fff;color:#2C51DB}
+@media (max-width:768px){
+  .nav__menu,.nav__ic,.nav__lang{display:none}
+  .nav__burger{display:flex}
+  .nav.is-open .nav__drawer{display:flex;animation:navDrop .3s cubic-bezier(.16,1,.3,1)}
+}
+@keyframes navDrop{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:none}}
+
+/* ---------- Buttons ---------- */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;height:52px;padding:0 28px;border-radius:999px;font-weight:600;font-size:1rem;letter-spacing:-.01em;white-space:nowrap;transition:transform .25s var(--e-out),background .25s var(--e-out),box-shadow .25s var(--e-out),color .25s var(--e-out)}
+.btn svg{width:17px;height:17px}
+.btn--primary{background:var(--accent);color:#fff}
+.btn--primary:hover{transform:translateY(-2px);background:#1f43c4}
+.btn--block{width:100%}
+
+/* ---------- 이미지 히어로 ---------- */
+.phero{position:relative;height:clamp(260px,28vh,340px);overflow:hidden;max-width:1280px;margin:0 auto;border-radius:0 0 32px 32px;display:flex;align-items:flex-end}
+.phero img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.phero__scrim{position:absolute;inset:0;background:linear-gradient(180deg,rgba(10,14,20,.45) 0%,rgba(10,14,20,.08) 42%,rgba(10,14,20,.58) 100%)}
+.phero__txt{position:relative;z-index:1;width:100%;max-width:var(--maxw);margin:0 auto;padding:0 clamp(24px,4vw,56px) clamp(24px,2.6vw,36px);color:#fff}
+.phero__txt h1{font-weight:800;letter-spacing:-.03em;line-height:1.1;font-size:clamp(1.7rem,3.2vw,2.5rem)}
+.phero__txt p{margin-top:10px;font-size:clamp(.94rem,1.1vw,1.05rem);font-weight:500;line-height:1.55;color:rgba(255,255,255,.86);max-width:56ch}
+
+/* ---------- Breadcrumb ---------- */
+.crumb{padding:18px 0 0;font-size:.82rem;color:var(--ink-faint);display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.crumb a{color:var(--ink-soft);transition:color .2s var(--e-out)}
+.crumb a:hover{color:var(--ink)}
+.crumb span{color:var(--ink-faint)}
+.crumb b{color:var(--ink-soft);font-weight:600}
+
+/* ============================================================
+   목적지 안내 — 좌 소개 / 우 At a Glance (공통)
+   ============================================================ */
+.pd{padding:clamp(20px,2.4vw,32px) 0 clamp(40px,5vw,64px)}
+.pd-grid{display:grid;grid-template-columns:1fr clamp(320px,30vw,400px);gap:clamp(28px,3.4vw,52px);align-items:start}
+
+.pd-trend{margin-top:clamp(6px,1vw,12px)}
+.pd-trend__label{font-family:var(--fd);font-size:.7rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-faint);margin-bottom:8px}
+.pd-trend__list{display:flex;flex-wrap:wrap;gap:4px 16px}
+.pd-tag{font-size:14px;font-weight:400;color:var(--shuttle);line-height:1.7}
+.pd-tag::before{content:'#';opacity:.55;margin-right:1px}
+
+.pd-about{margin-top:clamp(28px,3.2vw,40px)}
+.pd-about h2{font-size:1.3rem;font-weight:700;letter-spacing:-.02em;margin-bottom:14px;padding-left:var(--text-inset)}
+.pd-about p{font-size:.98rem;color:var(--ink-soft);line-height:1.75;margin-bottom:16px;max-width:60ch;padding-left:var(--text-inset)}
+
+/* 우 — At a Glance */
+.pd-glance{display:grid;grid-template-columns:repeat(2,1fr);gap:1px;background:var(--hair);border-radius:18px;overflow:hidden}
+.glance-item{margin:0;background:var(--card);padding:20px 22px}
+.glance-item dt{font-family:var(--fd);font-size:.7rem;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-faint);margin-bottom:7px}
+.glance-item dd{font-family:var(--fd);font-size:1rem;font-weight:700;letter-spacing:-.01em;color:var(--ink);line-height:1.4;margin:0}
+.glance-item dd small{display:block;font-family:var(--fb);font-weight:500;color:var(--ink-soft);font-size:.8rem;margin-top:3px;letter-spacing:-.005em}
+
+/* ============================================================
+   분기점 — 서비스 스위치 [셔틀 │ 프라이빗]
+   ============================================================ */
+.choose{background:var(--hair-soft);padding:clamp(44px,5.4vw,76px) 0}
+.choose-head{text-align:center;margin-bottom:clamp(24px,2.8vw,34px)}
+.choose-head h2{font-weight:700;letter-spacing:-.03em;line-height:1.12;font-size:clamp(1.5rem,2.8vw,2.1rem)}
+.choose-head p{margin-top:10px;font-size:clamp(.95rem,1.1vw,1.05rem);color:var(--ink-soft);font-weight:500}
+
+/* ---------- 아코디언 — 셔틀/프라이빗 세로, 펼친 쪽만 예약폼 노출 ---------- */
+.acc{display:flex;flex-direction:column;gap:clamp(12px,1.4vw,16px)}
+.acc-item{--svc-c:var(--accent);--svc-soft:var(--accent-soft);background:var(--card);border-radius:clamp(16px,1.4vw,20px);overflow:hidden}
+.acc-item[data-svc="shuttle"]{--svc-c:var(--shuttle);--svc-soft:var(--shuttle-soft)}
+.acc-item[data-svc="private"]{--svc-c:var(--private);--svc-soft:var(--private-soft)}
+/* 헤더 (항상 보임 · 클릭으로 펼침) */
+.acc-head{display:flex;align-items:center;gap:clamp(14px,1.6vw,18px);width:100%;padding:clamp(18px,2vw,24px) clamp(20px,2.2vw,28px);text-align:left;cursor:pointer;transition:background-color .3s var(--e-out)}
+.acc-head:hover{background:color-mix(in srgb, var(--svc-c) 8%, var(--card))}
+.acc-item.is-open .acc-head,.acc-item.is-open .acc-head:hover{background:var(--svc-soft)}
+.acc-head__icon{width:46px;height:46px;flex-shrink:0;border-radius:13px;display:grid;place-items:center;background:var(--svc-soft);color:var(--svc-c);transition:background-color .3s var(--e-out),color .3s var(--e-out)}
+.acc-item.is-open .acc-head__icon{background:var(--svc-c);color:#fff}
+.acc-head__icon svg{width:24px;height:24px}
+.acc-head__main{flex:1;min-width:0}
+.acc-head__title{font-size:clamp(1.05rem,1.4vw,1.2rem);font-weight:700;letter-spacing:-.01em;transition:color .3s var(--e-out)}
+.acc-item.is-open .acc-head__title{color:var(--svc-c)}
+.acc-head__sub{margin-top:3px;font-size:.86rem;color:var(--ink-soft);line-height:1.4}
+.acc-head__sub b{color:var(--ink);font-weight:700}
+.acc-head__chev{width:22px;height:22px;flex-shrink:0;color:var(--ink-faint);transition:transform .4s var(--e-out),color .3s var(--e-out)}
+.acc-item.is-open .acc-head__chev{transform:rotate(180deg);color:var(--svc-c)}
+/* 본문 — grid-rows 0fr↔1fr 높이 모핑 (CSS만, reflow에 안 죽음) */
+.acc-body{display:grid;grid-template-rows:0fr;transition:grid-template-rows .5s var(--e-out)}
+.acc-item.is-open .acc-body{grid-template-rows:1fr}
+.acc-body__inner{overflow:hidden;min-height:0}
+.acc-body__pad{padding:clamp(6px,1vw,10px) clamp(20px,2.2vw,28px) clamp(22px,2.4vw,30px)}
+@media (prefers-reduced-motion:reduce){.acc-body,.acc-head__chev{transition-duration:.01ms!important}}
+
+/* 메인 패널 (.sb-full) */
+.sb-full{padding:clamp(26px,2.6vw,38px)}
+.sb-tag{display:inline-flex;align-items:center;height:26px;padding:0 12px;border-radius:999px;font-size:.72rem;font-weight:700;letter-spacing:-.01em;background:var(--svc-soft);color:var(--svc-c);margin-bottom:14px}
+.sb-title{font-weight:700;letter-spacing:-.02em;line-height:1.14;font-size:clamp(1.5rem,2.4vw,2rem)}
+.sb-lead{margin-top:10px;font-size:clamp(.96rem,1.1vw,1.05rem);color:var(--ink-soft);font-weight:500;line-height:1.6;max-width:48ch}
+
+/* 핵심 정보 (요금/노선) */
+.sb-facts{margin-top:clamp(22px,2.4vw,30px);display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--hair);border-radius:16px;overflow:hidden}
+.sb-fact{background:var(--bg);padding:16px 18px}
+.sb-fact dt{font-family:var(--fd);font-size:.68rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-faint);margin-bottom:6px}
+.sb-fact dd{font-family:var(--fd);font-size:1.05rem;font-weight:700;letter-spacing:-.01em;color:var(--ink);line-height:1.35}
+.sb-fact dd .won{font-style:normal;font-size:.78em;font-weight:600;color:var(--ink-faint);margin-right:1px}
+.sb-fact dd small{display:block;font-family:var(--fb);font-weight:500;font-size:.78rem;color:var(--ink-soft);margin-top:2px}
+
+/* 특장점 */
+.sb-perks{margin-top:clamp(24px,2.6vw,32px);display:grid;grid-template-columns:repeat(2,1fr);gap:clamp(12px,1.4vw,18px)}
+.sb-perk h4{font-size:.96rem;font-weight:700;letter-spacing:-.01em;margin-bottom:5px;display:flex;align-items:center;gap:8px}
+.sb-perk h4::before{content:'';width:18px;height:18px;flex-shrink:0;background:var(--svc-c);-webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M9 16.2 4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4z'/%3E%3C/svg%3E") center/contain no-repeat;mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M9 16.2 4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4z'/%3E%3C/svg%3E") center/contain no-repeat}
+.sb-perk p{font-size:.84rem;color:var(--ink-soft);line-height:1.55;padding-left:26px}
+
+/* 이용안내 / 포함 — 구분선 리스트 */
+.sb-info{margin-top:clamp(24px,2.6vw,32px)}
+.sb-info h3{font-size:1.05rem;font-weight:700;letter-spacing:-.015em;margin-bottom:12px;padding-left:var(--text-inset)}
+.sb-info-list{display:grid;gap:0}
+.sb-info-list li{display:flex;gap:10px;padding:11px 4px;font-size:.88rem;color:var(--ink-soft);line-height:1.55}
+.sb-info-list li + li{border-top:1px solid var(--hair-soft)}
+.sb-info-list li::before{content:'';width:6px;height:6px;border-radius:50%;background:var(--svc-c);flex-shrink:0;margin-top:8px}
+.sb-info-list li strong{color:var(--ink);font-weight:700}
+
+/* 포함/불포함 칩 */
+.sb-inc{margin-top:clamp(18px,2vw,24px);display:flex;flex-wrap:wrap;gap:8px 10px;align-items:center;padding-left:var(--text-inset)}
+.sb-inc__label{font-size:.8rem;font-weight:700;color:var(--ink);margin-right:2px}
+.sb-inc__item{display:inline-flex;align-items:center;gap:5px;font-size:.82rem;color:var(--ink-soft);background:var(--bg);height:30px;padding:0 11px;border-radius:999px}
+.sb-inc__item.is-no{color:var(--ink-faint)}
+.sb-inc__item::before{content:'✓';font-size:.72rem;font-weight:800;color:var(--svc-c)}
+.sb-inc__item.is-no::before{content:'✕';color:var(--ink-faint)}
+
+/* 메인 예약 CTA */
+.sb-cta{margin-top:clamp(26px,2.8vw,36px)}
+.sb-cta .btn{background:var(--svc-c);color:#fff;width:100%}
+.sb-cta .btn:hover{transform:translateY(-2px);filter:brightness(.94)}
+.sb-cta__note{margin-top:10px;font-size:.78rem;color:var(--ink-faint);line-height:1.5;text-align:center}
+
+/* 메인 패널 — 예약 정보 입력폼 (파주 bk 차용 · 서비스 색 연동) */
+.bk{margin-top:clamp(22px,2.4vw,30px)}
+.bk__seg{display:flex;gap:4px;background:var(--bg);border-radius:12px;padding:4px;margin-bottom:14px}
+.bk__seg button{flex:1;height:38px;border-radius:9px;font-size:.86rem;font-weight:600;color:var(--ink-soft);transition:background .2s var(--e-out),color .2s var(--e-out)}
+.bk__seg button.on{background:var(--card);color:var(--svc-c);box-shadow:0 1px 2px rgb(var(--shadow)/.08)}
+.bk__seg-hint{margin:-6px 4px 14px;font-size:.78rem;color:var(--ink-faint);line-height:1.5}
+.bk__field{margin-bottom:12px}
+.bk__field label{display:block;font-size:.74rem;font-weight:600;color:var(--ink-faint);margin-bottom:6px;padding-left:4px}
+.bk__input{width:100%;height:46px;padding:0 14px;border:none;appearance:none;-webkit-appearance:none;border-radius:11px;background:var(--bg);font-size:.92rem;color:var(--ink);font-family:inherit;transition:box-shadow .2s var(--e-out)}
+.bk__input::placeholder{color:var(--ink-faint)}
+.bk__input:focus{outline:none;box-shadow:inset 0 0 0 1.5px var(--svc-c)}
+select.bk__input{padding-right:38px;cursor:pointer;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2397A0AC' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 14px center}
+.bk__fixed{display:flex;align-items:center;gap:8px;height:46px;padding:0 14px;border-radius:11px;background:var(--bg);color:var(--ink);font-size:.9rem;font-weight:600}
+.bk__fixed svg{color:var(--svc-c);flex-shrink:0}
+.bk__row{display:flex;gap:10px}
+.bk__row>.bk__field{flex:1;min-width:0}
+/* 인원·수하물 스텝퍼 — 날짜/시간 입력칸과 같은 높이(46px)로 한 줄 정렬 */
+.bk__stepper{display:flex;align-items:center;justify-content:space-between;height:46px;padding:0 6px;border-radius:11px;background:var(--bg)}
+.bk__stepper button{width:30px;height:30px;border-radius:50%;background:var(--card);font-size:1.1rem;line-height:1;color:var(--ink-soft);display:grid;place-items:center;transition:background .15s,color .15s;flex-shrink:0}
+.bk__stepper button:hover{background:var(--svc-c);color:#fff}
+.bk__stepper b{font-size:1rem;font-weight:700;font-variant-numeric:tabular-nums;min-width:18px;text-align:center}
+.bk__total{display:flex;align-items:baseline;justify-content:space-between;gap:16px;padding:16px 4px;margin-bottom:6px;border-top:1px dashed var(--hair)}
+.bk__total span{font-size:.86rem;color:var(--ink-soft);font-weight:600}
+.bk__total b{font-family:var(--fb);font-size:1.4rem;font-weight:700;font-variant-numeric:tabular-nums}
+.bk__total b .won{font-style:normal;font-size:.78em;color:var(--ink-faint);margin-right:1px;font-weight:600}
+.bk__total b small{font-size:.86rem;color:var(--ink-faint);font-weight:500}
+.bk__total-note{margin:0 4px 16px;font-size:.74rem;color:var(--ink-faint);line-height:1.5}
+.bk__submit{width:100%;background:var(--svc-c);color:#fff}
+.bk__submit:hover{transform:translateY(-2px);filter:brightness(.94)}
+.bk__trust{display:flex;flex-wrap:wrap;gap:6px 14px;margin-top:14px;padding-left:4px}
+.bk__trust li{font-size:.76rem;color:var(--ink-soft);display:flex;align-items:center;gap:5px}
+.bk__trust li::before{content:'✓';font-size:.7rem;font-weight:800;color:var(--svc-c)}
+
+/* 맛보기 패널 (.sb-peek) */
+.sb-peek{padding:clamp(24px,2.4vw,30px);background:var(--svc-soft);display:flex;flex-direction:column}
+.sb-peek__label{font-family:var(--fd);font-size:.7rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--svc-c);margin-bottom:10px}
+.sb-peek__title{font-size:1.25rem;font-weight:700;letter-spacing:-.02em;line-height:1.2}
+.sb-peek__lead{margin-top:8px;font-size:.86rem;color:var(--ink-soft);line-height:1.55}
+.sb-peek__price{margin-top:18px;padding-top:16px;border-top:1px dashed color-mix(in srgb,var(--svc-c) 30%,transparent)}
+.sb-peek__price span{font-size:.76rem;color:var(--ink-soft);font-weight:600;display:block;margin-bottom:3px}
+.sb-peek__price b{font-family:var(--fb);font-size:1.5rem;font-weight:700;letter-spacing:-.01em;color:var(--ink);font-variant-numeric:tabular-nums}
+.sb-peek__price b .won{font-style:normal;font-size:.7em;font-weight:600;color:var(--ink-faint);margin-right:1px}
+.sb-peek__price b small{font-size:.78rem;color:var(--ink-faint);font-weight:500}
+.sb-peek__go{margin-top:20px;align-self:flex-start;display:inline-flex;align-items:center;gap:7px;height:44px;padding:0 20px;border-radius:999px;background:var(--svc-c);color:#fff;font-size:.88rem;font-weight:700;transition:transform .25s var(--e-out),filter .25s var(--e-out)}
+.sb-peek__go svg{width:16px;height:16px;transition:transform .25s var(--e-out)}
+.sb-peek:hover .sb-peek__go{filter:brightness(.94)}
+.sb-peek:hover .sb-peek__go svg{transform:translateX(3px)}
+.sb-peek__btn{position:absolute;inset:0;cursor:pointer}
+
+/* ============================================================
+   체크 포인트 3-Point (분기점 상단) + 운영 가치 3-Point (공통)
+   ============================================================ */
+.checkpts{display:flex;flex-wrap:wrap;justify-content:center;gap:clamp(8px,1.1vw,12px);margin-bottom:clamp(28px,3.4vw,42px)}
+.checkpt{display:inline-flex;align-items:center;gap:9px;background:var(--card);height:46px;padding:0 20px;border-radius:999px;font-size:.9rem;font-weight:500;color:var(--ink-soft);letter-spacing:-.01em}
+.checkpt svg{width:18px;height:18px;color:var(--accent);flex-shrink:0}
+.checkpt b{color:var(--ink);font-weight:700}
+.values{background:var(--surface);padding:clamp(48px,5.6vw,80px) 0}
+.values-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:clamp(20px,2.6vw,44px)}
+.value{padding-left:var(--text-inset)}
+.value__ic{color:var(--accent);margin-bottom:13px}
+.value__ic svg{width:28px;height:28px}
+.value__t{font-size:1.06rem;font-weight:700;letter-spacing:-.015em;margin-bottom:9px}
+.value__d{font-size:.9rem;color:var(--ink-soft);line-height:1.62;max-width:34ch}
+@media (max-width:780px){.values-grid{grid-template-columns:1fr;gap:clamp(22px,4vw,28px)}}
+
+/* ============================================================
+   선택 연동 상세 — 아코디언(셔틀/프라이빗) 선택에 따라 내용 전환
+   ============================================================ */
+.svc-detail{background:var(--bg);padding:clamp(44px,5.4vw,76px) 0}
+.svc-detail[data-active="shuttle"]{--svc-c:var(--shuttle)}
+.svc-detail[data-active="private"]{--svc-c:var(--private)}
+.svc-detail .sec-head{margin-bottom:clamp(20px,2.4vw,30px)}
+.svc-detail .sec-title small{display:inline-block;margin-left:10px;font-size:.86rem;font-weight:700;color:var(--svc-c);vertical-align:middle}
+.sd-pane{display:none;animation:sdFade .4s var(--e-out)}
+.svc-detail[data-active="shuttle"] .sd-pane[data-for="shuttle"],
+.svc-detail[data-active="private"] .sd-pane[data-for="private"]{display:block}
+@keyframes sdFade{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+.sd-cols{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:clamp(14px,1.8vw,24px);align-items:start}
+.sd-col{background:var(--card);border-radius:16px;padding:clamp(20px,2vw,26px)}
+.sd-col h3{font-size:1rem;font-weight:700;letter-spacing:-.01em;margin-bottom:10px;padding-left:var(--text-inset)}
+.sd-list li{display:flex;gap:9px;padding:9px 4px;font-size:.88rem;color:var(--ink-soft);line-height:1.55}
+.sd-list li+li{border-top:1px solid var(--hair-soft)}
+.sd-list li::before{content:'';width:6px;height:6px;border-radius:50%;background:var(--svc-c);flex-shrink:0;margin-top:7px}
+.sd-inc{display:flex;flex-wrap:wrap;gap:8px;padding-left:var(--text-inset)}
+.sd-inc span{display:inline-flex;align-items:center;gap:5px;font-size:.84rem;background:var(--bg);height:32px;padding:0 12px;border-radius:999px;color:var(--ink-soft)}
+.sd-inc span::before{content:'✓';color:var(--svc-c);font-weight:800;font-size:.74rem}
+.sd-inc span.is-no{color:var(--ink-faint)}
+.sd-inc span.is-no::before{content:'✕'}
+@media (max-width:780px){.sd-cols{grid-template-columns:1fr}}
+
+/* ============================================================
+   여정 — 하루 흐름 (선택 연동)
+   ============================================================ */
+.journey{background:var(--hair-soft);padding:clamp(44px,5.4vw,76px) 0}
+.journey[data-active="shuttle"]{--svc-c:var(--shuttle)}
+.journey[data-active="private"]{--svc-c:var(--private)}
+.journey .sec-head{margin-bottom:clamp(20px,2.4vw,30px)}
+.journey .sec-title small{display:inline-block;margin-left:10px;font-size:.86rem;font-weight:700;color:var(--svc-c);vertical-align:middle}
+.journey .sd-pane{display:none;animation:sdFade .4s var(--e-out)}
+.journey[data-active="shuttle"] .sd-pane[data-for="shuttle"],
+.journey[data-active="private"] .sd-pane[data-for="private"]{display:block}
+.jrny{display:grid;grid-template-columns:repeat(4,1fr);gap:clamp(12px,1.4vw,18px)}
+.jstep{background:var(--card);border-radius:16px;padding:clamp(20px,2vw,26px)}
+.jstep__n{display:inline-flex;align-items:center;justify-content:center;width:30px;height:30px;border-radius:50%;background:var(--svc-c);color:#fff;font-family:var(--fd);font-weight:700;font-size:.9rem;margin-bottom:14px}
+.jstep__t{font-size:1rem;font-weight:700;letter-spacing:-.01em;margin-bottom:7px}
+.jstep__d{font-size:.86rem;color:var(--ink-soft);line-height:1.55}
+.jstep__time{font-family:var(--fd);font-size:.72rem;font-weight:600;letter-spacing:.04em;color:var(--ink-faint);margin-top:10px}
+@media (max-width:880px){.jrny{grid-template-columns:1fr 1fr}}
+@media (max-width:520px){.jrny{grid-template-columns:1fr}}
+
+/* ============================================================
+   FAQ (선택 연동)
+   ============================================================ */
+.faq{background:var(--bg);padding:clamp(44px,5.4vw,76px) 0}
+.faq[data-active="shuttle"]{--svc-c:var(--shuttle)}
+.faq[data-active="private"]{--svc-c:var(--private)}
+.faq .sec-head{margin-bottom:clamp(20px,2.4vw,30px)}
+.faq .sec-title small{display:inline-block;margin-left:10px;font-size:.86rem;font-weight:700;color:var(--svc-c);vertical-align:middle}
+.faq .sd-pane{display:none;animation:sdFade .4s var(--e-out)}
+.faq[data-active="shuttle"] .sd-pane[data-for="shuttle"],
+.faq[data-active="private"] .sd-pane[data-for="private"]{display:block}
+.faq-list{display:grid;gap:clamp(10px,1.2vw,14px);max-width:820px}
+.faq-item{background:var(--card);border-radius:16px;overflow:hidden}
+.faq-item summary{display:flex;align-items:center;gap:13px;padding:clamp(18px,2vw,22px) clamp(20px,2.2vw,26px);font-size:.98rem;font-weight:600;letter-spacing:-.01em;cursor:pointer;list-style:none}
+.faq-item summary::-webkit-details-marker{display:none}
+.faq-item summary::before{content:'Q';font-family:var(--fd);font-weight:800;color:var(--svc-c);flex-shrink:0}
+.faq-item summary::after{content:'';width:10px;height:10px;border-right:2px solid var(--ink-faint);border-bottom:2px solid var(--ink-faint);transform:rotate(45deg);margin-left:auto;flex-shrink:0;transition:transform .3s var(--e-out)}
+.faq-item[open] summary::after{transform:rotate(-135deg)}
+.faq-item__a{padding:0 clamp(20px,2.2vw,26px) clamp(20px,2vw,22px) clamp(44px,3.6vw,52px);font-size:.9rem;color:var(--ink-soft);line-height:1.65}
+
+/* ============================================================
+   동종 추천
+   ============================================================ */
+.others{padding:clamp(52px,6vw,84px) 0}
+.sec-head{margin-bottom:clamp(24px,3vw,36px);padding-left:var(--text-inset)}
+.sec-title{font-weight:700;letter-spacing:-.03em;line-height:1.12;font-size:clamp(1.6rem,3vw,2.2rem)}
+.ogrid{display:grid;grid-template-columns:repeat(3,1fr);gap:clamp(16px,1.7vw,24px)}
+.ocard{display:flex;flex-direction:column}
+.ocard__link{display:flex;flex-direction:column;background:var(--card);border-radius:clamp(14px,1.2vw,18px);overflow:clip;height:100%;transition:transform .28s var(--e-out),box-shadow .28s var(--e-out)}
+.ocard__link:hover{transform:translateY(-4px);box-shadow:0 1px 1px rgb(var(--shadow)/.04),0 20px 38px -22px rgb(var(--shadow)/.32)}
+.ocard__media{position:relative;aspect-ratio:16/10;overflow:hidden;background:linear-gradient(135deg,#F4ECE6,#ECDFD4)}
+.ocard__media img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;transition:transform .5s var(--e-out)}
+.ocard__link:hover .ocard__media img{transform:scale(1.04)}
+.ocard__body{padding:16px 18px 20px}
+.ocard__partner{font-family:var(--fd);font-size:.7rem;font-weight:600;letter-spacing:.06em;color:var(--ink-faint);margin-bottom:6px}
+.ocard__name{font-size:1.08rem;font-weight:700;letter-spacing:-.015em;line-height:1.25}
+.ocard__desc{margin-top:8px;font-size:.86rem;color:var(--ink-soft);line-height:1.5}
+.ocard__meta{display:flex;gap:7px;margin-top:12px}
+.tag{display:inline-flex;align-items:center;height:23px;padding:0 9px;border-radius:999px;font-size:.71rem;font-weight:700;letter-spacing:-.01em;white-space:nowrap}
+.tag--type{background:var(--hair-soft);color:var(--ink-soft)}
+.tag--both{padding-left:8px;background:var(--accent-soft);color:var(--accent)}
+.tag--both::before{content:'';width:5px;height:5px;border-radius:50%;margin-right:5px;background:var(--accent)}
+
+/* ============================================================
+   Closing CTA — 다크 클로징
+   ============================================================ */
+.cta{background:var(--ink);color:#fff;padding:clamp(56px,7vw,96px) 0 clamp(48px,6vw,80px)}
+.cta-in{display:flex;flex-direction:column;align-items:center;text-align:center}
+.cta-title{font-weight:700;letter-spacing:-.03em;line-height:1.15;font-size:clamp(1.6rem,3vw,2.2rem)}
+.cta-sub{margin-top:12px;font-size:clamp(.95rem,1.1vw,1.05rem);color:rgba(255,255,255,.62);font-weight:500;line-height:1.6;max-width:44ch}
+.cta-btns{margin-top:clamp(24px,3vw,32px);display:flex;flex-wrap:wrap;justify-content:center;gap:12px}
+.cta-btns .btn{padding:0 32px}
+.cta-btns .btn--shuttle{background:var(--shuttle);color:#fff}
+.cta-btns .btn--shuttle:hover{transform:translateY(-2px);filter:brightness(.94)}
+.cta-btns .btn--private{background:var(--private);color:#fff}
+.cta-btns .btn--private:hover{transform:translateY(-2px);filter:brightness(.94)}
+.cta-channels{margin-top:clamp(28px,3.4vw,40px);display:flex;flex-wrap:wrap;justify-content:center;gap:10px}
+.cta-ch{display:inline-flex;align-items:center;gap:8px;height:40px;padding:0 16px;border-radius:999px;background:rgba(255,255,255,.08);font-size:.82rem}
+.cta-ch b{font-weight:700;color:rgba(255,255,255,.9)}
+.cta-ch i{font-style:normal;color:rgba(255,255,255,.5)}
+
+/* ---------- Footer ---------- */
+.foot{background:var(--ink);color:rgba(255,255,255,.66);padding:clamp(44px,5vw,64px) 0 28px}
+.foot__in{max-width:var(--maxw);margin:0 auto;padding:0 clamp(24px,4vw,56px);display:flex;flex-wrap:wrap;justify-content:space-between;gap:24px}
+.foot__brand .logo{font-family:var(--fd);font-weight:700;font-size:1.3rem;color:#fff;margin-bottom:12px}
+.foot__brand p{font-size:.84rem;line-height:1.7;color:rgba(255,255,255,.5);max-width:34ch}
+.foot__bottom{max-width:var(--maxw);margin:clamp(28px,4vw,40px) auto 0;padding:22px clamp(24px,4vw,56px) 0;border-top:1px solid rgba(255,255,255,.12);font-size:.74rem;color:rgba(255,255,255,.4)}
+
+/* ---------- reveal ---------- */
+.rv{opacity:0;transform:translateY(22px)}
+/* 위치 지도 (locmap — 상세 공통 패턴) */
+.locmap{padding:clamp(52px,6vw,84px) 0}
+.route-grid{display:grid;grid-template-columns:1.05fr .95fr;gap:clamp(28px,3.4vw,56px);align-items:stretch}
+.route-map{background:var(--card);border-radius:20px;overflow:hidden;min-height:420px;position:relative}
+.route-side{display:flex;flex-direction:column;justify-content:space-between;gap:24px}
+.route-list{display:flex;flex-direction:column}
+.route-item{display:flex;align-items:center;gap:16px;padding:20px 4px}
+.route-item:first-child{padding-top:4px}
+.route-item + .route-item{border-top:1px solid var(--hair-soft)}
+.route-item__code{font-family:var(--fd);font-weight:700;font-size:.84rem;width:44px;height:44px;border-radius:12px;display:grid;place-items:center;background:var(--private-soft);color:var(--private);flex-shrink:0}
+.route-item__txt{flex:1;min-width:0}
+.route-item__from{font-size:.98rem;font-weight:700}
+.route-item__meta{font-size:.8rem;color:var(--ink-soft);margin-top:3px}
+.route-item__time{text-align:right;white-space:nowrap}
+.route-item__time b{font-family:var(--fd);font-weight:700;font-size:1.3rem;letter-spacing:-.01em}
+.route-item__time small{display:block;font-size:.72rem;color:var(--ink-faint);font-weight:500;margin-top:2px}
+.route-stops{margin-top:0;padding-top:20px;border-top:1px solid var(--hair-soft)}
+.route-stops__head{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;margin-bottom:14px}
+.route-stops__label{font-size:.95rem;font-weight:700}
+.route-stops__note{font-size:.78rem;color:var(--ink-faint)}
+.stop-chips{display:flex;flex-wrap:wrap;gap:10px}
+.stopchip{display:inline-flex;align-items:center;gap:9px;height:42px;padding:0 18px;border-radius:999px;background:var(--card);box-shadow:inset 0 0 0 1px var(--hair);font-size:.88rem}
+.stopchip b{font-weight:700}
+.stopchip i{font-style:normal;font-size:.76rem;color:var(--ink-faint)}
+.map-scroll-overlay{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.45);opacity:0;pointer-events:none;transition:opacity .3s;z-index:10;border-radius:inherit}
+.map-scroll-overlay.active{opacity:1}
+.map-scroll-msg{padding:10px 20px;background:rgba(0,0,0,.75);color:#fff;font-size:.875rem;border-radius:2rem;backdrop-filter:blur(4px);letter-spacing:.02em}
+@media(max-width:780px){.route-grid{grid-template-columns:1fr}.route-map{min-height:340px;height:clamp(300px,48vw,400px)}}
+.locmap-seg{display:inline-flex;gap:4px;background:var(--hair-soft);border-radius:12px;padding:4px;margin-top:16px}
+.locmap-seg button{height:38px;padding:0 18px;border-radius:9px;font-size:.86rem;font-weight:600;color:var(--ink-soft);transition:background .2s,color .2s}
+.locmap-seg button.on{background:#fff;color:#2E5CFF;box-shadow:0 1px 2px rgba(16,24,40,.08)}
+.route-pane[hidden]{display:none}
+.rv.in{opacity:1;transform:none;transition:opacity .7s var(--e-out),transform .8s var(--e-out)}
+@media (prefers-reduced-motion:reduce){.rv{opacity:1!important;transform:none!important}html{scroll-behavior:auto}}
+
+/* ---------- 반응형 ---------- */
+@media (max-width:980px){
+  .pd-grid{grid-template-columns:1fr}
+}
+@media (max-width:680px){
+  .nav__menu{gap:18px;font-size:.9rem}.nav__lang{display:none}
+  .ogrid{grid-template-columns:1fr}
+  /* 예약폼 한 줄들이 좁은 화면에서 2열로 접힘 */
+  .bk__row{flex-wrap:wrap}
+  .bk__row>.bk__field{flex:1 1 calc(50% - 5px);min-width:120px}
+}
+@media (max-width:480px){
+  .pd-glance{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body data-base="../../" data-nav-mode="scroll">
+
+<div data-include="navbar"></div>
+
+<main>
+  <!-- 이미지 히어로 -->
+  <div class="phero">
+    <img src="/assets/theme_everland_hero.webp" alt="" fetchpriority="high" decoding="async">
+    <div class="phero__scrim" aria-hidden="true"></div>
+    <div class="phero__txt">
+      <h1><span data-lang="ko">에버랜드</span><span data-lang="en" hidden>Everland</span></h1>
+      <p><span data-lang="ko">사계절 축제와 어트랙션이 가득한 대한민국 대표 테마파크. 서울에서 에버랜드까지, 셔틀과 프라이빗 중 골라서 편하게.</span><span data-lang="en" hidden>Korea's flagship theme park, full of four-season festivals and attractions. From Seoul to Everland, choose shuttle or private and travel with ease.</span></p>
+    </div>
+  </div>
+
+  <div class="wrap">
+    <nav class="crumb" aria-label="breadcrumb">
+      <a href="../../"><span data-lang="ko">홈</span><span data-lang="en" hidden>Home</span></a><span>/</span><a href="../../travel/"><span data-lang="ko">여행</span><span data-lang="en" hidden>Travel</span></a><span>/</span><a href="../../travel/"><span data-lang="ko">테마파크</span><span data-lang="en" hidden>Theme Park</span></a><span>/</span><b><span data-lang="ko">에버랜드</span><span data-lang="en" hidden>Everland</span></b>
+    </nav>
+  </div>
+
+  <!-- ============ 목적지 안내 (공통) ============ -->
+  <section class="pd">
+    <div class="wrap">
+      <div class="pd-grid">
+
+        <!-- 좌: 소개 -->
+        <div class="pd-info">
+          <div class="pd-trend">
+            <div class="pd-trend__label"><span data-lang="ko">에버랜드는 이런 곳</span><span data-lang="en" hidden>About Everland</span></div>
+            <div class="pd-trend__list">
+              <span class="pd-tag"><span data-lang="ko">사계절 축제</span><span data-lang="en" hidden>Four-season festivals</span></span>
+              <span class="pd-tag"><span data-lang="ko">5개 테마존</span><span data-lang="en" hidden>5 themed zones</span></span>
+              <span class="pd-tag"><span data-lang="ko">사파리월드</span><span data-lang="en" hidden>Safari World</span></span>
+              <span class="pd-tag"><span data-lang="ko">멀티미디어 불꽃쇼</span><span data-lang="en" hidden>Multimedia fireworks show</span></span>
+              <span class="pd-tag"><span data-lang="ko">가족 나들이</span><span data-lang="en" hidden>Family outing</span></span>
+            </div>
+          </div>
+
+          <div class="pd-about rv">
+            <h2><span data-lang="ko">목적지 안내</span><span data-lang="en" hidden>About the destination</span></h2>
+            <p><span data-lang="ko">에버랜드는 1년 365일 사계절 축제와 어트랙션, 동물·식물 체험이 어우러진 대한민국 대표 테마파크입니다. 5개 테마존과 40여 종의 놀이기구, 사파리월드·로스트밸리 등 수준 높은 동물 체험 콘텐츠를 갖추고 있습니다.</span><span data-lang="en" hidden>Everland is Korea's flagship theme park, blending four-season festivals, attractions, and animal·plant experiences all year round. It features 5 themed zones, around 40 rides, and high-quality animal experiences such as Safari World and Lost Valley.</span></p>
+            <p><span data-lang="ko">스릴 넘치는 어트랙션부터 가족형 놀이기구까지 한자리에서 즐길 수 있어 전 연령층에게 어울립니다. 셔틀 또는 프라이빗 이동을 이용하면 복잡한 교통이나 주차 걱정 없이 편안하게 다녀올 수 있습니다.</span><span data-lang="en" hidden>From thrilling attractions to family-friendly rides, all in one place for every age. With a shuttle or private ride, you can travel comfortably without worrying about traffic or parking.</span></p>
+          </div>
+        </div>
+
+        <!-- 우: At a Glance -->
+        <dl class="pd-glance rv">
+          <div class="glance-item">
+            <dt>Location</dt>
+            <dd><span data-lang="ko">경기 용인</span><span data-lang="en" hidden>Yongin, Gyeonggi</span><small><span data-lang="ko">포곡읍 에버랜드로 199</span><span data-lang="en" hidden>199 Everland-ro, Pogok-eup</span></small></dd>
+          </div>
+          <div class="glance-item">
+            <dt>From Seoul</dt>
+            <dd><span data-lang="ko">약 60–80분</span><span data-lang="en" hidden>About 60–80 min</span><small><span data-lang="ko">서울 도심 기준</span><span data-lang="en" hidden>From central Seoul</span></small></dd>
+          </div>
+          <div class="glance-item">
+            <dt>Mobility</dt>
+            <dd><span data-lang="ko">셔틀 · 프라이빗</span><span data-lang="en" hidden>Shuttle · Private</span><small><span data-lang="ko">원하는 방식 선택</span><span data-lang="en" hidden>Choose your option</span></small></dd>
+          </div>
+          <div class="glance-item">
+            <dt>Contact</dt>
+            <dd>031-320-5000<small><span data-lang="ko">에버랜드 안내</span><span data-lang="en" hidden>Everland guide</span></small></dd>
+          </div>
+        </dl>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 분기점 — 서비스 선택 ============ -->
+  <section class="choose">
+    <div class="wrap">
+      <div class="choose-head rv">
+        <h2><span data-lang="ko">어떻게 가시겠어요?</span><span data-lang="en" hidden>How would you like to get there?</span></h2>
+        <p><span data-lang="ko">서울 거점 직행 셔틀, 또는 호텔 앞까지 오는 전용 차량. 옆 카드를 누르면 자세히 펼쳐집니다.</span><span data-lang="en" hidden>A direct shuttle from Seoul hubs, or a private vehicle to your hotel door. Tap the card beside it to expand.</span></p>
+      </div>
+
+      <!-- 아코디언 — 셔틀/프라이빗 세로, 펼친 쪽만 예약폼 -->
+      <ul class="checkpts rv">
+        <li class="checkpt"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg><span data-lang="ko">탑승</span><span data-lang="en" hidden>Boarding</span> <b><span data-lang="ko">2일 전</span><span data-lang="en" hidden>2 days before</span></b><span data-lang="ko">까지 예약</span><span data-lang="en" hidden>book by</span></li>
+        <li class="checkpt"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg><span data-lang="ko">출발</span><span data-lang="en" hidden>Departure</span> <b><span data-lang="ko">24시간 전</span><span data-lang="en" hidden>24 hours before</span></b> <span data-lang="ko">무료 취소</span><span data-lang="en" hidden>Free cancellation</span></li>
+        <li class="checkpt"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M8 12l3 3 5-5"/></svg><span data-lang="ko">예약한 날,</span><span data-lang="en" hidden>On your booked day,</span> <b><span data-lang="ko">바로 이용</span><span data-lang="en" hidden>ready to ride</span></b></li>
+      </ul>
+
+      <div class="acc rv" id="acc">
+
+        <!-- ===== 셔틀 (기본 펼침) ===== -->
+        <section class="acc-item is-open" data-svc="shuttle">
+          <button class="acc-head" type="button" aria-expanded="true">
+            <span class="acc-head__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="13" rx="2"/><path d="M4 11h16M7 17v2M17 17v2"/><circle cx="8" cy="14" r="1"/><circle cx="16" cy="14" r="1"/></svg></span>
+            <span class="acc-head__main">
+              <span class="acc-head__title"><span data-lang="ko">셔틀버스</span><span data-lang="en" hidden>Shuttle bus</span></span>
+              <span class="acc-head__sub"><span data-lang="ko">서울 거점에서 에버랜드까지 직행 · <b>₩25,000부터</b></span><span data-lang="en" hidden>Direct from Seoul hubs to Everland · <b>from ₩25,000</b></span></span>
+            </span>
+            <svg class="acc-head__chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>
+          </button>
+          <div class="acc-body">
+            <div class="acc-body__inner">
+            <div class="acc-body__pad">
+            <div class="bk">
+              <div class="bk__seg" data-seg role="tablist" aria-label="편도/왕복">
+                <button type="button" class="on" data-mode="oneway" data-hint="에버랜드까지 편도 — 하차 후 종료" data-hint-en="One-way to Everland — service ends after drop-off"><span data-lang="ko">편도</span><span data-lang="en" hidden>One-way</span></button>
+                <button type="button" data-mode="round" data-hint="왕복 — 같은 날 지정 시간에 복귀" data-hint-en="Round trip — return at a set time the same day"><span data-lang="ko">왕복</span><span data-lang="en" hidden>Round trip</span></button>
+              </div>
+              <p class="bk__seg-hint" data-seg-hint><span data-lang="ko">에버랜드까지 편도 — 하차 후 종료</span><span data-lang="en" hidden>One-way to Everland — service ends after drop-off</span></p>
+
+              <div class="bk__row">
+                <div class="bk__field">
+                  <label><span data-lang="ko">탑승 거점</span><span data-lang="en" hidden>Boarding hub</span></label>
+                  <div class="bk__fixed"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="10" r="3"/><path d="M12 2a8 8 0 00-8 8c0 5 8 12 8 12s8-7 8-12a8 8 0 00-8-8z"/></svg><span data-lang="ko">서울 주요 거점</span><span data-lang="en" hidden>Major Seoul hubs</span></div>
+                </div>
+                <div class="bk__field">
+                  <label><span data-lang="ko">도착</span><span data-lang="en" hidden>Drop-off</span></label>
+                  <div class="bk__fixed"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C8.1 2 5 5.1 5 9c0 5.2 7 13 7 13s7-7.8 7-13c0-3.9-3.1-7-7-7zm0 9.5a2.5 2.5 0 110-5 2.5 2.5 0 010 5z"/></svg><span data-lang="ko">에버랜드</span><span data-lang="en" hidden>Everland</span></div>
+                </div>
+              </div>
+              <div class="bk__row">
+                <div class="bk__field"><label><span data-lang="ko">날짜</span><span data-lang="en" hidden>Date</span></label><input class="bk__input" type="date" data-date></div>
+                <div class="bk__field"><label><span data-lang="ko">시간</span><span data-lang="en" hidden>Time</span></label><input class="bk__input" type="time" value="09:00"></div>
+                <div class="bk__field"><label><span data-lang="ko">탑승 인원</span><span data-lang="en" hidden>Passengers</span></label><div class="bk__stepper"><button type="button" data-c="pax" data-d="-1" aria-label="인원 감소">−</button><b data-v="pax">2</b><button type="button" data-c="pax" data-d="1" aria-label="인원 증가">+</button></div></div>
+              </div>
+
+              <a class="btn bk__submit" href="https://everland.rideus.net/en/everland/page/everland" target="_blank" rel="noopener noreferrer">
+                <span data-lang="ko">셔틀버스 예약하기</span><span data-lang="en" hidden>Book shuttle bus</span>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
+              </a>
+              <ul class="bk__trust"><li><span data-lang="ko">서울 거점 직행</span><span data-lang="en" hidden>Direct from Seoul hubs</span></li><li><span data-lang="ko">정시 출발</span><span data-lang="en" hidden>On-time departure</span></li><li><span data-lang="ko">고정 요금</span><span data-lang="en" hidden>Fixed fare</span></li></ul>
+            </div>
+            </div></div>
+          </div>
+        </section>
+
+        <!-- ===== 프라이빗 (접힘) ===== -->
+        <section class="acc-item" data-svc="private">
+          <button class="acc-head" type="button" aria-expanded="false">
+            <span class="acc-head__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 11l1.7-4.5a2 2 0 011.9-1.3h6.8a2 2 0 011.9 1.3L19 11"/><path d="M3 16v-3.4a1 1 0 01.6-.9L5 11h14l1.4.7a1 1 0 01.6.9V16a1 1 0 01-1 1h-1M5 17H4a1 1 0 01-1-1"/><circle cx="7.5" cy="16.5" r="1.5"/><circle cx="16.5" cy="16.5" r="1.5"/></svg></span>
+            <span class="acc-head__main">
+              <span class="acc-head__title"><span data-lang="ko">프라이빗 이동</span><span data-lang="en" hidden>Private transfer</span></span>
+              <span class="acc-head__sub"><span data-lang="ko">호텔 앞까지 오는 전용 차량 · <b>₩150,000부터</b></span><span data-lang="en" hidden>A dedicated vehicle to your hotel door · <b>from ₩150,000</b></span></span>
+            </span>
+            <svg class="acc-head__chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>
+          </button>
+          <div class="acc-body">
+            <div class="acc-body__inner">
+            <div class="acc-body__pad">
+            <div class="bk">
+              <div class="bk__seg" data-seg role="tablist" aria-label="편도/왕복/풀데이">
+                <button type="button" class="on" data-mode="oneway" data-hint="픽업 → 에버랜드 편도 이동" data-hint-en="Pickup → one-way ride to Everland"><span data-lang="ko">편도</span><span data-lang="en" hidden>One-way</span></button>
+                <button type="button" data-mode="round" data-hint="왕복 — 정한 시간에 같은 기사가 픽업" data-hint-en="Round trip — same driver picks you up at the set time"><span data-lang="ko">왕복</span><span data-lang="en" hidden>Round trip</span></button>
+                <button type="button" data-mode="fullday" data-hint="기사가 종일 대기 — 최대 8시간, 귀환 자유" data-hint-en="Driver waits all day — up to 8 hours, return anytime"><span data-lang="ko">풀데이</span><span data-lang="en" hidden>Full day</span></button>
+              </div>
+              <p class="bk__seg-hint" data-seg-hint><span data-lang="ko">픽업 → 에버랜드 편도 이동</span><span data-lang="en" hidden>Pickup → one-way ride to Everland</span></p>
+
+              <div class="bk__row">
+                <div class="bk__field"><label><span data-lang="ko">픽업 위치</span><span data-lang="en" hidden>Pickup location</span></label><input class="bk__input" type="text" placeholder="예) 명동 호텔, 인천공항 T1" value="서울 시내" data-val-ko="서울 시내" data-val-en="Central Seoul" data-ph-ko="예) 명동 호텔, 인천공항 T1" data-ph-en="e.g. Myeongdong hotel, Incheon Airport T1"></div>
+                <div class="bk__field"><label><span data-lang="ko">도착</span><span data-lang="en" hidden>Drop-off</span></label><div class="bk__fixed"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C8.1 2 5 5.1 5 9c0 5.2 7 13 7 13s7-7.8 7-13c0-3.9-3.1-7-7-7zm0 9.5a2.5 2.5 0 110-5 2.5 2.5 0 010 5z"/></svg><span data-lang="ko">에버랜드</span><span data-lang="en" hidden>Everland</span></div></div>
+              </div>
+              <div class="bk__row">
+                <div class="bk__field"><label><span data-lang="ko">날짜</span><span data-lang="en" hidden>Date</span></label><input class="bk__input" type="date" data-date></div>
+                <div class="bk__field"><label><span data-lang="ko">시간</span><span data-lang="en" hidden>Time</span></label><input class="bk__input" type="time" value="10:00"></div>
+                <div class="bk__field"><label><span data-lang="ko">탑승 인원</span><span data-lang="en" hidden>Passengers</span></label><div class="bk__stepper"><button type="button" data-c="pax" data-d="-1" aria-label="인원 감소">−</button><b data-v="pax">2</b><button type="button" data-c="pax" data-d="1" aria-label="인원 증가">+</button></div></div>
+                <div class="bk__field"><label><span data-lang="ko">수하물</span><span data-lang="en" hidden>Luggage</span></label><div class="bk__stepper"><button type="button" data-c="bag" data-d="-1" aria-label="수하물 감소">−</button><b data-v="bag">2</b><button type="button" data-c="bag" data-d="1" aria-label="수하물 증가">+</button></div></div>
+              </div>
+              <a class="btn btn--primary btn--block bk__submit" href="results/index.html" data-go-results>
+                <span data-lang="ko">차량 검색하기</span><span data-lang="en" hidden>Find a vehicle</span>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
+              </a>
+              <ul class="bk__trust"><li><span data-lang="ko">도어투도어</span><span data-lang="en" hidden>Door-to-door</span></li><li><span data-lang="ko">영어 가능 기사</span><span data-lang="en" hidden>English-speaking driver</span></li><li><span data-lang="ko">고정 요금</span><span data-lang="en" hidden>Fixed fare</span></li></ul>
+            </div>
+            </div></div>
+          </div>
+        </section>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 오시는 길 — 이동수단별 지도 ============ -->
+  <section class="locmap" id="locmap" data-active="shuttle">
+    <div class="wrap">
+      <div class="sec-head rv">
+        <h2 class="sec-title"><span data-lang="ko">에버랜드 오시는 길</span><span data-lang="en" hidden>Getting to Everland</span></h2>
+        <p class="sec-lead"><span data-lang="ko">이동수단에 따라 경로가 달라집니다 — 셔틀은 서울 거점 노선, 프라이빗은 목적지 직행.</span><span data-lang="en" hidden>The route differs by transport — the shuttle runs a Seoul-hub route, private goes straight to the destination.</span></p>
+        <div class="locmap-seg" role="tablist" aria-label="이동수단">
+          <button class="on" type="button" data-map-mode="shuttle" role="tab"><span data-lang="ko">셔틀버스</span><span data-lang="en" hidden>Shuttle bus</span></button>
+          <button type="button" data-map-mode="private" role="tab"><span data-lang="ko">프라이빗</span><span data-lang="en" hidden>Private</span></button>
+        </div>
+      </div>
+      <div class="route-grid">
+        <!-- 지도 (네이버 지도 — 5173 도메인에서만 로드됨, 이동수단별 전환) -->
+        <div class="route-map rv" id="naverMap" role="img" aria-label="에버랜드 위치 지도"></div>
+
+        <div class="route-side">
+          <!-- 셔틀 패널: 서울 거점 정류장 노선 -->
+          <div class="route-pane" data-map-pane="shuttle">
+            <div class="route-list">
+              <div class="route-item rv">
+                <span class="route-item__code"><span data-lang="ko">명동</span><span data-lang="en" hidden>MD</span></span>
+                <div class="route-item__txt">
+                  <div class="route-item__from"><span data-lang="ko">명동 정류장</span><span data-lang="en" hidden>Myeongdong stop</span></div>
+                  <div class="route-item__meta"><span data-lang="ko">서울 도심 · 관광 1번지</span><span data-lang="en" hidden>City center · top tourist area</span></div>
+                </div>
+                <div class="route-item__time"><b>60–80<span data-lang="ko">분</span><span data-lang="en" hidden> min</span></b><small><span data-lang="ko">약 50km</span><span data-lang="en" hidden>~50 km</span></small></div>
+              </div>
+              <div class="route-item rv">
+                <span class="route-item__code"><span data-lang="ko">홍대</span><span data-lang="en" hidden>HD</span></span>
+                <div class="route-item__txt">
+                  <div class="route-item__from"><span data-lang="ko">홍대입구 정류장</span><span data-lang="en" hidden>Hongik Univ. stop</span></div>
+                  <div class="route-item__meta"><span data-lang="ko">서북권 · 공항철도 연계</span><span data-lang="en" hidden>Northwest · AREX-linked</span></div>
+                </div>
+                <div class="route-item__time"><b>70–90<span data-lang="ko">분</span><span data-lang="en" hidden> min</span></b><small><span data-lang="ko">약 55km</span><span data-lang="en" hidden>~55 km</span></small></div>
+              </div>
+              <div class="route-item rv">
+                <span class="route-item__code"><span data-lang="ko">강남</span><span data-lang="en" hidden>GN</span></span>
+                <div class="route-item__txt">
+                  <div class="route-item__from"><span data-lang="ko">강남 정류장</span><span data-lang="en" hidden>Gangnam stop</span></div>
+                  <div class="route-item__meta"><span data-lang="ko">서남권 · 경부고속도로 진입</span><span data-lang="en" hidden>Southeast · onto Gyeongbu Expressway</span></div>
+                </div>
+                <div class="route-item__time"><b>50–70<span data-lang="ko">분</span><span data-lang="en" hidden> min</span></b><small><span data-lang="ko">약 45km</span><span data-lang="en" hidden>~45 km</span></small></div>
+              </div>
+            </div>
+            <p class="route-stops__note rv" style="margin-top:18px"><span data-lang="ko">서울 주요 거점에서 에버랜드 정문까지 직행 · 지정 시간 출발</span><span data-lang="en" hidden>Direct from major Seoul hubs to the Everland main gate · scheduled departures</span></p>
+          </div>
+          <!-- 프라이빗 패널: 도어투도어 목적지 직행 -->
+          <div class="route-pane" data-map-pane="private" hidden>
+            <div class="route-list">
+              <div class="route-item rv">
+                <span class="route-item__code">SEL</span>
+                <div class="route-item__txt">
+                  <div class="route-item__from"><span data-lang="ko">원하는 곳 어디서나</span><span data-lang="en" hidden>Anywhere you like</span></div>
+                  <div class="route-item__meta"><span data-lang="ko">호텔·숙소·공항 도어투도어 픽업</span><span data-lang="en" hidden>Door-to-door pickup at your hotel, lodging, or airport</span></div>
+                </div>
+                <div class="route-item__time"><b>60–80<span data-lang="ko">분</span><span data-lang="en" hidden> min</span></b><small><span data-lang="ko">서울 기준</span><span data-lang="en" hidden>from Seoul</span></small></div>
+              </div>
+            </div>
+            <div class="route-stops rv">
+              <div class="route-stops__head">
+                <span class="route-stops__label"><span data-lang="ko">단독 차량의 장점</span><span data-lang="en" hidden>Why go private</span></span>
+              </div>
+              <div class="stop-chips">
+                <span class="stopchip"><b><span data-lang="ko">정문 앞 하차</span><span data-lang="en" hidden>Main-gate drop-off</span></b></span>
+                <span class="stopchip"><b><span data-lang="ko">픽업 시간 자유</span><span data-lang="en" hidden>Flexible pickup time</span></b></span>
+                <span class="stopchip"><b><span data-lang="ko">짐 걱정 없이</span><span data-lang="en" hidden>No luggage hassle</span></b></span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 선택 연동 상세 — 이용 안내 (셔틀/프라이빗) ============ -->
+  <!-- ============ 공통 운영 가치 3-Point ============ -->
+  <section class="values">
+    <div class="wrap">
+      <div class="values-grid">
+        <div class="value rv">
+          <div class="value__ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M6 19v-3h12v3M6 16V6a2 2 0 012-2h8a2 2 0 012 2v10M4 19h16"/></svg></div>
+          <h3 class="value__t"><span data-lang="ko">지정 좌석</span><span data-lang="en" hidden>Assigned seats</span></h3>
+          <p class="value__d"><span data-lang="ko">1인 1석 지정 좌석으로 옆자리 걱정 없이, 끝까지 편안하게 이동하세요.</span><span data-lang="en" hidden>One assigned seat per person — no worries about who sits next to you, comfortable the whole way.</span></p>
+        </div>
+        <div class="value rv">
+          <div class="value__ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.4 8.4 0 01-.9 3.8 8.5 8.5 0 01-7.6 4.7 8.4 8.4 0 01-3.8-.9L3 21l1.9-5.7a8.4 8.4 0 01-.9-3.8 8.5 8.5 0 014.7-7.6 8.4 8.4 0 013.8-.9h.5a8.48 8.48 0 018 8v.5z"/></svg></div>
+          <h3 class="value__t"><span data-lang="ko">살뜰한 응대</span><span data-lang="en" hidden>Attentive care</span></h3>
+          <p class="value__d"><span data-lang="ko">쌓아온 경험과 파트너십으로 여정 중 생기는 문제를 끝까지 함께 해결합니다.</span><span data-lang="en" hidden>With years of experience and partnerships, we help resolve any issue during your trip, all the way through.</span></p>
+        </div>
+        <div class="value rv">
+          <div class="value__ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></div>
+          <h3 class="value__t"><span data-lang="ko">정시 보장</span><span data-lang="en" hidden>On-time guarantee</span></h3>
+          <p class="value__d"><span data-lang="ko">매일 같은 시간, 약속한 자리로. 정시 운행을 지키기 위해 최선을 다합니다.</span><span data-lang="en" hidden>Same time every day, at the agreed spot. We do our best to keep every departure on time.</span></p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 선택 연동 상세 — 이용 안내 ============ -->
+  <section class="svc-detail" id="svcDetail" data-active="shuttle">
+    <div class="wrap">
+      <div class="sec-head rv">
+        <h2 class="sec-title"><span data-lang="ko">이용 안내</span><span data-lang="en" hidden>How it works</span> <small data-svc-label><span data-lang="ko">셔틀버스</span><span data-lang="en" hidden>Shuttle bus</span></small></h2>
+      </div>
+
+      <!-- 셔틀 -->
+      <div class="sd-pane" data-for="shuttle">
+        <div class="sd-cols">
+          <div class="sd-col">
+            <h3><span data-lang="ko">예약 · 탑승</span><span data-lang="en" hidden>Booking · boarding</span></h3>
+            <ul class="sd-list">
+              <li><span data-lang="ko">예약은 탑승일 기준 최소 2일 전까지 완료해 주세요.</span><span data-lang="en" hidden>Please complete your booking at least 2 days before the boarding date.</span></li>
+              <li><span data-lang="ko">예약 시 선택한 날짜·탑승 시간에만 이용 가능합니다.</span><span data-lang="en" hidden>Valid only for the date and boarding time selected at booking.</span></li>
+              <li><span data-lang="ko">모든 차량은 정시 출발 — 탑승 장소에 5분 전까지 도착해 주세요.</span><span data-lang="en" hidden>All vehicles depart on time — please arrive at the boarding point 5 minutes early.</span></li>
+            </ul>
+          </div>
+          <div class="sd-col">
+            <h3><span data-lang="ko">취소 규정</span><span data-lang="en" hidden>Cancellation policy</span></h3>
+            <ul class="sd-list">
+              <li><span data-lang="ko">탑승 24시간 전까지 취소 시 전액 환불됩니다.</span><span data-lang="en" hidden>Cancel up to 24 hours before boarding for a full refund.</span></li>
+              <li><span data-lang="ko">24시간 미만 취소 및 노쇼(No-show)는 환불 불가합니다.</span><span data-lang="en" hidden>Cancellations within 24 hours and no-shows are non-refundable.</span></li>
+              <li><span data-lang="ko">왕복 티켓의 일부(편도) 취소·환불은 불가합니다.</span><span data-lang="en" hidden>Partial (one-way) cancellation or refund of a round-trip ticket is not available.</span></li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <!-- 프라이빗 -->
+      <div class="sd-pane" data-for="private">
+        <div class="sd-cols">
+          <div class="sd-col">
+            <h3><span data-lang="ko">예약 · 이용</span><span data-lang="en" hidden>Booking · use</span></h3>
+            <ul class="sd-list">
+              <li><span data-lang="ko">예약은 픽업일 기준 최소 2일 전까지 완료해 주세요.</span><span data-lang="en" hidden>Please complete your booking at least 2 days before the pickup date.</span></li>
+              <li><span data-lang="ko">왕복 예약은 동일 날짜 이용 시에만 가능합니다.</span><span data-lang="en" hidden>Round-trip booking is available only for same-day use.</span></li>
+              <li><span data-lang="ko">대기 시간·경유지 추가 등에 따라 추가 요금이 발생할 수 있습니다.</span><span data-lang="en" hidden>Extra charges may apply for wait time, added stops, and the like.</span></li>
+            </ul>
+          </div>
+          <div class="sd-col">
+            <h3><span data-lang="ko">취소 규정</span><span data-lang="en" hidden>Cancellation policy</span></h3>
+            <ul class="sd-list">
+              <li><span data-lang="ko">차종(세단·밴·코치)에 따라 24~48시간 취소 규정이 적용됩니다.</span><span data-lang="en" hidden>A 24–48 hour cancellation policy applies depending on vehicle type (sedan·van·coach).</span></li>
+              <li><span data-lang="ko">규정 시간 내 취소 시 요금의 50%, 이후 및 노쇼는 100% 부과됩니다.</span><span data-lang="en" hidden>Cancellation within the policy window is charged 50%; after that, and for no-shows, 100%.</span></li>
+            </ul>
+          </div>
+          <div class="sd-col">
+            <h3><span data-lang="ko">요금 포함</span><span data-lang="en" hidden>Included in the fare</span></h3>
+            <div class="sd-inc">
+              <span><span data-lang="ko">기본 할증료</span><span data-lang="en" hidden>Base surcharge</span></span><span><span data-lang="ko">유류비</span><span data-lang="en" hidden>Fuel</span></span><span><span data-lang="ko">봉사료</span><span data-lang="en" hidden>Gratuity</span></span><span class="is-no"><span data-lang="ko">주차비</span><span data-lang="en" hidden>Parking</span></span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 여정 — 하루 흐름 (선택 연동) ============ -->
+  <section class="journey" id="journey" data-active="shuttle">
+    <div class="wrap">
+      <div class="sec-head rv">
+        <h2 class="sec-title"><span data-lang="ko">에버랜드 가는 하루</span><span data-lang="en" hidden>A day getting to Everland</span> <small data-svc-label><span data-lang="ko">셔틀버스</span><span data-lang="en" hidden>Shuttle bus</span></small></h2>
+      </div>
+      <!-- 셔틀 -->
+      <div class="sd-pane" data-for="shuttle">
+        <ol class="jrny">
+          <li class="jstep"><span class="jstep__n">1</span><h3 class="jstep__t"><span data-lang="ko">서울 거점 집결</span><span data-lang="en" hidden>Gather at the Seoul hub</span></h3><p class="jstep__d"><span data-lang="ko">명동·홍대·강남 등 지정 정류장에서 탑승. 출발 5분 전까지 도착해 주세요.</span><span data-lang="en" hidden>Board at a designated stop such as Myeongdong, Hongdae, or Gangnam. Please arrive 5 minutes before departure.</span></p><div class="jstep__time"><span data-lang="ko">출발 −5분</span><span data-lang="en" hidden>5 min before departure</span></div></li>
+          <li class="jstep"><span class="jstep__n">2</span><h3 class="jstep__t"><span data-lang="ko">무정차 직행</span><span data-lang="en" hidden>Non-stop direct</span></h3><p class="jstep__d"><span data-lang="ko">중간 정차 없이 에버랜드까지 한 번에. 길이 막히지 않으면 약 1시간.</span><span data-lang="en" hidden>Straight to Everland with no stops. About an hour without traffic.</span></p><div class="jstep__time"><span data-lang="ko">약 60분</span><span data-lang="en" hidden>About 60 min</span></div></li>
+          <li class="jstep"><span class="jstep__n">3</span><h3 class="jstep__t"><span data-lang="ko">정문 하차</span><span data-lang="en" hidden>Drop-off at the main gate</span></h3><p class="jstep__d"><span data-lang="ko">에버랜드 정문 앞에서 내려 자유 관람. 입장권은 따로 준비해 주세요.</span><span data-lang="en" hidden>Get off at the Everland main gate and explore freely. Please arrange admission tickets separately.</span></p><div class="jstep__time"><span data-lang="ko">현장 자유</span><span data-lang="en" hidden>Free on site</span></div></li>
+          <li class="jstep"><span class="jstep__n">4</span><h3 class="jstep__t"><span data-lang="ko">지정 시간 복귀</span><span data-lang="en" hidden>Return at the set time</span></h3><p class="jstep__d"><span data-lang="ko">왕복 예약이면 정해진 시간에 같은 자리에서 타고 서울로 돌아옵니다.</span><span data-lang="en" hidden>With a round-trip booking, return to Seoul from the same spot at the set time.</span></p><div class="jstep__time"><span data-lang="ko">왕복 선택 시</span><span data-lang="en" hidden>For round trips</span></div></li>
+        </ol>
+      </div>
+      <!-- 프라이빗 -->
+      <div class="sd-pane" data-for="private">
+        <ol class="jrny">
+          <li class="jstep"><span class="jstep__n">1</span><h3 class="jstep__t"><span data-lang="ko">호텔·숙소 픽업</span><span data-lang="en" hidden>Hotel·lodging pickup</span></h3><p class="jstep__d"><span data-lang="ko">정한 시간·장소로 전용 차량이 찾아갑니다. 기사가 미리 대기해요.</span><span data-lang="en" hidden>A dedicated vehicle comes to your chosen time and place. The driver waits ahead of time.</span></p><div class="jstep__time"><span data-lang="ko">원하는 시간</span><span data-lang="en" hidden>Your chosen time</span></div></li>
+          <li class="jstep"><span class="jstep__n">2</span><h3 class="jstep__t"><span data-lang="ko">도어투도어 직행</span><span data-lang="en" hidden>Door-to-door direct</span></h3><p class="jstep__d"><span data-lang="ko">다른 승객 없이 에버랜드 정문 앞까지. 짐은 차에 두고 가볍게.</span><span data-lang="en" hidden>To the Everland main gate with no other passengers. Leave your bags in the car and travel light.</span></p><div class="jstep__time"><span data-lang="ko">전용 차량</span><span data-lang="en" hidden>Private vehicle</span></div></li>
+          <li class="jstep"><span class="jstep__n">3</span><h3 class="jstep__t"><span data-lang="ko">자유 일정</span><span data-lang="en" hidden>Flexible schedule</span></h3><p class="jstep__d"><span data-lang="ko">관람 동안 차량 대기(풀데이) 또는 지정한 시간에 다시 픽업.</span><span data-lang="en" hidden>The vehicle waits during your visit (full day), or re-picks up at a set time.</span></p><div class="jstep__time"><span data-lang="ko">대기·재픽업</span><span data-lang="en" hidden>Wait·re-pickup</span></div></li>
+          <li class="jstep"><span class="jstep__n">4</span><h3 class="jstep__t"><span data-lang="ko">편한 복귀</span><span data-lang="en" hidden>Easy return</span></h3><p class="jstep__d"><span data-lang="ko">원하는 시간에 정문에서 출발, 호텔·공항까지 도어투도어로 모십니다.</span><span data-lang="en" hidden>Depart the main gate whenever you like — door-to-door to your hotel or airport.</span></p><div class="jstep__time"><span data-lang="ko">풀데이 선택 시</span><span data-lang="en" hidden>For full day</span></div></li>
+        </ol>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ FAQ (선택 연동) ============ -->
+  <section class="faq" id="faq" data-active="shuttle">
+    <div class="wrap">
+      <div class="sec-head rv">
+        <h2 class="sec-title"><span data-lang="ko">자주 묻는 질문</span><span data-lang="en" hidden>Frequently asked questions</span> <small data-svc-label><span data-lang="ko">셔틀버스</span><span data-lang="en" hidden>Shuttle bus</span></small></h2>
+      </div>
+      <!-- 셔틀 -->
+      <div class="sd-pane" data-for="shuttle">
+        <div class="faq-list">
+          <details class="faq-item"><summary><span data-lang="ko">예약은 언제까지 해야 하나요?</span><span data-lang="en" hidden>When do I need to book by?</span></summary><div class="faq-item__a"><span data-lang="ko">탑승일 기준 최소 2일 전까지 완료해 주세요. 좌석이 한정돼 주말·성수기엔 더 일찍 마감될 수 있습니다.</span><span data-lang="en" hidden>At least 2 days before the boarding date. Seats are limited and may sell out earlier on weekends and peak seasons.</span></div></details>
+          <details class="faq-item"><summary><span data-lang="ko">정류장은 어디에 있나요?</span><span data-lang="en" hidden>Where are the stops?</span></summary><div class="faq-item__a"><span data-lang="ko">명동·홍대·강남 등 서울 주요 거점에서 탑승합니다. 예약 시 선택한 정류장과 시간이 탑승권에 표기됩니다.</span><span data-lang="en" hidden>You board at major Seoul hubs such as Myeongdong, Hongdae, and Gangnam. The stop and time you select at booking are printed on your ticket.</span></div></details>
+          <details class="faq-item"><summary><span data-lang="ko">캐리어를 가져가도 되나요?</span><span data-lang="en" hidden>Can I bring a suitcase?</span></summary><div class="faq-item__a"><span data-lang="ko">1인당 캐리어 1개와 기내 수하물 1개까지 실을 수 있습니다. 그 이상은 예약 시 미리 알려주세요.</span><span data-lang="en" hidden>Up to one suitcase and one carry-on per person. For more, please let us know when booking.</span></div></details>
+        </div>
+      </div>
+      <!-- 프라이빗 -->
+      <div class="sd-pane" data-for="private">
+        <div class="faq-list">
+          <details class="faq-item"><summary><span data-lang="ko">픽업 위치를 자유롭게 정할 수 있나요?</span><span data-lang="en" hidden>Can I freely choose the pickup location?</span></summary><div class="faq-item__a"><span data-lang="ko">호텔·숙소·공항 등 원하는 주소로 픽업합니다. 예약 시 정확한 주소와 시간을 입력해 주세요.</span><span data-lang="en" hidden>We pick up at any address you like — hotel, lodging, airport, and more. Please enter the exact address and time when booking.</span></div></details>
+          <details class="faq-item"><summary><span data-lang="ko">관람하는 동안 기사가 기다리나요?</span><span data-lang="en" hidden>Does the driver wait during my visit?</span></summary><div class="faq-item__a"><span data-lang="ko">풀데이 예약은 관람 내내 차량이 대기합니다. 편도·왕복은 지정한 시간에 다시 픽업하는 방식입니다.</span><span data-lang="en" hidden>With a full-day booking, the vehicle waits throughout your visit. One-way and round-trip pick you up again at the set time.</span></div></details>
+          <details class="faq-item"><summary><span data-lang="ko">요금에는 무엇이 포함되나요?</span><span data-lang="en" hidden>What's included in the fare?</span></summary><div class="faq-item__a"><span data-lang="ko">유류비·통행료·기사 봉사료가 모두 포함된 고정 요금입니다. 주차비는 현장 별도이며, 대기·경유 추가 시 미리 안내드립니다.</span><span data-lang="en" hidden>A fixed fare including fuel, tolls, and driver gratuity. Parking is paid on site, and we'll let you know in advance for added wait time or stops.</span></div></details>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 동종 추천 ============ -->
+  <section class="others">
+    <div class="wrap">
+      <div class="sec-head rv">
+        <h2 class="sec-title"><span data-lang="ko">다른 테마파크 이동 서비스</span><span data-lang="en" hidden>Other theme park transfer services</span></h2>
+      </div>
+      <div class="ogrid">
+        <article class="ocard rv">
+          <a class="ocard__link" href="../gyeongju/">
+            <div class="ocard__media"><img src="/assets/theme_gyeongju_hero.webp" alt="경주월드" loading="lazy"></div>
+            <div class="ocard__body">
+              <div class="ocard__partner"><span data-lang="ko">Theme Park · 경북 경주</span><span data-lang="en" hidden>Theme Park · Gyeongju, Gyeongbuk</span></div>
+              <h3 class="ocard__name"><span data-lang="ko">경주월드</span><span data-lang="en" hidden>Gyeongju World</span></h3>
+              <p class="ocard__desc"><span data-lang="ko">영남권 최대 테마파크. 셔틀과 프라이빗 이동 모두 제공</span><span data-lang="en" hidden>The largest theme park in the Yeongnam region. Both shuttle and private transfers available.</span></p>
+              <div class="ocard__meta"><span class="tag tag--type"><span data-lang="ko">테마파크</span><span data-lang="en" hidden>Theme Park</span></span><span class="tag tag--both"><span data-lang="ko">셔틀·프라이빗</span><span data-lang="en" hidden>Shuttle·Private</span></span></div>
+            </div>
+          </a>
+        </article>
+        <article class="ocard rv">
+          <a class="ocard__link" href="../lotte-world/">
+            <div class="ocard__media"><img src="/assets/theme_lotte-world_hero.webp" alt="롯데월드" loading="lazy"></div>
+            <div class="ocard__body">
+              <div class="ocard__partner"><span data-lang="ko">Theme Park · 서울 잠실</span><span data-lang="en" hidden>Theme Park · Jamsil, Seoul</span></div>
+              <h3 class="ocard__name"><span data-lang="ko">롯데월드</span><span data-lang="en" hidden>Lotte World</span></h3>
+              <p class="ocard__desc"><span data-lang="ko">도심 속 실내·외 복합 테마파크. 시내 접근성 우수</span><span data-lang="en" hidden>An indoor·outdoor theme park in the city, with excellent downtown access.</span></p>
+              <div class="ocard__meta"><span class="tag tag--type"><span data-lang="ko">테마파크</span><span data-lang="en" hidden>Theme Park</span></span><span class="tag tag--both"><span data-lang="ko">셔틀·프라이빗</span><span data-lang="en" hidden>Shuttle·Private</span></span></div>
+            </div>
+          </a>
+        </article>
+        <article class="ocard rv">
+          <a class="ocard__link" href="../ocean-world/">
+            <div class="ocard__media"><img src="/assets/theme_ocean-world_hero.webp" alt="오션월드" loading="lazy"></div>
+            <div class="ocard__body">
+              <div class="ocard__partner"><span data-lang="ko">Water Park · 강원 홍천</span><span data-lang="en" hidden>Water Park · Hongcheon, Gangwon</span></div>
+              <h3 class="ocard__name"><span data-lang="ko">오션월드</span><span data-lang="en" hidden>Ocean World</span></h3>
+              <p class="ocard__desc"><span data-lang="ko">국내 최대 워터파크. 서울 거점 셔틀과 프라이빗 이동</span><span data-lang="en" hidden>Korea's largest water park. Shuttle from Seoul hubs and private transfers.</span></p>
+              <div class="ocard__meta"><span class="tag tag--type"><span data-lang="ko">워터파크</span><span data-lang="en" hidden>Water park</span></span><span class="tag tag--both"><span data-lang="ko">셔틀·프라이빗</span><span data-lang="en" hidden>Shuttle·Private</span></span></div>
+            </div>
+          </a>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ Closing CTA ============ -->
+  <section class="cta">
+    <div class="wrap cta-in">
+      <h2 class="cta-title"><span data-lang="ko">에버랜드 가는 길, 준비되셨나요?</span><span data-lang="en" hidden>Ready for the trip to Everland?</span></h2>
+      <p class="cta-sub"><span data-lang="ko">셔틀로 가볍게, 프라이빗으로 편안하게. 원하는 방식으로 지금 예약하세요.</span><span data-lang="en" hidden>Light by shuttle, comfortable by private. Book now, your way.</span></p>
+      <div class="cta-btns">
+        <a href="https://everland.rideus.net/en/everland/page/everland" target="_blank" rel="noopener noreferrer" class="btn btn--shuttle"><span data-lang="ko">셔틀버스 예약</span><span data-lang="en" hidden>Book shuttle bus</span></a>
+        <a href="https://link.triseup.com/everland?booking=new" target="_blank" rel="noopener noreferrer" class="btn btn--private"><span data-lang="ko">프라이빗 예약</span><span data-lang="en" hidden>Book private</span></a>
+      </div>
+      <div class="cta-channels">
+        <span class="cta-ch"><b>WhatsApp</b><i>+82 2 863 3540</i></span>
+        <span class="cta-ch"><b>WeChat</b><i>groundk_kr</i></span>
+        <span class="cta-ch"><b>LINE</b><i>@groundk</i></span>
+        <span class="cta-ch"><b>KakaoTalk</b><i><span data-lang="ko">@그라운드케이</span><span data-lang="en" hidden>@groundk</span></i></span>
+      </div>
+    </div>
+  </section>
+</main>
+
+<div data-include="footer"></div>
+
+<script>
+(function(){
+  /* ---- 아코디언: 헤더 클릭 → 한 번에 하나만 펼침 + 아래 상세 섹션 연동 ---- */
+  var acc=document.getElementById('acc');
+  var SVC_LABEL={shuttle:'셔틀버스',private:'프라이빗 이동'};
+  var SVC_LABEL_EN={shuttle:'Shuttle bus',private:'Private transfer'};
+  function svcLabel(svc){return (document.documentElement.lang==='en'?SVC_LABEL_EN:SVC_LABEL)[svc]||'';}
+  function curSvc(){var o=acc&&acc.querySelector('.acc-item.is-open');return o?o.getAttribute('data-svc'):'shuttle';}
+  /* 선택에 따라 연동되는 섹션들: 이용안내·여정·FAQ */
+  function syncDetail(svc){
+    ['svcDetail','journey','faq'].forEach(function(id){var el=document.getElementById(id);if(el)el.setAttribute('data-active',svc);});
+    document.querySelectorAll('[data-svc-label]').forEach(function(el){el.textContent=svcLabel(svc);});
+    try{window.dispatchEvent(new CustomEvent('everland-svc',{detail:{svc:svc}}));}catch(e){}
+  }
+  if(acc){
+    var items=acc.querySelectorAll('.acc-item');
+    acc.querySelectorAll('.acc-head').forEach(function(head){
+      head.addEventListener('click',function(){
+        var item=head.closest('.acc-item');
+        if(!item||item.classList.contains('is-open'))return;
+        items.forEach(function(it){
+          var open=(it===item);
+          it.classList.toggle('is-open',open);
+          var h=it.querySelector('.acc-head');if(h)h.setAttribute('aria-expanded',open?'true':'false');
+        });
+        syncDetail(item.getAttribute('data-svc'));
+      });
+    });
+  }
+
+  /* ---- 예약폼: 세그 → 안내 문구 갱신, 인원/수하물 스텝퍼 (요금은 검색 전이라 미표시) ---- */
+  function updateHint(bk){
+    var segOn=bk.querySelector('[data-seg] .on');
+    if(!segOn)return;
+    var hint=bk.querySelector('[data-seg-hint]');
+    if(!hint)return;
+    var t=(document.documentElement.lang==='en'&&segOn.getAttribute('data-hint-en'))||segOn.getAttribute('data-hint');
+    if(t)hint.textContent=t;
+  }
+  document.querySelectorAll('.bk').forEach(function(bk){
+    var seg=bk.querySelector('[data-seg]');
+    if(seg)seg.addEventListener('click',function(e){
+      var b=e.target.closest('button');if(!b)return;
+      [].forEach.call(seg.children,function(x){x.classList.toggle('on',x===b);});
+      updateHint(bk);
+    });
+    bk.querySelectorAll('.bk__stepper button').forEach(function(cb){
+      cb.addEventListener('click',function(){
+        var key=cb.getAttribute('data-c'),d=parseInt(cb.getAttribute('data-d'),10);
+        var el=bk.querySelector('[data-v="'+key+'"]');
+        if(el)el.textContent=Math.max(1,Math.min(13,parseInt(el.textContent,10)+d));
+      });
+    });
+    var dt=bk.querySelector('[data-date]');
+    if(dt){try{var d=new Date();d.setDate(d.getDate()+1);dt.value=d.toISOString().slice(0,10);}catch(e){}}
+    updateHint(bk);
+  });
+
+  /* ---- 모바일 nav 토글 + 히어로 스크롤 전환 ---- */
+  var _nav=document.getElementById('nav'),_burger=document.getElementById('navBurger');
+  if(_nav&&_burger){
+    _burger.addEventListener('click',function(){var o=_nav.classList.toggle('is-open');_burger.setAttribute('aria-expanded',o?'true':'false');_burger.setAttribute('aria-label',o?'메뉴 닫기':'메뉴 열기');});
+    document.querySelectorAll('#navDrawer a').forEach(function(a){a.addEventListener('click',function(){_nav.classList.remove('is-open');});});
+  }
+
+  /* ---- reveal ---- */
+  if('IntersectionObserver' in window){
+    var io=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target);}});},{threshold:.14,rootMargin:'0px 0px -8% 0px'});
+    document.querySelectorAll('.rv').forEach(function(el){io.observe(el);});
+  } else {document.querySelectorAll('.rv').forEach(function(el){el.classList.add('in');});}
+
+  /* 프라이빗 '차량 검색하기' → 검색결과 페이지 (이동수단·날짜·인원 전달) */
+  var goBtn=document.querySelector('[data-go-results]');
+  if(goBtn)goBtn.addEventListener('click',function(e){
+    e.preventDefault();
+    var bk=goBtn.closest('.bk');
+    var on=bk&&bk.querySelector('[data-seg] .on');
+    var mode=on?on.getAttribute('data-mode'):'oneway';
+    var de=bk&&bk.querySelector('input[type="date"]'), te=bk&&bk.querySelector('input[type="time"]');
+    var px=bk&&bk.querySelector('[data-v="pax"]'), bg=bk&&bk.querySelector('[data-v="bag"]');
+    location.href='results/index.html?mode='+mode+'&date='+(de?de.value:'')+'&time='+(te?te.value:'')+'&pax='+(px?px.textContent:'2')+'&bag='+(bg?bg.textContent:'2');
+  });
+
+  /* ---- 언어 토글 시 동적 라벨(svc-label / seg-hint) 갱신 ---- */
+  window.addEventListener('langchange',function(){
+    syncDetail(curSvc());
+    document.querySelectorAll('.bk').forEach(function(bk){updateHint(bk);});
+  });
+})();
+</script>
+  <script>
+  /* 에버랜드 위치 지도 — 이동수단별 전환 (셔틀=거점 마커+경로선, 프라이빗=목적지 마커) */
+  (function(){
+    var mapEl=document.getElementById('naverMap'); if(!mapEl) return;
+    var CLIENT_ID='79rnwdvrt2';
+    var EVER={lat:37.293400,lng:127.202100};
+    var HUBS=[{key:'myeongdong',lat:37.563600,lng:126.986900},{key:'hongdae',lat:37.557200,lng:126.924600},{key:'gangnam',lat:37.497900,lng:127.027600}];
+    /* 실제 도로 경로 (OSRM driving, 정적 삽입 — 런타임 호출 0) */
+    var ROUTES={"myeongdong":[[37.56352,126.98666],[37.56467,126.98758],[37.53666,127.00509],[37.52237,127.01728],[37.51158,127.01534],[37.47468,127.0294],[37.40153,127.09866],[37.39727,127.10013],[37.39182,127.10992],[37.39133,127.1202],[37.3731,127.14627],[37.36029,127.15043],[37.35741,127.16409],[37.3477,127.17432],[37.34545,127.18469],[37.33552,127.19901],[37.33513,127.21201],[37.33247,127.21768],[37.31743,127.22134],[37.30971,127.22057],[37.30566,127.2244],[37.29734,127.22322],[37.29405,127.22065],[37.29391,127.20825],[37.29782,127.20416],[37.29565,127.20244]],"hongdae":[[37.55729,126.9245],[37.55862,126.92683],[37.55524,126.93627],[37.54899,126.93938],[37.53466,126.9756],[37.53529,126.99876],[37.53301,127.00772],[37.52148,127.01766],[37.51158,127.01534],[37.47468,127.0294],[37.40153,127.09866],[37.39727,127.10013],[37.39182,127.10992],[37.39133,127.1202],[37.3731,127.14627],[37.36029,127.15043],[37.35741,127.16409],[37.3477,127.17432],[37.34545,127.18469],[37.33552,127.19901],[37.33513,127.21201],[37.33247,127.21768],[37.31743,127.22134],[37.30971,127.22057],[37.30566,127.2244],[37.29734,127.22322],[37.29405,127.22065],[37.29391,127.20825],[37.29782,127.20416],[37.29565,127.20244]],"gangnam":[[37.49789,127.02761],[37.48022,127.03791],[37.47038,127.03874],[37.46565,127.04274],[37.46325,127.03828],[37.40385,127.09652],[37.39727,127.10013],[37.39182,127.10992],[37.39133,127.1202],[37.3731,127.14627],[37.36029,127.15043],[37.35741,127.16409],[37.3477,127.17432],[37.34545,127.18469],[37.33552,127.19901],[37.33513,127.21201],[37.33247,127.21768],[37.31743,127.22134],[37.30971,127.22057],[37.30566,127.2244],[37.29734,127.22322],[37.29405,127.22065],[37.29391,127.20825],[37.29782,127.20416],[37.29565,127.20244]]};
+    var map=null, ovl=[], mode='shuttle', curLang=null;
+
+    mapEl.style.position='relative';
+    var sov=document.createElement('div');
+    sov.className='map-scroll-overlay';
+    sov.innerHTML='<span class="map-scroll-msg"><span data-lang="ko">Ctrl + 스크롤로 확대/축소</span><span data-lang="en" hidden>Use Ctrl + Scroll to zoom</span></span>';
+    mapEl.appendChild(sov);
+    var hideT; function showOv(){sov.classList.add('active');clearTimeout(hideT);hideT=setTimeout(function(){sov.classList.remove('active');},1500);}
+
+    function lang(){return localStorage.getItem('rideus-lang')==='EN'?'en':'ko';}
+    function LL(p){return new naver.maps.LatLng(p.lat,p.lng);}
+    function clearOvl(){ovl.forEach(function(o){o.setMap(null);});ovl=[];}
+
+    function renderMode(m){
+      if(!map) return; clearOvl();
+      if(m==='shuttle'){
+        var b=new naver.maps.LatLngBounds();
+        HUBS.forEach(function(h){
+          var mk=new naver.maps.Marker({position:LL(h),map:map}); ovl.push(mk); b.extend(LL(h));
+          var rc=ROUTES[h.key]||[[h.lat,h.lng],[EVER.lat,EVER.lng]];
+          var path=rc.map(function(c){return new naver.maps.LatLng(c[0],c[1]);});
+          path.forEach(function(ll){b.extend(ll);});
+          var pl=new naver.maps.Polyline({map:map,path:path,strokeColor:'#2E5CFF',strokeWeight:4,strokeOpacity:.8}); ovl.push(pl);
+        });
+        var dest=new naver.maps.Marker({position:LL(EVER),map:map,zIndex:200}); ovl.push(dest); b.extend(LL(EVER));
+        map.fitBounds(b,{top:48,right:48,bottom:48,left:48});
+      } else {
+        /* 프라이빗: 서울 시내(명동) → 에버랜드 경로선 1개 (도어투도어 예시) */
+        var h=HUBS[0];
+        var mk=new naver.maps.Marker({position:LL(h),map:map}); ovl.push(mk);
+        var rc=ROUTES[h.key]||[[h.lat,h.lng],[EVER.lat,EVER.lng]];
+        var path=rc.map(function(c){return new naver.maps.LatLng(c[0],c[1]);});
+        var bb=new naver.maps.LatLngBounds();
+        path.forEach(function(ll){bb.extend(ll);});
+        var pl=new naver.maps.Polyline({map:map,path:path,strokeColor:'#5B45B8',strokeWeight:4,strokeOpacity:.8}); ovl.push(pl);
+        var dest=new naver.maps.Marker({position:LL(EVER),map:map,zIndex:200}); ovl.push(dest);
+        map.fitBounds(bb,{top:48,right:48,bottom:48,left:48});
+      }
+    }
+    function build(){
+      map=new naver.maps.Map(mapEl,{center:LL(EVER),zoom:11,scrollWheel:false,zoomControl:true,zoomControlOptions:{position:naver.maps.Position.TOP_RIGHT}});
+      mapEl.addEventListener('wheel',function(e){
+        if(e.ctrlKey||e.metaKey){e.preventDefault();map.setOptions({scrollWheel:true});clearTimeout(map._st);map._st=setTimeout(function(){map.setOptions({scrollWheel:false});},800);}
+        else{showOv();}
+      },{passive:false});
+      renderMode(mode);
+    }
+    function load(){
+      var lg=lang();
+      if(lg===curLang&&map){renderMode(mode);return;}
+      curLang=lg;
+      if(map){try{map.destroy();}catch(e){}map=null;}
+      Array.prototype.slice.call(mapEl.children).forEach(function(c){if(!c.classList.contains('map-scroll-overlay'))c.remove();});
+      var old=document.getElementById('ever-map-sdk'); if(old)old.remove();
+      if(window.naver){try{delete window.naver.maps;}catch(e){}}
+      var s=document.createElement('script'); s.id='ever-map-sdk';
+      s.src='https://oapi.map.naver.com/openapi/v3/maps.js?ncpKeyId='+CLIENT_ID+'&language='+lg;
+      s.onload=build; document.head.appendChild(s);
+    }
+    load();
+
+    /* 모드 전환 — 지도 + 사이드 패널 + 세그 버튼 동기화 */
+    function setMode(m){
+      mode=m;
+      var lm=document.getElementById('locmap'); if(lm)lm.setAttribute('data-active',m);
+      document.querySelectorAll('[data-map-pane]').forEach(function(p){p.hidden=p.getAttribute('data-map-pane')!==m;});
+      var sg=document.querySelector('.locmap-seg');
+      if(sg)Array.prototype.slice.call(sg.children).forEach(function(x){x.classList.toggle('on',x.getAttribute('data-map-mode')===m);});
+      renderMode(m);
+    }
+
+    /* 지도 세그 클릭 → 위쪽 '어떻게 가시겠어요?' 아코디언과 양방향 연동 */
+    var seg=document.querySelector('.locmap-seg');
+    if(seg)seg.addEventListener('click',function(e){
+      var b=e.target.closest('button'); if(!b)return;
+      var m=b.getAttribute('data-map-mode');
+      var head=document.querySelector('.acc-item[data-svc="'+m+'"] .acc-head');
+      if(head)head.click();   // 위쪽 아코디언 열기 → 메인 syncDetail → everland-svc 디스패치
+      setMode(m);
+    });
+
+    /* 위쪽 이동수단 선택(syncDetail) → 지도 섹션 연동 */
+    window.addEventListener('everland-svc',function(e){setMode(e.detail.svc);});
+    window.addEventListener('langchange',load);
+  })();
+  </script>
+  <script src="../../js/includes.js"></script>
+</body>
+</html>

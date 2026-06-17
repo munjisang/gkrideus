@@ -1,0 +1,53 @@
+<!-- 공통 푸터 — 홈 4컬럼 디자인(컨셉) + CSS 자급(전 페이지 통일) + 한영 전환(data-lang) -->
+<style>
+.footer{background:#1B2027;color:rgba(255,255,255,.7);padding:64px 0 28px}
+.footer__inner{max-width:1216px;margin:0 auto;padding:0 24px;display:grid;grid-template-columns:1.4fr 1fr 1fr 1fr;gap:48px}
+.footer__brand .logo{font-family:'Outfit','Pretendard',sans-serif;font-weight:800;font-size:24px;color:#fff;letter-spacing:.04em;margin-bottom:14px}
+.footer__brand p{font-size:13px;line-height:1.7;color:#A3A5A8}
+.footer__col h3{font-size:14px;font-weight:600;color:#fff;margin-bottom:14px}
+.footer__col ul{display:grid;gap:8px;list-style:none;padding:0;margin:0}
+.footer__col li{font-size:14px;display:flex;align-items:center;gap:10px}
+.footer__col a{color:#A3A5A8;text-decoration:none;transition:color .2s}
+.footer__col a:hover{color:#fff}
+.footer__col .badge{font-size:11px;color:#fff;opacity:.35}
+.footer__col a.is-accent{color:#2C51DB;font-weight:600;opacity:1}
+.footer__divider{max-width:1216px;margin:36px auto 0;padding:0 24px;height:1px;background:rgba(255,255,255,.30)}
+.footer__bottom{max-width:1216px;margin:22px auto 0;padding:0 24px;display:flex;justify-content:space-between;font-size:11px;color:rgba(255,255,255,.4)}
+.footer__bottom span:last-child{color:#fff}
+@media(max-width:768px){.footer__inner{grid-template-columns:1fr 1fr;gap:28px 24px}}
+</style>
+<footer class="footer">
+  <div class="footer__inner">
+    <div class="footer__brand">
+      <div class="logo">RIDEUS</div>
+      <p><span data-lang="ko">프리미엄 모빌리티의 기준을 정의합니다.<br>공항 의전부터 프라이빗 투어까지,<br>완벽한 여정을 설계합니다.</span><span data-lang="en" hidden>Defining the standard of premium mobility.<br>From airport chauffeur service to private tours,<br>we design the complete journey.</span></p>
+    </div>
+    <div class="footer__col">
+      <h3><span data-lang="ko">회사소개</span><span data-lang="en" hidden>Company</span></h3>
+      <ul>
+        <li><a href="#"><span data-lang="ko">브랜드 스토리</span><span data-lang="en" hidden>Brand Story</span></a><span class="badge"><span data-lang="ko">준비중</span><span data-lang="en" hidden>Soon</span></span></li>
+        <li><a href="#"><span data-lang="ko">채용</span><span data-lang="en" hidden>Careers</span></a><span class="badge"><span data-lang="ko">준비중</span><span data-lang="en" hidden>Soon</span></span></li>
+        <li><a href="#"><span data-lang="ko">보도자료</span><span data-lang="en" hidden>Press</span></a><span class="badge"><span data-lang="ko">준비중</span><span data-lang="en" hidden>Soon</span></span></li>
+      </ul>
+    </div>
+    <div class="footer__col">
+      <h3><span data-lang="ko">고객지원</span><span data-lang="en" hidden>Support</span></h3>
+      <ul>
+        <li><a href="#"><span data-lang="ko">고객센터</span><span data-lang="en" hidden>Help Center</span></a></li>
+        <li><a href="#"><span data-lang="ko">이용약관</span><span data-lang="en" hidden>Terms</span></a><span class="badge"><span data-lang="ko">준비중</span><span data-lang="en" hidden>Soon</span></span></li>
+        <li><a href="#"><span data-lang="ko">개인정보처리방침</span><span data-lang="en" hidden>Privacy</span></a><span class="badge"><span data-lang="ko">준비중</span><span data-lang="en" hidden>Soon</span></span></li>
+      </ul>
+    </div>
+    <div class="footer__col">
+      <h3><span data-lang="ko">제휴 문의</span><span data-lang="en" hidden>Partnership</span></h3>
+      <ul>
+        <li><a href="#"><span data-lang="ko">파트너 등록</span><span data-lang="en" hidden>Become a partner</span></a><a class="is-accent" href="#"><span data-lang="ko">신청하기 →</span><span data-lang="en" hidden>Apply →</span></a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="footer__divider"></div>
+  <div class="footer__bottom">
+    <span>© 2026 Rideus Mobility. All rights reserved.</span>
+    <span>Seoul, Republic of Korea</span>
+  </div>
+</footer>

@@ -1,0 +1,508 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="theme-color" content="#FAF8F5" />
+<title>여행 — 어디로 떠나든, 즐길 거리는 한곳에 | K.RIDEUS</title>
+<meta name="description" content="리조트·테마파크·쇼핑·시티투어·관광택시까지. 한국 전역의 즐길 거리를 지역과 유형으로 찾고, 셔틀·프라이빗으로 편하게 닿으세요." />
+
+<!-- Fonts -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+<link rel="stylesheet" href="place-design.css">
+</head>
+<body>
+
+<!-- ========================================================
+     Navbar
+     ======================================================== -->
+<nav class="navbar" id="navbar" role="navigation" aria-label="주 메뉴">
+  <div class="navbar__inner">
+    <a href="../index.html" class="navbar__brand" aria-label="RIDEUS 홈">RIDEUS<span class="dot">.</span></a>
+    <div class="navbar__menu">
+      <a href="../movement/">이동</a>
+      <a href="place.html" class="is-active" aria-current="page">여행</a>
+      <a href="../event/">이벤트</a>
+    </div>
+    <div class="navbar__actions">
+      <span class="lang-toggle" role="group" aria-label="언어 선택"><span class="is-on">KR</span><span>EN</span></span>
+      <a href="#" class="support-link">고객센터</a>
+    </div>
+    <button class="navbar__burger" type="button" aria-label="메뉴 열기" aria-expanded="false" aria-controls="navDrawer">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+  <div class="navbar__drawer" id="navDrawer">
+    <a href="../movement/" class="navbar__drawer-link">이동</a>
+    <a href="place.html" class="navbar__drawer-link">여행</a>
+    <a href="../event/" class="navbar__drawer-link">이벤트</a>
+    <a href="#" class="navbar__drawer-link">고객센터</a>
+    <div class="navbar__drawer-lang">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="color:var(--text-mute)"><circle cx="12" cy="12" r="9"/><line x1="3" y1="12" x2="21" y2="12"/><path d="M12 3a15 15 0 0 1 0 18 15 15 0 0 1 0-18z"/></svg>
+      <span class="lang-toggle" role="group" aria-label="언어 선택"><span class="is-on">KR</span><span>EN</span></span>
+    </div>
+  </div>
+</nav>
+
+<main id="main">
+
+  <!-- ====================================================
+       지역 탭 (넷플릭스 상단 탭) — 클릭 = 지역 페이지 전환
+       ==================================================== -->
+  <div class="region-tabs-wrap">
+    <div class="container">
+      <nav class="region-tabs" aria-label="지역 선택">
+        <a class="region-tab" href="place.html" aria-current="page">전체 <span class="en">All</span></a>
+        <a class="region-tab" href="region.html">수도권 <span class="en">Seoul</span></a>
+        <a class="region-tab" href="region.html">강원 <span class="en">Gangwon</span></a>
+        <a class="region-tab" href="region.html">경상 <span class="en">Gyeongsang</span></a>
+        <a class="region-tab" href="region.html">전라 <span class="en">Jeolla</span></a>
+        <a class="region-tab" href="region.html">제주 <span class="en">Jeju</span></a>
+      </nav>
+    </div>
+  </div>
+
+  <!-- ====================================================
+       히어로 배너
+       ==================================================== -->
+  <section class="section--base" style="padding:16px 0 8px" aria-label="여행 소개">
+    <div class="container">
+      <div class="nf-hero" data-reveal>
+        <p class="nf-hero__eyebrow">Travel · 여행</p>
+        <h1 class="nf-hero__title">어디로 떠나든, 즐길 거리는 한곳에
+          <span class="en">Wherever you go, everything to enjoy — in one place.</span>
+        </h1>
+      </div>
+    </div>
+  </section>
+
+  <!-- ====================================================
+       유형 행들 (가로 캐러셀)
+       ==================================================== -->
+  <section class="section section--soft" aria-label="여행지 둘러보기">
+    <div class="container">
+
+      <!-- 큐레이션 ① 지금 주목 (강조 레일 — 대표 크게) -->
+      <div class="row" data-reveal>
+        <div class="sec-head">
+          <h2 class="sec-title">지금 주목
+            <span class="sub-note">이번 주 인기 · 조회·문의순</span>
+          </h2>
+        </div>
+        <div class="rail-wrap">
+          <div class="rail rail--pick">
+            <a class="card" href="../theme-park/everland/">
+              <div class="card__media" data-type="테마파크"><span class="ph-label">Everland</span></div>
+              <div class="card__body">
+                <h3 class="card__title">에버랜드</h3>
+                <div class="card__meta">
+                  <span class="badge badge--type">테마파크</span>
+                  <span class="card__region">수도권·용인</span>
+                  <span class="badge badge--shuttle">셔틀</span>
+                </div>
+              </div>
+            </a>
+            <article class="card">
+              <div class="card__media" data-type="리조트"><span class="ph-label">Mona Yongpyong</span></div>
+              <div class="card__body">
+                <h3 class="card__title">모나 용평 리조트</h3>
+                <div class="card__meta">
+                  <span class="badge badge--type">리조트</span>
+                  <span class="card__region">강원·평창</span>
+                  <span class="badge badge--shuttle">셔틀</span>
+                </div>
+              </div>
+            </article>
+            <a class="card" href="city-tour-gyeongju/">
+              <div class="card__media" data-type="시티투어"><span class="ph-label">Gyeongju</span></div>
+              <div class="card__body">
+                <h3 class="card__title">경주 시티투어</h3>
+                <div class="card__meta">
+                  <span class="badge badge--type">시티투어</span>
+                  <span class="card__region">경상·경주</span>
+                  <span class="badge badge--shuttle">셔틀</span>
+                </div>
+              </div>
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <!-- 큐레이션 ② 지금 가기 좋은 -->
+      <div class="row" data-reveal>
+        <div class="sec-head">
+          <h2 class="sec-title">지금 가기 좋은
+            <span class="sub-note">시즌 추천 · 날짜·계절 기반</span>
+          </h2>
+        </div>
+        <div class="rail-wrap">
+          <div class="rail">
+            <article class="card">
+              <div class="card__media" data-type="리조트"><span class="ph-label">High1</span></div>
+              <div class="card__body">
+                <h3 class="card__title">하이원 스키월드</h3>
+                <div class="card__meta">
+                  <span class="badge badge--type">리조트</span>
+                  <span class="card__region">강원·정선</span>
+                  <span class="badge badge--shuttle">셔틀</span>
+                </div>
+              </div>
+            </article>
+            <a class="card" href="resort-vivaldi/index.html">
+              <div class="card__media" data-type="리조트"><span class="ph-label">Vivaldi</span></div>
+              <div class="card__body">
+                <h3 class="card__title">비발디파크 스노위랜드</h3>
+                <div class="card__meta">
+                  <span class="badge badge--type">리조트</span>
+                  <span class="card__region">강원·홍천</span>
+                  <span class="badge badge--shuttle">셔틀</span>
+                </div>
+              </div>
+            </a>
+            <article class="card">
+              <div class="card__media" data-type="리조트"><span class="ph-label">Alpensia</span></div>
+              <div class="card__body">
+                <h3 class="card__title">알펜시아 눈썰매</h3>
+                <div class="card__meta">
+                  <span class="badge badge--type">리조트</span>
+                  <span class="card__region">강원·평창</span>
+                  <span class="badge badge--shuttle">셔틀</span>
+                </div>
+              </div>
+            </article>
+          </div>
+        </div>
+      </div>
+
+      <!-- 큐레이션 ③ 외국인 인기 BEST -->
+      <div class="row" data-reveal>
+        <div class="sec-head">
+          <h2 class="sec-title">외국인 인기 BEST
+            <span class="sub-note">해외 조회 기반</span>
+          </h2>
+        </div>
+        <div class="rail-wrap">
+          <div class="rail">
+            <article class="card">
+              <div class="card__media" data-type="시티투어"><span class="ph-label">Bomun</span></div>
+              <div class="card__body">
+                <h3 class="card__title">경주 보문관광단지</h3>
+                <div class="card__meta">
+                  <span class="badge badge--type">시티투어</span>
+                  <span class="card__region">경상·경주</span>
+                  <span class="badge badge--private">프라이빗</span>
+                </div>
+              </div>
+            </article>
+            <article class="card">
+              <div class="card__media" data-type="시티투어"><span class="ph-label">Busan</span></div>
+              <div class="card__body">
+                <h3 class="card__title">부산 시티투어</h3>
+                <div class="card__meta">
+                  <span class="badge badge--type">시티투어</span>
+                  <span class="card__region">경상·부산</span>
+                  <span class="badge badge--private">프라이빗</span>
+                </div>
+              </div>
+            </article>
+            <article class="card">
+              <div class="card__media" data-type="테마파크"><span class="ph-label">Lotte World</span></div>
+              <div class="card__body">
+                <h3 class="card__title">롯데월드</h3>
+                <div class="card__meta">
+                  <span class="badge badge--type">테마파크</span>
+                  <span class="card__region">수도권·서울</span>
+                  <span class="badge badge--shuttle">셔틀</span>
+                </div>
+              </div>
+            </article>
+          </div>
+        </div>
+      </div>
+
+      <!-- 유형: 리조트 (주력 — 표준 레일, 카드 다수) -->
+      <div class="row" data-reveal>
+        <div class="sec-head">
+          <h2 class="sec-title">리조트 <span class="en">Resort</span></h2>
+          <a class="more" href="type.html">전체보기 →</a>
+        </div>
+        <div class="rail-wrap">
+          <div class="rail">
+            <article class="card">
+              <div class="card__media" data-type="리조트"><span class="ph-label">Mona Yongpyong</span></div>
+              <div class="card__body">
+                <h3 class="card__title">모나 용평 리조트</h3>
+                <div class="card__meta"><span class="badge badge--type">리조트</span><span class="card__region">강원·평창</span><span class="badge badge--shuttle">셔틀</span></div>
+              </div>
+            </article>
+            <article class="card">
+              <div class="card__media" data-type="리조트"><span class="ph-label">High1</span></div>
+              <div class="card__body">
+                <h3 class="card__title">하이원 리조트</h3>
+                <div class="card__meta"><span class="badge badge--type">리조트</span><span class="card__region">강원·정선</span><span class="badge badge--shuttle">셔틀</span></div>
+              </div>
+            </article>
+            <article class="card">
+              <div class="card__media" data-type="리조트"><span class="ph-label">Alpensia</span></div>
+              <div class="card__body">
+                <h3 class="card__title">알펜시아 리조트</h3>
+                <div class="card__meta"><span class="badge badge--type">리조트</span><span class="card__region">강원·평창</span><span class="badge badge--shuttle">셔틀</span></div>
+              </div>
+            </article>
+            <a class="card" href="resort-vivaldi/index.html">
+              <div class="card__media" data-type="리조트"><span class="ph-label">Vivaldi</span></div>
+              <div class="card__body">
+                <h3 class="card__title">비발디파크</h3>
+                <div class="card__meta"><span class="badge badge--type">리조트</span><span class="card__region">강원·홍천</span><span class="badge badge--shuttle">셔틀</span></div>
+              </div>
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <!-- 유형: 테마파크 (표준 레일) -->
+      <div class="row" data-reveal>
+        <div class="sec-head">
+          <h2 class="sec-title">테마파크 <span class="en">Theme Park</span></h2>
+          <a class="more" href="type.html">전체보기 →</a>
+        </div>
+        <div class="rail-wrap">
+          <div class="rail">
+            <a class="card" href="../theme-park/everland/">
+              <div class="card__media" data-type="테마파크"><span class="ph-label">Everland</span></div>
+              <div class="card__body">
+                <h3 class="card__title">에버랜드</h3>
+                <div class="card__meta"><span class="badge badge--type">테마파크</span><span class="card__region">수도권·용인</span><span class="badge badge--shuttle">셔틀</span></div>
+              </div>
+            </a>
+            <article class="card">
+              <div class="card__media" data-type="테마파크"><span class="ph-label">Lotte World</span></div>
+              <div class="card__body">
+                <h3 class="card__title">롯데월드</h3>
+                <div class="card__meta"><span class="badge badge--type">테마파크</span><span class="card__region">수도권·서울</span><span class="badge badge--shuttle">셔틀</span></div>
+              </div>
+            </article>
+            <article class="card">
+              <div class="card__media" data-type="테마파크"><span class="ph-label">Legoland</span></div>
+              <div class="card__body">
+                <h3 class="card__title">레고랜드 코리아</h3>
+                <div class="card__meta"><span class="badge badge--type">테마파크</span><span class="card__region">강원·춘천</span><span class="badge badge--shuttle">셔틀</span></div>
+              </div>
+            </article>
+          </div>
+        </div>
+      </div>
+
+      <!-- 유형: 쇼핑 (표준 레일) -->
+      <div class="row" data-reveal>
+        <div class="sec-head">
+          <h2 class="sec-title">쇼핑 <span class="en">Shopping</span></h2>
+          <a class="more" href="type.html">전체보기 →</a>
+        </div>
+        <div class="rail-wrap">
+          <div class="rail">
+            <a class="card" href="shopping-yeoju/">
+              <div class="card__media" data-type="쇼핑"><span class="ph-label">Yeoju</span></div>
+              <div class="card__body">
+                <h3 class="card__title">여주 프리미엄 아울렛</h3>
+                <div class="card__meta"><span class="badge badge--type">쇼핑</span><span class="card__region">수도권·여주</span><span class="badge badge--shuttle">셔틀</span></div>
+              </div>
+            </a>
+            <a class="card" href="shopping-paju/">
+              <div class="card__media" data-type="쇼핑"><span class="ph-label">Paju</span></div>
+              <div class="card__body">
+                <h3 class="card__title">파주 프리미엄 아울렛</h3>
+                <div class="card__meta"><span class="badge badge--type">쇼핑</span><span class="card__region">수도권·파주</span><span class="badge badge--shuttle">셔틀</span></div>
+              </div>
+            </a>
+            <a class="card" href="shopping-siheung/">
+              <div class="card__media" data-type="쇼핑"><span class="ph-label">Siheung</span></div>
+              <div class="card__body">
+                <h3 class="card__title">시흥 프리미엄 아울렛</h3>
+                <div class="card__meta"><span class="badge badge--type">쇼핑</span><span class="card__region">수도권·시흥</span><span class="badge badge--shuttle">셔틀</span></div>
+              </div>
+            </a>
+            <a class="card" href="shopping-gimpo/">
+              <div class="card__media" data-type="쇼핑"><span class="ph-label">Gimpo</span></div>
+              <div class="card__body">
+                <h3 class="card__title">현대 프리미엄 아울렛 김포</h3>
+                <div class="card__meta"><span class="badge badge--type">쇼핑</span><span class="card__region">수도권·김포</span><span class="badge badge--shuttle">셔틀</span></div>
+              </div>
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <!-- 유형: 시티투어 (컴팩트 레일 — 소수) -->
+      <div class="row" data-reveal>
+        <div class="sec-head">
+          <h2 class="sec-title">시티투어 <span class="en">City Tour</span></h2>
+          <a class="more" href="type.html">전체보기 →</a>
+        </div>
+        <div class="rail-wrap">
+          <div class="rail rail--compact">
+            <a class="card" href="city-tour-gyeongju/">
+              <div class="card__media" data-type="시티투어"><span class="ph-label">Gyeongju</span></div>
+              <div class="card__body">
+                <h3 class="card__title">경주 시티투어</h3>
+                <div class="card__meta"><span class="badge badge--type">시티투어</span><span class="card__region">경상·경주</span><span class="badge badge--shuttle">셔틀</span></div>
+              </div>
+            </a>
+            <article class="card">
+              <div class="card__media" data-type="시티투어"><span class="ph-label">Busan</span></div>
+              <div class="card__body">
+                <h3 class="card__title">부산 시티투어</h3>
+                <div class="card__meta"><span class="badge badge--type">시티투어</span><span class="card__region">경상·부산</span><span class="badge badge--private">프라이빗</span></div>
+              </div>
+            </article>
+          </div>
+        </div>
+      </div>
+
+      <!-- 유형: 관광택시 (컴팩트 레일 — 소수) -->
+      <div class="row" data-reveal>
+        <div class="sec-head">
+          <h2 class="sec-title">관광택시 <span class="en">Sightseeing Taxi</span></h2>
+          <a class="more" href="type.html">전체보기 →</a>
+        </div>
+        <div class="rail-wrap">
+          <div class="rail rail--compact">
+            <article class="card">
+              <div class="card__media" data-type="관광택시"><span class="ph-label">Gangwon</span></div>
+              <div class="card__body">
+                <h3 class="card__title">강원 관광택시</h3>
+                <div class="card__meta"><span class="badge badge--type">관광택시</span><span class="card__region">강원 일대</span><span class="badge badge--private">프라이빗</span></div>
+              </div>
+            </article>
+            <article class="card">
+              <div class="card__media" data-type="관광택시"><span class="ph-label">Nationwide</span></div>
+              <div class="card__body">
+                <h3 class="card__title">전국 명소 관광택시</h3>
+                <div class="card__meta"><span class="badge badge--type">관광택시</span><span class="card__region">안동·포항 등</span><span class="badge badge--private">프라이빗</span></div>
+              </div>
+            </article>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ====================================================
+       문의 CTA
+       ==================================================== -->
+  <section class="section section--base" aria-label="맞춤 여행 문의">
+    <div class="container">
+      <div class="cta-panel" data-reveal>
+        <h2>찾는 곳이 없거나, 나만의 일정이 있나요?</h2>
+        <p class="cta-panel__sub">지역을 잘 아는 기사와 함께 — 짐도, 일정도 그대로.
+          <span class="en">A local driver, your own itinerary.</span>
+        </p>
+        <a href="#" class="btn btn--primary">맞춤 여행 문의 · Inquire</a>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<!-- ========================================================
+     Footer
+     ======================================================== -->
+<footer class="footer">
+  <div class="footer__inner">
+    <div class="footer__brand">
+      <div class="logo">RIDEUS</div>
+      <p>목적지에 맞게, 이동을 선택하다.<br>공항·항만부터 여행·이벤트까지,<br>완벽한 여정을 설계합니다.</p>
+    </div>
+    <div class="footer__col">
+      <h3>여행</h3>
+      <ul>
+        <li><a href="type.html">리조트</a></li>
+        <li><a href="type.html">테마파크</a></li>
+        <li><a href="type.html">쇼핑</a></li>
+        <li><a href="type.html">시티투어 · 관광택시</a></li>
+      </ul>
+    </div>
+    <div class="footer__col">
+      <h3>고객지원</h3>
+      <ul>
+        <li><a href="#">고객센터</a></li>
+        <li><a href="#">이용약관</a><span class="tag">준비중</span></li>
+        <li><a href="#">개인정보처리방침</a><span class="tag">준비중</span></li>
+      </ul>
+    </div>
+    <div class="footer__col">
+      <h3>제휴 문의</h3>
+      <ul>
+        <li><a href="#">파트너 등록</a><a class="is-accent" href="#">신청하기 →</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="footer__divider"></div>
+  <div class="footer__bottom">
+    <span>© 2026 Rideus Mobility. All rights reserved.</span>
+    <span>Seoul, Republic of Korea</span>
+  </div>
+</footer>
+
+<script>
+/* 공유 인터랙션 — 햄버거 토글 / 레일 스크롤 힌트 / 스크롤 리빌 */
+(function () {
+  /* 모바일 navbar 햄버거 */
+  var nav = document.getElementById('navbar');
+  if (nav) {
+    var burger = nav.querySelector('.navbar__burger');
+    if (burger) {
+      burger.addEventListener('click', function () {
+        var open = nav.classList.toggle('is-open');
+        burger.setAttribute('aria-expanded', open ? 'true' : 'false');
+        burger.setAttribute('aria-label', open ? '메뉴 닫기' : '메뉴 열기');
+      });
+      nav.querySelectorAll('.navbar__drawer a').forEach(function (a) {
+        a.addEventListener('click', function () {
+          nav.classList.remove('is-open');
+          burger.setAttribute('aria-expanded', 'false');
+          burger.setAttribute('aria-label', '메뉴 열기');
+        });
+      });
+    }
+  }
+
+  /* 레일 — 가로 스크롤 가능 시 우측 페이드 힌트 표시 */
+  function syncRail(wrap) {
+    var rail = wrap.querySelector('.rail');
+    if (!rail) return;
+    var more = rail.scrollWidth - rail.clientWidth - rail.scrollLeft > 8;
+    wrap.classList.toggle('is-scrollable', more);
+  }
+  var wraps = [].slice.call(document.querySelectorAll('.rail-wrap'));
+  wraps.forEach(function (wrap) {
+    var rail = wrap.querySelector('.rail');
+    if (!rail) return;
+    syncRail(wrap);
+    rail.addEventListener('scroll', function () { syncRail(wrap); }, { passive: true });
+  });
+  window.addEventListener('resize', function () { wraps.forEach(syncRail); }, { passive: true });
+
+  /* 스크롤 리빌 (subtle, 1회) */
+  if ('IntersectionObserver' in window) {
+    var io = new IntersectionObserver(function (entries) {
+      entries.forEach(function (e) {
+        if (e.isIntersecting) { e.target.classList.add('is-in'); io.unobserve(e.target); }
+      });
+    }, { threshold: 0.12, rootMargin: '0px 0px -8% 0px' });
+    document.querySelectorAll('[data-reveal],[data-reveal-group]').forEach(function (el) {
+      if (el.hasAttribute('data-reveal-group')) {
+        [].slice.call(el.children).forEach(function (c, i) { c.style.transitionDelay = (i * 0.08) + 's'; });
+      }
+      io.observe(el);
+    });
+  }
+})();
+</script>
+</body>
+</html>

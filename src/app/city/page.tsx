@@ -6,14 +6,14 @@ import {
   pushRecent,
   pushRecentRoute,
   pushRecentBusRoute,
-} from "../lib/recentStations";
-import { useI18n, stationLabel } from "../lib/i18n";
-import StationPicker from "../components/StationPicker";
-import BusCityPicker from "../components/BusCityPicker";
-import DatePickerSheet, { type DateHour } from "../components/DatePickerSheet";
-import PassengersSheet, { type Passengers } from "../components/PassengersSheet";
-import { busCityLabel, type BusCity } from "../lib/busCities";
-import type { TripType } from "../lib/types";
+} from "../../lib/recentStations";
+import { useI18n, stationLabel } from "../../lib/i18n";
+import StationPicker from "../../components/StationPicker";
+import BusCityPicker from "../../components/BusCityPicker";
+import DatePickerSheet, { type DateHour } from "../../components/DatePickerSheet";
+import PassengersSheet, { type Passengers } from "../../components/PassengersSheet";
+import { busCityLabel, type BusCity } from "../../lib/busCities";
+import type { TripType } from "../../lib/types";
 
 type Station = { id: string; name: string };
 type CityGroup = { cityCode: string; cityName: string; stations: Station[] };
@@ -307,7 +307,7 @@ export default function HomePage() {
           className="absolute inset-0 bg-gradient-to-b from-black/55 via-black/30 to-black/45"
         />
 
-        <div className="relative mx-auto w-full max-w-[1280px] px-4 sm:px-8 lg:px-12 pt-[104px] pb-24 lg:pb-32">
+        <div className="relative mx-auto w-full max-w-[1280px] px-4 sm:px-8 lg:px-12 pt-12 lg:pt-16 pb-24 lg:pb-32">
           <h1 className="max-w-2xl text-white text-[28px] leading-tight sm:text-4xl lg:text-[44px] font-extrabold tracking-tight mb-7 lg:mb-9">
             {t("home.heroTitle")}
           </h1>

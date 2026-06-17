@@ -1,0 +1,1387 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <link rel="icon" href="https://cdn.rideus.net/uploads/0003/3016/2023/07/07/favicon.png" type="image/png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#0F1115">
+  <meta name="description" content="2026 KBO·K리그·LCK 경기장 셔틀버스 예약. 잠실·고척·서울월드컵·KSPO DOME 야구장·축구장·e스포츠 경기장 전용 셔틀 & 프라이빗 밴. 응원·관람객 직행 운송.">
+  <title>경기장 셔틀버스 예약 - 야구·축구·e스포츠 — 라이더스</title>
+  <link rel="canonical" href="https://k.rideus.net/sports-shuttle/">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="RIDEUS">
+  <meta property="og:title" content="경기장 셔틀버스 예약 - 야구·축구·e스포츠 — 라이더스">
+  <meta property="og:description" content="2026 KBO·K리그·LCK 경기장 셔틀버스 예약. 잠실·고척·서울월드컵·KSPO DOME 야구장·축구장·e스포츠 경기장 전용 셔틀 & 프라이빗 밴. 응원·관람객 직행 운송.">
+  <meta property="og:url" content="https://k.rideus.net/sports-shuttle/">
+  <meta property="og:image" content="https://k.rideus.net/assets/og-default.webp">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:locale" content="ko_KR">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="경기장 셔틀버스 예약 - 야구·축구·e스포츠 — 라이더스">
+  <meta name="twitter:description" content="2026 KBO·K리그·LCK 경기장 셔틀버스 예약. 잠실·고척·서울월드컵·KSPO DOME 야구장·축구장·e스포츠 경기장 전용 셔틀 & 프라이빗 밴. 응원·관람객 직행 운송.">
+  <meta name="twitter:image" content="https://k.rideus.net/assets/og-default.webp">
+
+  <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=Montserrat:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="../css/style.css?v=20260427">
+  <link rel="stylesheet" href="../css/subpage.css?v=20260427">
+  <link rel="stylesheet" href="../css/airport.css?v=20260427">
+  <link rel="stylesheet" href="../css/event-detail.css?v=20260427">
+  <link rel="stylesheet" href="sports.css?v=20260427">
+</head>
+<body class="view-sports">
+
+  <!-- Shared navbar (기존 include 시스템) -->
+  <div data-include="navbar"></div>
+
+  <main id="main">
+  <!-- ============================================================
+       HERO — images swap based on body.view-sports / view-esports
+       ============================================================ -->
+  <section class="sub-hero sp-hero" id="sportsHero">
+    <div class="sub-hero-bg sub-hero-bg--slideshow">
+      <!-- Sports slides -->
+      <img width="1920" height="1280" src="images/hero_baseball.webp" alt="야구 경기" class="hero-slide active" data-view="sports" loading="eager" decoding="async">
+      <img width="1920" height="1280" src="images/hero_football.webp" alt="축구 경기" class="hero-slide" data-view="sports" loading="lazy" decoding="async">
+      <img width="1920" height="1280" src="images/hero_golf.webp" alt="골프 대회" class="hero-slide" data-view="sports" loading="lazy" decoding="async">
+      <!-- Esports slides -->
+      <img width="1920" height="1280" src="images/hero_esports_01.webp" alt="e스포츠 경기" class="hero-slide" data-view="esports" loading="lazy" decoding="async">
+      <img width="1920" height="1280" src="images/hero_esports_02.webp" alt="e스포츠 스테이지" class="hero-slide" data-view="esports" loading="lazy" decoding="async">
+    </div>
+    <div class="sub-hero-content">
+      <div class="sub-hero-breadcrumb" data-lang="ko">
+        <span>홈 /</span> <span data-view="sports">스포츠</span><span data-view="esports">e스포츠</span>
+      </div>
+      <div class="sub-hero-breadcrumb" data-lang="en" hidden>
+        <span>Home /</span> <span data-view="sports">Sports</span><span data-view="esports">Esports</span>
+      </div>
+      <!-- Sports copy -->
+      <div data-view="sports">
+        <h1 class="sub-hero-title" data-lang="ko">응원은 이미<br><em>오는 길에서 시작됩니다</em></h1>
+        <h1 class="sub-hero-title" data-lang="en" hidden>Your cheering begins<br><em>on the way to the stadium</em></h1>
+        <p class="sub-hero-subtitle" data-lang="ko">야구장·축구장·체육관 직행 셔틀. 경기 시작 전부터 종료 후 귀가까지, 팬의 하루를 완성합니다.</p>
+        <p class="sub-hero-subtitle" data-lang="en" hidden>Direct shuttles to every major stadium. From first pitch to final whistle — your game day, fully covered.</p>
+      </div>
+      <!-- Esports copy -->
+      <div data-view="esports">
+        <h2 class="sub-hero-title" data-lang="ko">챔피언의 무대,<br><em>무대 앞까지 모시다</em></h2>
+        <h2 class="sub-hero-title" data-lang="en" hidden>The champion's stage,<br><em>right at your doorstep</em></h2>
+        <p class="sub-hero-subtitle" data-lang="ko">LCK, LoL MSI, 국제 e스포츠 대회까지. 전 세계 팬들을 경기장 정문까지.</p>
+        <p class="sub-hero-subtitle" data-lang="en" hidden>LCK, LoL MSI, and the world's biggest e-sports events — bringing fans from every corner of the globe straight to the arena.</p>
+      </div>
+    </div>
+    <div class="sub-hero-scroll">
+      <span>Scroll</span>
+      <div class="sub-hero-scroll-line"></div>
+    </div>
+  </section>
+
+
+  <!-- ============================================================
+       VIEW TABS — Sports / Esports switcher
+       ============================================================ -->
+  <div class="sp-view-tabs-bar">
+    <div class="container">
+      <div class="sp-view-tabs">
+        <button type="button" class="sp-view-tab active" data-view-tab="sports" aria-label="Sports">SPORTS</button>
+        <button type="button" class="sp-view-tab" data-view-tab="esports" aria-label="E-Sports">E-SPORTS</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Overview Strip -->
+  <div class="sub-overview-strip">
+    <div class="sub-overview-item">
+      <div class="sub-overview-label">Events</div>
+      <div class="sub-overview-value" data-lang="ko">2026 시즌</div>
+      <div class="sub-overview-value" data-lang="en" hidden>2026 Season</div>
+    </div>
+    <div class="sub-overview-item">
+      <div class="sub-overview-label">Venues</div>
+      <div class="sub-overview-value" data-lang="ko">수도권 주요 경기장</div>
+      <div class="sub-overview-value" data-lang="en" hidden>Seoul Metro Major Stadiums</div>
+    </div>
+    <div class="sub-overview-item">
+      <div class="sub-overview-label">Service</div>
+      <div class="sub-overview-value" data-lang="ko">셔틀 · 프라이빗</div>
+      <div class="sub-overview-value" data-lang="en" hidden>Shuttle · Private</div>
+    </div>
+    <div class="sub-overview-item">
+      <div class="sub-overview-label">Featured</div>
+      <div class="sub-overview-value" data-lang="ko"><a href="#schedule">2026 경기 일정 →</a></div>
+      <div class="sub-overview-value" data-lang="en" hidden><a href="#schedule">2026 Schedule →</a></div>
+    </div>
+  </div>
+
+
+  <!-- ============================================================
+       2026 SPORTS SCHEDULE
+       ============================================================ -->
+  <section class="ap-routes sp-schedule" id="schedule">
+    <div class="container">
+
+      <!-- Sports view header -->
+      <div class="sp-section-header" data-view="sports">
+        <span class="section-overline">2026 Schedule</span>
+        <h2 class="ap-routes-title" data-lang="ko">2026 주요 경기 &amp; 대회 일정</h2>
+        <h2 class="ap-routes-title" data-lang="en" hidden>2026 Major Games &amp; Tournaments</h2>
+        <p class="sp-schedule-desc" data-lang="ko">프로 경기부터 마라톤, 골프 대회까지. 응원하는 자와 도전하는 자 모두를 위한 이동.</p>
+        <p class="sp-schedule-desc" data-lang="en" hidden>From pro leagues to marathons and golf tournaments — transport for both fans and competitors.</p>
+      </div>
+
+      <!-- Esports view header -->
+      <div class="sp-section-header" data-view="esports">
+        <span class="section-overline">2026 E-Sports Schedule</span>
+        <h2 class="ap-routes-title" data-lang="ko">2026 주요 e스포츠 대회</h2>
+        <h2 class="ap-routes-title" data-lang="en" hidden>2026 Major E-Sports Tournaments</h2>
+        <p class="sp-schedule-desc" data-lang="ko">LCK, LoL MSI 등 세계 최정상 e스포츠 대회. 해외 팬부터 국내 관객까지, 경기장 정문까지 직행.</p>
+        <p class="sp-schedule-desc" data-lang="en" hidden>World-class e-sports events including LCK and LoL MSI. Direct service from arrival to arena entrance for fans worldwide.</p>
+      </div>
+
+      <div class="sp-esports-notice" data-view="esports">
+        <div class="sp-esports-notice-icon" aria-hidden="true">🎮</div>
+        <p data-lang="ko">2026 e스포츠 대회 일정이 확정되는 대로 순차적으로 업데이트됩니다.<br>셔틀 운행 일정은 대회 공식 발표 후 공개됩니다.</p>
+        <p data-lang="en" hidden>2026 e-sports tournament schedules will be updated as they are officially confirmed.<br>Shuttle service details will be announced following each event's official release.</p>
+      </div>
+
+      <!-- Filter bar: Sport type tabs (sports view only) -->
+      <div class="sp-filter-bar" data-view="sports">
+        <div class="sp-type-tabs" id="spTypeTabs">
+          <button type="button" class="sp-type-tab active" data-type="baseball"><span data-lang="ko">야구</span><span data-lang="en" hidden>Baseball</span></button>
+          <button type="button" class="sp-type-tab" data-type="football"><span data-lang="ko">축구</span><span data-lang="en" hidden>Football</span></button>
+          <button type="button" class="sp-type-tab" data-type="basketball"><span data-lang="ko">농구</span><span data-lang="en" hidden>Basketball</span></button>
+          <button type="button" class="sp-type-tab" data-type="volleyball"><span data-lang="ko">배구</span><span data-lang="en" hidden>Volleyball</span></button>
+          <button type="button" class="sp-type-tab" data-type="golf"><span data-lang="ko">골프</span><span data-lang="en" hidden>Golf</span></button>
+          <button type="button" class="sp-type-tab" data-type="marathon"><span data-lang="ko">마라톤</span><span data-lang="en" hidden>Marathon</span></button>
+          <button type="button" class="sp-type-tab" data-type="all"><span data-lang="ko">전체</span><span data-lang="en" hidden>All</span></button>
+        </div>
+      </div>
+
+      <div class="sp-empty-state" id="spEmptyState"><span data-lang="ko">선택된 종목의 일정이 없습니다.</span><span data-lang="en" hidden>No events for the selected category.</span></div>
+
+      <div class="sp-ticket-grid" id="spTicketGrid">
+
+        <!-- K리그1 개막전 · 02.28 -->
+        <a href="#" class="sp-ticket" data-month="2026-02" data-type="football" data-view="sports">
+          <div class="sp-ticket-date">
+            <span class="sp-ticket-month">FEB</span>
+            <span class="sp-ticket-day">28</span>
+            <span class="sp-ticket-range">SAT</span>
+          <span class="sp-ticket-notch-bottom"></span>
+          </div>
+          <div class="sp-ticket-info">
+            <div class="sp-ticket-header">
+              <span class="sp-ticket-type"><span data-lang="ko">축구</span><span data-lang="en" hidden>Football</span></span>
+              <span class="sp-ticket-status sp-ticket-status--upcoming"><span data-lang="ko">예정</span><span data-lang="en" hidden>Upcoming</span></span>
+            </div>
+            <h3 class="sp-ticket-name"><span data-lang="ko">K리그1 개막전 · 인천 vs FC 서울</span><span data-lang="en" hidden>K League 1 · Incheon vs FC Seoul</span></h3>
+            <p class="sp-ticket-venue">
+              <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
+              <span data-lang="ko">인천축구전용경기장</span><span data-lang="en" hidden>Incheon Football Stadium</span>
+            </p>
+          </div>
+          <div class="sp-ticket-image" style="background-image:url(images/sp_ticket_football.webp);"></div>
+        </a>
+
+        <a href="#" class="sp-ticket" data-month="2026-02" data-type="football" data-view="sports">
+          <div class="sp-ticket-date">
+            <span class="sp-ticket-month">FEB</span>
+            <span class="sp-ticket-day">28</span>
+            <span class="sp-ticket-range">SAT</span>
+          <span class="sp-ticket-notch-bottom"></span>
+          </div>
+          <div class="sp-ticket-info">
+            <div class="sp-ticket-header">
+              <span class="sp-ticket-type"><span data-lang="ko">축구</span><span data-lang="en" hidden>Football</span></span>
+              <span class="sp-ticket-status sp-ticket-status--upcoming"><span data-lang="ko">예정</span><span data-lang="en" hidden>Upcoming</span></span>
+            </div>
+            <h3 class="sp-ticket-name"><span data-lang="ko">K리그1 · 울산 HD vs 강원 FC</span><span data-lang="en" hidden>K League 1 · Ulsan HD vs Gangwon FC</span></h3>
+            <p class="sp-ticket-venue">
+              <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
+              <span data-lang="ko">울산문수축구경기장</span><span data-lang="en" hidden>Ulsan Munsu Football Stadium</span>
+            </p>
+          </div>
+          <div class="sp-ticket-image" style="background-image:url(images/sp_ticket_football.webp);"></div>
+        </a>
+
+        <a href="#" class="sp-ticket" data-month="2026-03" data-type="football" data-view="sports">
+          <div class="sp-ticket-date">
+            <span class="sp-ticket-month">MAR</span>
+            <span class="sp-ticket-day">01</span>
+            <span class="sp-ticket-range">SUN</span>
+          <span class="sp-ticket-notch-bottom"></span>
+          </div>
+          <div class="sp-ticket-info">
+            <div class="sp-ticket-header">
+              <span class="sp-ticket-type"><span data-lang="ko">축구</span><span data-lang="en" hidden>Football</span></span>
+              <span class="sp-ticket-status sp-ticket-status--upcoming"><span data-lang="ko">예정</span><span data-lang="en" hidden>Upcoming</span></span>
+            </div>
+            <h3 class="sp-ticket-name"><span data-lang="ko">K리그1 · 전북 현대 vs 부천 FC</span><span data-lang="en" hidden>K League 1 · Jeonbuk Hyundai vs Bucheon FC</span></h3>
+            <p class="sp-ticket-venue">
+              <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
+              <span data-lang="ko">전주월드컵경기장</span><span data-lang="en" hidden>Jeonju World Cup Stadium</span>
+            </p>
+          </div>
+          <div class="sp-ticket-image" style="background-image:url(images/sp_ticket_football.webp);"></div>
+        </a>
+
+        <!-- 서울마라톤 -->
+        <a href="#" class="sp-ticket" data-month="2026-03" data-type="marathon" data-view="sports">
+          <div class="sp-ticket-date">
+            <span class="sp-ticket-month">MAR</span>
+            <span class="sp-ticket-day">15</span>
+            <span class="sp-ticket-range">SUN</span>
+          <span class="sp-ticket-notch-bottom"></span>
+          </div>
+          <div class="sp-ticket-info">
+            <div class="sp-ticket-header">
+              <span class="sp-ticket-type"><span data-lang="ko">마라톤</span><span data-lang="en" hidden>Marathon</span></span>
+              <span class="sp-ticket-status sp-ticket-status--upcoming"><span data-lang="ko">예정</span><span data-lang="en" hidden>Upcoming</span></span>
+            </div>
+            <h3 class="sp-ticket-name"><span data-lang="ko">서울국제마라톤</span><span data-lang="en" hidden>Seoul International Marathon</span></h3>
+            <p class="sp-ticket-venue">
+              <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
+              <span data-lang="ko">광화문 ~ 잠실종합운동장</span><span data-lang="en" hidden>Gwanghwamun ~ Jamsil Stadium</span>
+            </p>
+          </div>
+          <div class="sp-ticket-image" style="background-image:url(images/cat_marathon.webp);"></div>
+        </a>
+
+        <!-- V리그 플레이오프 -->
+        <a href="#" class="sp-ticket" data-month="2026-03" data-type="volleyball" data-view="sports">
+          <div class="sp-ticket-date">
+            <span class="sp-ticket-month">MAR</span>
+            <span class="sp-ticket-day">21</span>
+            <span class="sp-ticket-range">~ 28</span>
+          <span class="sp-ticket-notch-bottom"></span>
+          </div>
+          <div class="sp-ticket-info">
+            <div class="sp-ticket-header">
+              <span class="sp-ticket-type"><span data-lang="ko">배구</span><span data-lang="en" hidden>Volleyball</span></span>
+              <span class="sp-ticket-status sp-ticket-status--upcoming"><span data-lang="ko">예정</span><span data-lang="en" hidden>Upcoming</span></span>
+            </div>
+            <h3 class="sp-ticket-name"><span data-lang="ko">V리그 준플레이오프 · 플레이오프</span><span data-lang="en" hidden>V-League Semi-Playoffs · Playoffs</span></h3>
+            <p class="sp-ticket-venue">
+              <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
+              <span data-lang="ko">장충체육관 · 수원체육관 외</span><span data-lang="en" hidden>Jangchung Gym · Suwon Gym &amp; others</span>
+            </p>
+          </div>
+          <div class="sp-ticket-image" style="background-image:url(images/cat_volleyball.webp);"></div>
+        </a>
+
+        <!-- KBO 개막전 · 03.28 -->
+        <a href="jamsil/" class="sp-ticket" data-month="2026-03" data-type="baseball" data-view="sports">
+          <div class="sp-ticket-date">
+            <span class="sp-ticket-month">MAR</span>
+            <span class="sp-ticket-day">28</span>
+            <span class="sp-ticket-range">SAT</span>
+          <span class="sp-ticket-notch-bottom"></span>
+          </div>
+          <div class="sp-ticket-info">
+            <div class="sp-ticket-header">
+              <span class="sp-ticket-type"><span data-lang="ko">야구</span><span data-lang="en" hidden>Baseball</span></span>
+              <span class="sp-ticket-status sp-ticket-status--upcoming"><span data-lang="ko">예정</span><span data-lang="en" hidden>Upcoming</span></span>
+            </div>
+            <h3 class="sp-ticket-name"><span data-lang="ko">KBO 개막전 · KT vs LG</span><span data-lang="en" hidden>KBO Opening Day · KT vs LG</span></h3>
+            <p class="sp-ticket-venue">
+              <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
+              <span data-lang="ko">잠실야구장</span><span data-lang="en" hidden>Jamsil Baseball Stadium</span>
+            </p>
+          </div>
+          <div class="sp-ticket-image" style="background-image:url(images/sp_ticket_baseball.webp);"></div>
+        </a>
+
+        <a href="incheon-ssg/" class="sp-ticket" data-month="2026-03" data-type="baseball" data-view="sports">
+          <div class="sp-ticket-date">
+            <span class="sp-ticket-month">MAR</span>
+            <span class="sp-ticket-day">28</span>
+            <span class="sp-ticket-range">SAT</span>
+          <span class="sp-ticket-notch-bottom"></span>
+          </div>
+          <div class="sp-ticket-info">
+            <div class="sp-ticket-header">
+              <span class="sp-ticket-type"><span data-lang="ko">야구</span><span data-lang="en" hidden>Baseball</span></span>
+              <span class="sp-ticket-status sp-ticket-status--upcoming"><span data-lang="ko">예정</span><span data-lang="en" hidden>Upcoming</span></span>
+            </div>
+            <h3 class="sp-ticket-name"><span data-lang="ko">KBO 개막전 · KIA vs SSG</span><span data-lang="en" hidden>KBO Opening Day · KIA vs SSG</span></h3>
+            <p class="sp-ticket-venue">
+              <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
+              <span data-lang="ko">인천SSG랜더스필드</span><span data-lang="en" hidden>Incheon SSG Landers Field</span>
+            </p>
+          </div>
+          <div class="sp-ticket-image" style="background-image:url(images/sp_ticket_baseball.webp);"></div>
+        </a>
+
+        <a href="changwon-nc/" class="sp-ticket" data-month="2026-03" data-type="baseball" data-view="sports">
+          <div class="sp-ticket-date">
+            <span class="sp-ticket-month">MAR</span>
+            <span class="sp-ticket-day">28</span>
+            <span class="sp-ticket-range">SAT</span>
+          <span class="sp-ticket-notch-bottom"></span>
+          </div>
+          <div class="sp-ticket-info">
+            <div class="sp-ticket-header">
+              <span class="sp-ticket-type"><span data-lang="ko">야구</span><span data-lang="en" hidden>Baseball</span></span>
+              <span class="sp-ticket-status sp-ticket-status--upcoming"><span data-lang="ko">예정</span><span data-lang="en" hidden>Upcoming</span></span>
+            </div>
+            <h3 class="sp-ticket-name"><span data-lang="ko">KBO 개막전 · 두산 vs NC</span><span data-lang="en" hidden>KBO Opening Day · Doosan vs NC</span></h3>
+            <p class="sp-ticket-venue">
+              <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
+              <span data-lang="ko">창원NC파크</span><span data-lang="en" hidden>Changwon NC Park</span>
+            </p>
+          </div>
+          <div class="sp-ticket-image" style="background-image:url(images/sp_ticket_baseball.webp);"></div>
+        </a>
+
+        <!-- V리그 챔피언결정전 -->
+        <a href="#" class="sp-ticket" data-month="2026-04" data-type="volleyball" data-view="sports">
+          <div class="sp-ticket-date">
+            <span class="sp-ticket-month">APR</span>
+            <span class="sp-ticket-day">01</span>
+            <span class="sp-ticket-range">~</span>
+          <span class="sp-ticket-notch-bottom"></span>
+          </div>
+          <div class="sp-ticket-info">
+            <div class="sp-ticket-header">
+              <span class="sp-ticket-type"><span data-lang="ko">배구</span><span data-lang="en" hidden>Volleyball</span></span>
+              <span class="sp-ticket-status sp-ticket-status--upcoming"><span data-lang="ko">예정</span><span data-lang="en" hidden>Upcoming</span></span>
+            </div>
+            <h3 class="sp-ticket-name"><span data-lang="ko">V리그 챔피언결정전</span><span data-lang="en" hidden>V-League Championship Final</span></h3>
+            <p class="sp-ticket-venue">
+              <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
+              <span data-lang="ko">5전 3선승제</span><span data-lang="en" hidden>Best-of-5 series</span>
+            </p>
+          </div>
+          <div class="sp-ticket-image" style="background-image:url(images/cat_volleyball.webp);"></div>
+        </a>
+
+        <!-- KBL 플레이오프 -->
+        <a href="#" class="sp-ticket" data-month="2026-04" data-type="basketball" data-view="sports">
+          <div class="sp-ticket-date">
+            <span class="sp-ticket-month">APR</span>
+            <span class="sp-ticket-day">12</span>
+            <span class="sp-ticket-range">~ 21</span>
+          <span class="sp-ticket-notch-bottom"></span>
+          </div>
+          <div class="sp-ticket-info">
+            <div class="sp-ticket-header">
+              <span class="sp-ticket-type"><span data-lang="ko">농구</span><span data-lang="en" hidden>Basketball</span></span>
+              <span class="sp-ticket-status sp-ticket-status--upcoming"><span data-lang="ko">예정</span><span data-lang="en" hidden>Upcoming</span></span>
+            </div>
+            <h3 class="sp-ticket-name"><span data-lang="ko">KBL 플레이오프 6강</span><span data-lang="en" hidden>KBL Playoffs Top 6</span></h3>
+            <p class="sp-ticket-venue">
+              <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
+              <span data-lang="ko">잠실학생체육관 · 안양 · 수원 외</span><span data-lang="en" hidden>Jamsil Student Gym · Anyang · Suwon &amp; others</span>
+            </p>
+          </div>
+          <div class="sp-ticket-image" style="background-image:url(images/cat_basketball.webp);"></div>
+        </a>
+
+        <a href="#" class="sp-ticket" data-month="2026-04" data-type="basketball" data-view="sports">
+          <div class="sp-ticket-date">
+            <span class="sp-ticket-month">APR</span>
+            <span class="sp-ticket-day">23</span>
+            <span class="sp-ticket-range">~ 5.02</span>
+          <span class="sp-ticket-notch-bottom"></span>
+          </div>
+          <div class="sp-ticket-info">
+            <div class="sp-ticket-header">
+              <span class="sp-ticket-type"><span data-lang="ko">농구</span><span data-lang="en" hidden>Basketball</span></span>
+              <span class="sp-ticket-status sp-ticket-status--upcoming"><span data-lang="ko">예정</span><span data-lang="en" hidden>Upcoming</span></span>
+            </div>
+            <h3 class="sp-ticket-name"><span data-lang="ko">KBL 플레이오프 4강</span><span data-lang="en" hidden>KBL Playoffs Semifinals</span></h3>
+            <p class="sp-ticket-venue">
+              <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
+              <span data-lang="ko">5전 3선승제</span><span data-lang="en" hidden>Best-of-5 series</span>
+            </p>
+          </div>
+          <div class="sp-ticket-image" style="background-image:url(images/cat_basketball.webp);"></div>
+        </a>
+
+        <a href="#" class="sp-ticket" data-month="2026-05" data-type="basketball" data-view="sports">
+          <div class="sp-ticket-date">
+            <span class="sp-ticket-month">MAY</span>
+            <span class="sp-ticket-day">05</span>
+            <span class="sp-ticket-range">~ 17</span>
+          <span class="sp-ticket-notch-bottom"></span>
+          </div>
+          <div class="sp-ticket-info">
+            <div class="sp-ticket-header">
+              <span class="sp-ticket-type"><span data-lang="ko">농구</span><span data-lang="en" hidden>Basketball</span></span>
+              <span class="sp-ticket-status sp-ticket-status--upcoming"><span data-lang="ko">예정</span><span data-lang="en" hidden>Upcoming</span></span>
+            </div>
+            <h3 class="sp-ticket-name"><span data-lang="ko">KBL 챔피언결정전</span><span data-lang="en" hidden>KBL Championship Final</span></h3>
+            <p class="sp-ticket-venue">
+              <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
+              <span data-lang="ko">7전 4선승제</span><span data-lang="en" hidden>Best-of-7 series</span>
+            </p>
+          </div>
+          <div class="sp-ticket-image" style="background-image:url(images/cat_basketball.webp);"></div>
+        </a>
+
+        <!-- LCK 2026 정규 — 인스파이어 아레나 -->
+        <a href="#" class="sp-ticket" data-month="2026-04" data-type="esports" data-view="esports">
+          <div class="sp-ticket-date">
+            <span class="sp-ticket-month">APR</span>
+            <span class="sp-ticket-day">25</span>
+            <span class="sp-ticket-range">~ 26</span>
+          <span class="sp-ticket-notch-bottom"></span>
+          </div>
+          <div class="sp-ticket-info">
+            <div class="sp-ticket-header">
+              <span class="sp-ticket-type"><span data-lang="ko">e스포츠</span><span data-lang="en" hidden>E-Sports</span></span>
+              <span class="sp-ticket-status sp-ticket-status--upcoming"><span data-lang="ko">예정</span><span data-lang="en" hidden>Upcoming</span></span>
+            </div>
+            <h3 class="sp-ticket-name"><span data-lang="ko">LCK 2026 정규시즌</span><span data-lang="en" hidden>LCK 2026 Regular Season</span></h3>
+            <p class="sp-ticket-venue">
+              <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
+              <span data-lang="ko">인스파이어 아레나</span><span data-lang="en" hidden>Inspire Arena</span>
+            </p>
+          </div>
+          <div class="sp-ticket-image" style="background-image:url(images/cat_esports.webp);"></div>
+        </a>
+
+        <!-- 2026 LoL MSI 본선 -->
+        <a href="#" class="sp-ticket" data-month="2026-05" data-type="esports" data-view="esports">
+          <div class="sp-ticket-date">
+            <span class="sp-ticket-month">MAY</span>
+            <span class="sp-ticket-day">—</span>
+            <span class="sp-ticket-range">TBA</span>
+          <span class="sp-ticket-notch-bottom"></span>
+          </div>
+          <div class="sp-ticket-info">
+            <div class="sp-ticket-header">
+              <span class="sp-ticket-type"><span data-lang="ko">e스포츠</span><span data-lang="en" hidden>E-Sports</span></span>
+              <span class="sp-ticket-status sp-ticket-status--upcoming"><span data-lang="ko">예정</span><span data-lang="en" hidden>Upcoming</span></span>
+            </div>
+            <h3 class="sp-ticket-name"><span data-lang="ko">2026 LoL MSI 본선</span><span data-lang="en" hidden>2026 LoL MSI Main Event</span></h3>
+            <p class="sp-ticket-venue">
+              <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
+              <span data-lang="ko">한국 · 장소 TBA</span><span data-lang="en" hidden>Korea · Venue TBA</span>
+            </p>
+          </div>
+          <div class="sp-ticket-image" style="background-image:url(images/cat_esports.webp);"></div>
+        </a>
+
+        <!-- LIV Golf -->
+        <a href="busan-asiad/" class="sp-ticket" data-month="2026-05" data-type="golf" data-view="sports">
+          <div class="sp-ticket-date">
+            <span class="sp-ticket-month">MAY</span>
+            <span class="sp-ticket-day">28</span>
+            <span class="sp-ticket-range">~ 31</span>
+          <span class="sp-ticket-notch-bottom"></span>
+          </div>
+          <div class="sp-ticket-info">
+            <div class="sp-ticket-header">
+              <span class="sp-ticket-type"><span data-lang="ko">골프</span><span data-lang="en" hidden>Golf</span></span>
+              <span class="sp-ticket-status sp-ticket-status--upcoming"><span data-lang="ko">예정</span><span data-lang="en" hidden>Upcoming</span></span>
+            </div>
+            <h3 class="sp-ticket-name"><span data-lang="ko">LIV Golf Korea 2026</span><span data-lang="en" hidden>LIV Golf Korea 2026</span></h3>
+            <p class="sp-ticket-venue">
+              <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
+              <span data-lang="ko">부산 아시아드 컨트리클럽</span><span data-lang="en" hidden>Busan Asiad Country Club</span>
+            </p>
+          </div>
+          <div class="sp-ticket-image" style="background-image:url(images/sp_ticket_golf.webp);"></div>
+        </a>
+
+        <!-- LCK Road to MSI — 원주종합체육관 -->
+        <a href="#" class="sp-ticket" data-month="2026-06" data-type="esports" data-view="esports">
+          <div class="sp-ticket-date">
+            <span class="sp-ticket-month">JUN</span>
+            <span class="sp-ticket-day">12</span>
+            <span class="sp-ticket-range">~ 14</span>
+          <span class="sp-ticket-notch-bottom"></span>
+          </div>
+          <div class="sp-ticket-info">
+            <div class="sp-ticket-header">
+              <span class="sp-ticket-type"><span data-lang="ko">e스포츠</span><span data-lang="en" hidden>E-Sports</span></span>
+              <span class="sp-ticket-status sp-ticket-status--upcoming"><span data-lang="ko">예정</span><span data-lang="en" hidden>Upcoming</span></span>
+            </div>
+            <h3 class="sp-ticket-name"><span data-lang="ko">LCK Road to MSI · 대표 선발전</span><span data-lang="en" hidden>LCK Road to MSI · National Selection</span></h3>
+            <p class="sp-ticket-venue">
+              <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
+              <span data-lang="ko">원주종합체육관</span><span data-lang="en" hidden>Wonju General Gymnasium</span>
+            </p>
+          </div>
+          <div class="sp-ticket-image" style="background-image:url(images/cat_esports.webp);"></div>
+        </a>
+
+        <!-- LCK 2026 정규 — KSPO DOME -->
+        <a href="#" class="sp-ticket" data-month="2026-08" data-type="esports" data-view="esports">
+          <div class="sp-ticket-date">
+            <span class="sp-ticket-month">AUG</span>
+            <span class="sp-ticket-day">14</span>
+            <span class="sp-ticket-range">~ 16</span>
+          <span class="sp-ticket-notch-bottom"></span>
+          </div>
+          <div class="sp-ticket-info">
+            <div class="sp-ticket-header">
+              <span class="sp-ticket-type"><span data-lang="ko">e스포츠</span><span data-lang="en" hidden>E-Sports</span></span>
+              <span class="sp-ticket-status sp-ticket-status--upcoming"><span data-lang="ko">예정</span><span data-lang="en" hidden>Upcoming</span></span>
+            </div>
+            <h3 class="sp-ticket-name"><span data-lang="ko">LCK 2026 정규시즌</span><span data-lang="en" hidden>LCK 2026 Regular Season</span></h3>
+            <p class="sp-ticket-venue">
+              <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
+              KSPO DOME
+            </p>
+          </div>
+          <div class="sp-ticket-image" style="background-image:url(images/cat_esports.webp);"></div>
+        </a>
+
+        <!-- LCK 결승전 -->
+        <a href="#" class="sp-ticket" data-month="2026-09" data-type="esports" data-view="esports">
+          <div class="sp-ticket-date">
+            <span class="sp-ticket-month">SEP</span>
+            <span class="sp-ticket-day">12</span>
+            <span class="sp-ticket-range">~ 13</span>
+          <span class="sp-ticket-notch-bottom"></span>
+          </div>
+          <div class="sp-ticket-info">
+            <div class="sp-ticket-header">
+              <span class="sp-ticket-type"><span data-lang="ko">e스포츠</span><span data-lang="en" hidden>E-Sports</span></span>
+              <span class="sp-ticket-status sp-ticket-status--upcoming"><span data-lang="ko">예정</span><span data-lang="en" hidden>Upcoming</span></span>
+            </div>
+            <h3 class="sp-ticket-name"><span data-lang="ko">LCK 결승전</span><span data-lang="en" hidden>LCK Finals</span></h3>
+            <p class="sp-ticket-venue">
+              <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
+              KSPO DOME
+            </p>
+          </div>
+          <div class="sp-ticket-image" style="background-image:url(images/cat_esports.webp);"></div>
+        </a>
+
+        <!-- Genesis Championship -->
+        <a href="#" class="sp-ticket" data-month="2026-10" data-type="golf" data-view="sports">
+          <div class="sp-ticket-date">
+            <span class="sp-ticket-month">OCT</span>
+            <span class="sp-ticket-day">—</span>
+            <span class="sp-ticket-range">TBA</span>
+          <span class="sp-ticket-notch-bottom"></span>
+          </div>
+          <div class="sp-ticket-info">
+            <div class="sp-ticket-header">
+              <span class="sp-ticket-type"><span data-lang="ko">골프</span><span data-lang="en" hidden>Golf</span></span>
+              <span class="sp-ticket-status sp-ticket-status--upcoming"><span data-lang="ko">예정</span><span data-lang="en" hidden>Upcoming</span></span>
+            </div>
+            <h3 class="sp-ticket-name"><span data-lang="ko">Genesis Championship</span><span data-lang="en" hidden>Genesis Championship</span></h3>
+            <p class="sp-ticket-venue">
+              <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
+              <span data-lang="ko">천안 우정힐스 컨트리클럽</span><span data-lang="en" hidden>Cheonan Woojeong Hills CC</span>
+            </p>
+          </div>
+          <div class="sp-ticket-image" style="background-image:url(images/sp_ticket_golf.webp);"></div>
+        </a>
+
+        <!-- BMW Ladies -->
+        <a href="#" class="sp-ticket" data-month="2026-10" data-type="golf" data-view="sports">
+          <div class="sp-ticket-date">
+            <span class="sp-ticket-month">OCT</span>
+            <span class="sp-ticket-day">22</span>
+            <span class="sp-ticket-range">~ 25</span>
+          <span class="sp-ticket-notch-bottom"></span>
+          </div>
+          <div class="sp-ticket-info">
+            <div class="sp-ticket-header">
+              <span class="sp-ticket-type"><span data-lang="ko">골프</span><span data-lang="en" hidden>Golf</span></span>
+              <span class="sp-ticket-status sp-ticket-status--upcoming"><span data-lang="ko">예정</span><span data-lang="en" hidden>Upcoming</span></span>
+            </div>
+            <h3 class="sp-ticket-name"><span data-lang="ko">BMW Ladies Championship</span><span data-lang="en" hidden>BMW Ladies Championship</span></h3>
+            <p class="sp-ticket-venue">
+              <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
+              <span data-lang="ko">해남 파인비치 골프링크스</span><span data-lang="en" hidden>Haenam Pine Beach Golf Links</span>
+            </p>
+          </div>
+          <div class="sp-ticket-image" style="background-image:url(images/sp_ticket_golf.webp);"></div>
+        </a>
+
+        <!-- 춘천마라톤 -->
+        <a href="#" class="sp-ticket" data-month="2026-11" data-type="marathon" data-view="sports">
+          <div class="sp-ticket-date">
+            <span class="sp-ticket-month">NOV</span>
+            <span class="sp-ticket-day">01</span>
+            <span class="sp-ticket-range">SUN</span>
+          <span class="sp-ticket-notch-bottom"></span>
+          </div>
+          <div class="sp-ticket-info">
+            <div class="sp-ticket-header">
+              <span class="sp-ticket-type"><span data-lang="ko">마라톤</span><span data-lang="en" hidden>Marathon</span></span>
+              <span class="sp-ticket-status sp-ticket-status--upcoming"><span data-lang="ko">예정</span><span data-lang="en" hidden>Upcoming</span></span>
+            </div>
+            <h3 class="sp-ticket-name"><span data-lang="ko">춘천마라톤</span><span data-lang="en" hidden>Chuncheon Marathon</span></h3>
+            <p class="sp-ticket-venue">
+              <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
+              <span data-lang="ko">강원도 춘천 의암호</span><span data-lang="en" hidden>Uiam Lake, Chuncheon, Gangwon</span>
+            </p>
+          </div>
+          <div class="sp-ticket-image" style="background-image:url(images/cat_marathon.webp);"></div>
+        </a>
+
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ============================================================
+       SPOTLIGHT CAROUSEL — glass-wing 카드 단일 유지, 내부 콘텐츠만 crossfade
+       ============================================================ -->
+  <section class="sp-spotlight-banner sp-carousel-section" data-view="sports">
+    <div class="container">
+      <div class="sp-carousel" id="spotlightCarousel">
+
+        <!-- 단일 glass-wing 카드 — 구조 유지, 내부만 교체 -->
+        <div class="sp-spotlight-card glass-wing">
+
+          <!-- 이미지 레이어 (absolute crossfade) -->
+          <div class="sp-spotlight-media">
+            <img width="3840" height="2160" class="sp-carousel-img active" src="images/venue_changwon_nc.webp" alt="창원NC파크 NC 다이노스 홈구장">
+            <img width="1600" height="1324" class="sp-carousel-img" src="images/banner_gtws_muju.webp" alt="가을 덕유산 트레일러닝">
+          </div>
+
+          <!-- 텍스트 콘텐츠 레이어 (absolute crossfade) -->
+          <div class="sp-spotlight-body sp-carousel-body">
+
+            <!-- Slide 0: NC 다이노스 -->
+            <div class="sp-carousel-content active">
+              <div class="sp-spotlight-meta">
+                <span class="sp-spotlight-tag sp-spotlight-tag--baseball">2026 KBO</span>
+                <span class="sp-spotlight-date" data-lang="ko">2026 정규시즌 · 창원NC파크</span>
+                <span class="sp-spotlight-date" data-lang="en" hidden>2026 Season · Changwon NC Park</span>
+              </div>
+              <h2 class="sp-spotlight-title" data-lang="ko">NC 다이노스<br>무료 셔틀버스</h2>
+              <h2 class="sp-spotlight-title" data-lang="en" hidden>NC Dinos<br>Free Shuttle Bus</h2>
+              <p class="sp-spotlight-subtitle sp-spotlight-subtitle--baseball" data-lang="ko">45인승 6대 운행 · 창원·진주·김해 출발</p>
+              <p class="sp-spotlight-subtitle sp-spotlight-subtitle--baseball" data-lang="en" hidden>6 Buses · 45 Seats · Changwon · Jinju · Gimhae</p>
+              <p class="sp-spotlight-desc" data-lang="ko">개막전(3.28)부터 30경기 무료 운행. 창원·진해·마산·진주·김해에서 창원NC파크까지 직행. 경기 5일 전 오전 11시 예약 오픈 — 선착순 마감.</p>
+              <p class="sp-spotlight-desc" data-lang="en" hidden>Free shuttle for 30 match days from Opening Day (Mar 28). Direct service from Changwon, Jinhae, Masan, Jinju, and Gimhae. Booking opens 5 days before each game at 11:00 AM — first come, first served.</p>
+              <a href="changwon-nc/" class="sp-spotlight-cta sp-spotlight-cta--baseball" data-lang="ko">노선 안내 &amp; 예약 →</a>
+              <a href="changwon-nc/" class="sp-spotlight-cta sp-spotlight-cta--baseball" data-lang="en" hidden>Routes &amp; Booking →</a>
+            </div>
+
+            <!-- Slide 1: GTWS -->
+            <div class="sp-carousel-content">
+              <div class="sp-spotlight-meta">
+                <span class="sp-spotlight-tag">SPOTLIGHT</span>
+                <span class="sp-spotlight-date" data-lang="ko">OCT 24, 2026 · 무주 덕유산</span>
+                <span class="sp-spotlight-date" data-lang="en" hidden>OCT 24, 2026 · Muju Deogyusan</span>
+              </div>
+              <h2 class="sp-spotlight-title" data-lang="ko">GTWS<br>그랜드 파이널 2026</h2>
+              <h2 class="sp-spotlight-title" data-lang="en" hidden>GTWS<br>Grand Final 2026</h2>
+              <p class="sp-spotlight-subtitle">Golden Trail World Series · Stitched By Strides</p>
+              <p class="sp-spotlight-desc" data-lang="ko">한국에서 처음으로 열리는 세계 최고의 트레일러닝 축제. 가을빛으로 물든 덕유산의 경이로운 대자연 속에서 — 7개 컨티넨탈 레이스를 통과한 정상급 러너 30인의 마지막 무대에 라이더스가 함께합니다.</p>
+              <p class="sp-spotlight-desc" data-lang="en" hidden>Korea's first-ever stage of the world's top trail running festival. In the breathtaking autumn beauty of Mt. Deogyusan — Rideus stands with the 30 elite runners crowned through 7 continental races.</p>
+              <a href="gtws-muju/" class="sp-spotlight-cta" data-lang="ko">참가·관람객 셔틀 문의 →</a>
+              <a href="gtws-muju/" class="sp-spotlight-cta" data-lang="en" hidden>Runner &amp; Spectator Shuttle Inquiry →</a>
+            </div>
+
+          </div><!-- /.sp-carousel-body -->
+
+          <!-- 화살표 — 카드 전체 하단 중앙 -->
+          <div class="sp-carousel-btns" aria-label="슬라이드 탐색">
+            <button class="sp-carousel-btn sp-carousel-prev" aria-label="이전 슬라이드">
+              <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
+            </button>
+            <button class="sp-carousel-btn sp-carousel-next" aria-label="다음 슬라이드">
+              <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
+            </button>
+          </div>
+
+        </div><!-- /.sp-spotlight-card -->
+
+        <!-- Carousel Controls (dots) -->
+        <div class="sp-carousel-nav" aria-label="슬라이드 탐색">
+          <button class="sp-carousel-dot active" data-index="0" aria-label="NC 다이노스 셔틀 슬라이드"></button>
+          <button class="sp-carousel-dot" data-index="1" aria-label="GTWS 그랜드 파이널 슬라이드"></button>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ============================================================
+       MAJOR VENUES
+       ============================================================ -->
+  <section class="ap-routes sp-venues" id="venues">
+    <div class="container">
+
+      <!-- Sports view header -->
+      <div class="sp-section-header" data-view="sports">
+        <span class="section-overline">Permanent Venues</span>
+        <h2 class="ap-routes-title" data-lang="ko">주요 경기장 상시 운영</h2>
+        <h2 class="ap-routes-title" data-lang="en" hidden>Major Venues · Year-round Service</h2>
+      </div>
+
+      <!-- Esports view header -->
+      <div class="sp-section-header" data-view="esports">
+        <span class="section-overline">E-Sports Venues</span>
+        <h2 class="ap-routes-title" data-lang="ko">e스포츠 주요 경기장</h2>
+        <h2 class="ap-routes-title" data-lang="en" hidden>Major E-Sports Venues</h2>
+      </div>
+
+      <div class="ap-routes-grid stagger-children">
+
+        <a href="jamsil/" class="ap-route-card" data-view="sports">
+          <div class="ap-route-img">
+            <img width="1200" height="468" src="images/venue_jamsil.webp" alt="잠실야구장" loading="lazy" decoding="async">
+            <div class="ap-route-badges">
+              <span class="ap-badge sp-badge sp-badge--baseball">BASEBALL</span>
+              <span class="ap-badge ap-badge--airport"><span data-lang="ko">송파</span><span data-lang="en" hidden>Songpa</span></span>
+            </div>
+          </div>
+          <div class="ap-route-body">
+            <h3 class="ap-route-name"><span data-lang="ko">잠실야구장</span><span data-lang="en" hidden>Jamsil Baseball Stadium</span></h3>
+            <p class="ap-route-desc"><span data-lang="ko">25,553석 · 한국 프로야구의 심장 · 2026 마지막 시즌</span><span data-lang="en" hidden>25,553 seats · Heart of Korean Baseball · Final Season 2026</span></p>
+            <div class="ap-route-meta">
+              <span><span data-lang="ko">LG · 두산 홈</span><span data-lang="en" hidden>LG · Doosan Home</span></span>
+              <span><span data-lang="ko">상시 운행</span><span data-lang="en" hidden>Year-round</span></span>
+            </div>
+            <div class="ap-route-price"><span data-lang="ko">상세보기 →</span><span data-lang="en" hidden>View Details →</span></div>
+          </div>
+        </a>
+
+        <a href="gocheok-skydome/" class="ap-route-card" data-view="sports">
+          <div class="ap-route-img">
+            <img width="1000" height="540" src="images/venue_gocheok.webp" alt="고척스카이돔" loading="lazy" decoding="async">
+            <div class="ap-route-badges">
+              <span class="ap-badge sp-badge sp-badge--baseball">BASEBALL</span>
+              <span class="ap-badge ap-badge--airport"><span data-lang="ko">구로</span><span data-lang="en" hidden>Guro</span></span>
+            </div>
+          </div>
+          <div class="ap-route-body">
+            <h3 class="ap-route-name"><span data-lang="ko">고척스카이돔</span><span data-lang="en" hidden>Gocheok Sky Dome</span></h3>
+            <p class="ap-route-desc"><span data-lang="ko">16,783석 · 국내 최초 돔구장 · 날씨 무관 경기</span><span data-lang="en" hidden>16,783 seats · Korea's First Dome · All-weather Games</span></p>
+            <div class="ap-route-meta">
+              <span><span data-lang="ko">키움 히어로즈 홈</span><span data-lang="en" hidden>Kiwoom Heroes Home</span></span>
+              <span><span data-lang="ko">상시 운행</span><span data-lang="en" hidden>Year-round</span></span>
+            </div>
+            <div class="ap-route-price"><span data-lang="ko">상세보기 →</span><span data-lang="en" hidden>View Details →</span></div>
+          </div>
+        </a>
+
+        <a href="seoul-worldcup/" class="ap-route-card" data-view="sports">
+          <div class="ap-route-img">
+            <img width="1000" height="658" src="images/venue_seoul_wc.webp" alt="서울월드컵경기장" loading="lazy" decoding="async">
+            <div class="ap-route-badges">
+              <span class="ap-badge sp-badge sp-badge--football">FOOTBALL</span>
+              <span class="ap-badge ap-badge--airport"><span data-lang="ko">마포</span><span data-lang="en" hidden>Mapo</span></span>
+            </div>
+          </div>
+          <div class="ap-route-body">
+            <h3 class="ap-route-name"><span data-lang="ko">서울월드컵경기장</span><span data-lang="en" hidden>Seoul World Cup Stadium</span></h3>
+            <p class="ap-route-desc"><span data-lang="ko">66,704석 · 국내 최대 · 2002 월드컵의 전설</span><span data-lang="en" hidden>66,704 seats · Largest in Korea · 2002 World Cup Legend</span></p>
+            <div class="ap-route-meta">
+              <span><span data-lang="ko">FC 서울 홈</span><span data-lang="en" hidden>FC Seoul Home</span></span>
+              <span><span data-lang="ko">상시 운행</span><span data-lang="en" hidden>Year-round</span></span>
+            </div>
+            <div class="ap-route-price"><span data-lang="ko">상세보기 →</span><span data-lang="en" hidden>View Details →</span></div>
+          </div>
+        </a>
+
+        <a href="suwon-ktwiz/" class="ap-route-card" data-view="sports">
+          <div class="ap-route-img">
+            <img width="1000" height="482" src="images/venue_suwon_kt.webp" alt="수원KT위즈파크" loading="lazy" decoding="async">
+            <div class="ap-route-badges">
+              <span class="ap-badge sp-badge sp-badge--baseball">BASEBALL</span>
+              <span class="ap-badge ap-badge--airport"><span data-lang="ko">수원</span><span data-lang="en" hidden>Suwon</span></span>
+            </div>
+          </div>
+          <div class="ap-route-body">
+            <h3 class="ap-route-name"><span data-lang="ko">수원KT위즈파크</span><span data-lang="en" hidden>Suwon KT Wiz Park</span></h3>
+            <p class="ap-route-desc"><span data-lang="ko">22,067석 · 경기도 대표 야구장</span><span data-lang="en" hidden>22,067 seats · Gyeonggi's Premier Baseball Stadium</span></p>
+            <div class="ap-route-meta">
+              <span><span data-lang="ko">KT 위즈 홈</span><span data-lang="en" hidden>KT Wiz Home</span></span>
+              <span><span data-lang="ko">서울 약 50분</span><span data-lang="en" hidden>~50 min from Seoul</span></span>
+            </div>
+            <div class="ap-route-price"><span data-lang="ko">상세보기 →</span><span data-lang="en" hidden>View Details →</span></div>
+          </div>
+        </a>
+
+        <a href="incheon-ssg/" class="ap-route-card" data-view="sports">
+          <div class="ap-route-img">
+            <img width="600" height="380" src="images/venue_incheon_ssg.webp" alt="인천SSG랜더스필드" loading="lazy" decoding="async">
+            <div class="ap-route-badges">
+              <span class="ap-badge sp-badge sp-badge--baseball">BASEBALL</span>
+              <span class="ap-badge ap-badge--airport"><span data-lang="ko">인천</span><span data-lang="en" hidden>Incheon</span></span>
+            </div>
+          </div>
+          <div class="ap-route-body">
+            <h3 class="ap-route-name"><span data-lang="ko">인천SSG랜더스필드</span><span data-lang="en" hidden>Incheon SSG Landers Field</span></h3>
+            <p class="ap-route-desc"><span data-lang="ko">27,500석 · 인천 연고 프로야구장</span><span data-lang="en" hidden>27,500 seats · Incheon's Home Baseball Stadium</span></p>
+            <div class="ap-route-meta">
+              <span><span data-lang="ko">SSG 랜더스 홈</span><span data-lang="en" hidden>SSG Landers Home</span></span>
+              <span><span data-lang="ko">서울 약 1시간</span><span data-lang="en" hidden>~1 hr from Seoul</span></span>
+            </div>
+            <div class="ap-route-price"><span data-lang="ko">상세보기 →</span><span data-lang="en" hidden>View Details →</span></div>
+          </div>
+        </a>
+
+        <a href="../event/kspo-dome/" class="ap-route-card" data-view="sports">
+          <div class="ap-route-img">
+            <img width="647" height="431" src="../assets/ev_venue_kspo.webp" alt="KSPO DOME" loading="lazy" decoding="async">
+            <div class="ap-route-badges">
+              <span class="ap-badge sp-badge sp-badge--multi">MULTI</span>
+              <span class="ap-badge ap-badge--airport"><span data-lang="ko">송파</span><span data-lang="en" hidden>Songpa</span></span>
+            </div>
+          </div>
+          <div class="ap-route-body">
+            <h3 class="ap-route-name">KSPO DOME</h3>
+            <p class="ap-route-desc"><span data-lang="ko">15,000석 · e스포츠 · 배구 · 농구</span><span data-lang="en" hidden>15,000 seats · E-Sports · Volleyball · Basketball</span></p>
+            <div class="ap-route-meta">
+              <span><span data-lang="ko">올림픽공원</span><span data-lang="en" hidden>Olympic Park</span></span>
+              <span><span data-lang="ko">상시 운행</span><span data-lang="en" hidden>Year-round</span></span>
+            </div>
+            <div class="ap-route-price"><span data-lang="ko">공연·이벤트 페이지로 →</span><span data-lang="en" hidden>Events Page →</span></div>
+          </div>
+        </a>
+
+        <a href="changwon-nc/" class="ap-route-card" data-view="sports">
+          <div class="ap-route-img">
+            <img width="1920" height="1280" src="images/hero_baseball.webp" alt="창원NC파크" loading="lazy" decoding="async">
+            <div class="ap-route-badges">
+              <span class="ap-badge sp-badge sp-badge--baseball">BASEBALL</span>
+              <span class="ap-badge ap-badge--airport"><span data-lang="ko">창원</span><span data-lang="en" hidden>Changwon</span></span>
+            </div>
+          </div>
+          <div class="ap-route-body">
+            <h3 class="ap-route-name"><span data-lang="ko">창원NC파크</span><span data-lang="en" hidden>Changwon NC Park</span></h3>
+            <p class="ap-route-desc"><span data-lang="ko">22,000석 · NC 다이노스 홈 · 경남 대표 야구장</span><span data-lang="en" hidden>22,000 seats · NC Dinos Home · Gyeongnam's Premier Ballpark</span></p>
+            <div class="ap-route-meta">
+              <span><span data-lang="ko">NC 다이노스 홈</span><span data-lang="en" hidden>NC Dinos Home</span></span>
+              <span><span data-lang="ko">서울 약 3시간</span><span data-lang="en" hidden>~3 hr from Seoul</span></span>
+            </div>
+            <div class="ap-route-price"><span data-lang="ko">상세보기 →</span><span data-lang="en" hidden>View Details →</span></div>
+          </div>
+        </a>
+
+        <a href="busan-asiad/" class="ap-route-card" data-view="sports">
+          <div class="ap-route-img">
+            <img width="1200" height="675" src="images/venue_busan_asiad.webp" alt="부산 아시아드CC" loading="lazy" decoding="async">
+            <div class="ap-route-badges">
+              <span class="ap-badge sp-badge sp-badge--golf">GOLF</span>
+              <span class="ap-badge ap-badge--airport"><span data-lang="ko">부산</span><span data-lang="en" hidden>Busan</span></span>
+            </div>
+          </div>
+          <div class="ap-route-body">
+            <h3 class="ap-route-name"><span data-lang="ko">부산 아시아드 컨트리클럽</span><span data-lang="en" hidden>Busan Asiad Country Club</span></h3>
+            <p class="ap-route-desc"><span data-lang="ko">27홀 · LIV Golf Korea 2026 공식 코스</span><span data-lang="en" hidden>27 holes · Official Course — LIV Golf Korea 2026</span></p>
+            <div class="ap-route-meta">
+              <span><span data-lang="ko">기장군 일광</span><span data-lang="en" hidden>Ilgwang, Gijang-gun</span></span>
+              <span><span data-lang="ko">LIV Golf 2026.5.28~31</span><span data-lang="en" hidden>LIV Golf May 28–31, 2026</span></span>
+            </div>
+            <div class="ap-route-price"><span data-lang="ko">상세보기 →</span><span data-lang="en" hidden>View Details →</span></div>
+          </div>
+        </a>
+
+        <!-- E-SPORTS VENUES -->
+        <a href="../event/kspo-dome/" class="ap-route-card" data-view="esports">
+          <div class="ap-route-img">
+            <img width="647" height="431" src="../assets/ev_venue_kspo.webp" alt="KSPO DOME" loading="lazy" decoding="async">
+            <div class="ap-route-badges">
+              <span class="ap-badge sp-badge sp-badge--esports">ESPORTS</span>
+              <span class="ap-badge ap-badge--airport"><span data-lang="ko">송파</span><span data-lang="en" hidden>Songpa</span></span>
+            </div>
+          </div>
+          <div class="ap-route-body">
+            <h3 class="ap-route-name">KSPO DOME</h3>
+            <p class="ap-route-desc"><span data-lang="ko">15,000석 · LCK 결승 · 국제 e스포츠 대회</span><span data-lang="en" hidden>15,000 seats · LCK Finals · International E-Sports Events</span></p>
+            <div class="ap-route-meta">
+              <span><span data-lang="ko">올림픽공원</span><span data-lang="en" hidden>Olympic Park</span></span>
+              <span><span data-lang="ko">해외 팬 대상 서비스</span><span data-lang="en" hidden>Service for International Fans</span></span>
+            </div>
+            <div class="ap-route-price"><span data-lang="ko">상세보기 →</span><span data-lang="en" hidden>View Details →</span></div>
+          </div>
+        </a>
+
+        <a href="/event/inspire-arena/" class="ap-route-card" data-view="esports">
+          <div class="ap-route-img">
+            <img width="940" height="627" src="/assets/ev_venue_inspire.webp" alt="인스파이어 아레나" loading="lazy" decoding="async">
+            <div class="ap-route-badges">
+              <span class="ap-badge sp-badge sp-badge--esports">ESPORTS</span>
+              <span class="ap-badge ap-badge--airport">영종도</span>
+            </div>
+          </div>
+          <div class="ap-route-body">
+            <h3 class="ap-route-name"><span data-lang="ko">인스파이어 아레나</span><span data-lang="en" hidden>Inspire Arena</span></h3>
+            <p class="ap-route-desc"><span data-lang="ko">15,000석 · LCK 2026 정규시즌 · 공연·이벤트 다목적 아레나</span><span data-lang="en" hidden>15,000 seats · LCK 2026 Season · Multi-purpose Performance Arena</span></p>
+            <div class="ap-route-meta">
+              <span><span data-lang="ko">인천 영종도</span><span data-lang="en" hidden>Incheon Yeongjongdo</span></span>
+              <span><span data-lang="ko">4월 LCK 개최지</span><span data-lang="en" hidden>April LCK Venue</span></span>
+            </div>
+            <div class="ap-route-price"><span data-lang="ko">공연·이벤트 페이지로 →</span><span data-lang="en" hidden>Events Page →</span></div>
+          </div>
+        </a>
+
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ============================================================
+       SERVICE CARDS — 스포츠 이동, 더 쉽게 준비하세요
+       ============================================================ -->
+  <section class="ap-routes sp-services">
+    <div class="container">
+      <div class="sp-section-header sp-section-header--center">
+        <span class="section-overline">Service Options</span>
+        <h2 class="ap-routes-title sp-services-title" data-lang="ko">스포츠 이동, 더 쉽게 준비하세요</h2>
+        <h2 class="ap-routes-title sp-services-title" data-lang="en" hidden>Game Day, Made Easy</h2>
+      </div>
+      <div class="sp-service-grid">
+
+        <div class="sp-service-card">
+          <div class="sp-service-card-icon sp-service-card-icon--football">
+            <svg aria-hidden="true" width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="var(--sp-cat-football)" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+          </div>
+          <h3 class="sp-service-card-title" data-lang="ko">경기 맞춤 배차</h3>
+          <h3 class="sp-service-card-title" data-lang="en" hidden>Game-timed Dispatch</h3>
+          <ul class="sp-service-card-list" data-lang="ko">
+            <li><span class="sp-service-card-bullet--football">·</span> 경기 시간 연동 출발</li>
+            <li><span class="sp-service-card-bullet--football">·</span> 종료 후 즉시 탑승</li>
+            <li><span class="sp-service-card-bullet--football">·</span> 심야 운행 가능</li>
+          </ul>
+          <ul class="sp-service-card-list" data-lang="en" hidden>
+            <li><span class="sp-service-card-bullet--football">·</span> Departures synced with kickoff</li>
+            <li><span class="sp-service-card-bullet--football">·</span> Board immediately after the game</li>
+            <li><span class="sp-service-card-bullet--football">·</span> Late-night service available</li>
+          </ul>
+        </div>
+
+        <div class="sp-service-card">
+          <div class="sp-service-card-icon sp-service-card-icon--baseball">
+            <svg aria-hidden="true" width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="var(--sp-cat-baseball)" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+          </div>
+          <h3 class="sp-service-card-title" data-lang="ko">프라이빗 의전</h3>
+          <h3 class="sp-service-card-title" data-lang="en" hidden>Private Transfer</h3>
+          <ul class="sp-service-card-list" data-lang="ko">
+            <li><span class="sp-service-card-bullet--baseball">·</span> Door-to-Door</li>
+            <li><span class="sp-service-card-bullet--baseball">·</span> 전담 기사 배정</li>
+            <li><span class="sp-service-card-bullet--baseball">·</span> VIP 차량 선택</li>
+          </ul>
+          <ul class="sp-service-card-list" data-lang="en" hidden>
+            <li><span class="sp-service-card-bullet--baseball">·</span> Door-to-Door</li>
+            <li><span class="sp-service-card-bullet--baseball">·</span> Dedicated driver assigned</li>
+            <li><span class="sp-service-card-bullet--baseball">·</span> VIP vehicle selection</li>
+          </ul>
+        </div>
+
+        <div class="sp-service-card">
+          <div class="sp-service-card-icon sp-service-card-icon--volleyball">
+            <svg aria-hidden="true" width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="var(--sp-cat-volleyball)" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+          </div>
+          <h3 class="sp-service-card-title" data-lang="ko">안심 귀가</h3>
+          <h3 class="sp-service-card-title" data-lang="en" hidden>Safe Return</h3>
+          <ul class="sp-service-card-list" data-lang="ko">
+            <li><span class="sp-service-card-bullet--volleyball">·</span> 심야 전용 운행</li>
+            <li><span class="sp-service-card-bullet--volleyball">·</span> 전문 기사 안전 운행</li>
+            <li><span class="sp-service-card-bullet--volleyball">·</span> 실시간 위치 공유</li>
+          </ul>
+          <ul class="sp-service-card-list" data-lang="en" hidden>
+            <li><span class="sp-service-card-bullet--volleyball">·</span> Late-night dedicated service</li>
+            <li><span class="sp-service-card-bullet--volleyball">·</span> Experienced professional drivers</li>
+            <li><span class="sp-service-card-bullet--volleyball">·</span> Real-time location sharing</li>
+          </ul>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ============================================================
+       OVERSEAS BANNER — 해외 원정 응원 → 공항 셔틀 유도
+       ============================================================ -->
+  <section class="sp-overseas-banner">
+    <div class="container">
+      <div class="sp-overseas-card">
+        <div class="sp-overseas-media">
+          <img width="1600" height="900" src="images/banner_overseas_cheer.webp" alt="해외 원정 응원하는 한국 팬">
+        </div>
+        <div class="sp-overseas-body">
+          <span class="sp-overseas-overline">Going Overseas?</span>
+          <h2 class="sp-overseas-title" data-lang="ko">해외 원정 응원,<br>라이더스가 함께 합니다</h2>
+          <h2 class="sp-overseas-title" data-lang="en" hidden>Going Abroad to Cheer?<br>Rideus Has You Covered</h2>
+          <p class="sp-overseas-desc" data-lang="ko">월드컵·올림픽·그랑프리 — 인천·김포공항 셔틀부터 50개국 450개 공항의 현지 파트너 네트워크까지, 원정 응원의 처음과 끝을 책임집니다.</p>
+          <p class="sp-overseas-desc" data-lang="en" hidden>World Cup · Olympics · Grand Prix — from Incheon/Gimpo airport shuttles to our local partner network across 450 airports in 50 countries, we cover every step of your overseas journey.</p>
+          <a href="../airport/" class="sp-overseas-cta" data-lang="ko">공항·항만 이동 안내 →</a>
+          <a href="../airport/" class="sp-overseas-cta" data-lang="en" hidden>Airport &amp; Port Transfer Info →</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ============================================================
+       SHUTTLE INQUIRY
+       ============================================================ -->
+  <section class="ev-inquiry" id="inquiry" aria-labelledby="spInquiryTitle">
+    <div class="container">
+      <div class="ev-inquiry-inner">
+
+        <div class="ev-inquiry-header reveal">
+          <span class="section-overline">Shuttle Inquiry</span>
+          <h2 class="ev-inquiry-title" id="spInquiryTitle">
+            <span data-lang="ko">경기장 셔틀을 문의하세요</span>
+            <span data-lang="en" hidden>Request a Shuttle to the Stadium</span>
+          </h2>
+          <p class="ev-inquiry-desc">
+            <span data-lang="ko">아래 양식을 작성해 주시면 24시간 이내에 맞춤 셔틀 안내를 드립니다.</span>
+            <span data-lang="en" hidden>Fill in the form below and we will contact you within 24 hours.</span>
+          </p>
+        </div>
+
+        <form class="ev-inquiry-form reveal" id="spInquiryForm" novalidate>
+
+          <div class="ev-inquiry-field">
+            <label class="inquiry-label" for="spEventName">
+              <span data-lang="ko">경기·대회명</span><span data-lang="en" hidden>Game / Event</span>
+              <span class="inquiry-required">*</span>
+            </label>
+            <input type="text" class="inquiry-input" id="spEventName" name="eventName"
+                   autocomplete="off"
+                   placeholder="예: KBO 개막전 LG vs 두산" data-placeholder-en="e.g. KBO Opening Day LG vs Doosan" required
+                   aria-describedby="spEventNameError">
+            <span class="ev-inquiry-error-msg" id="spEventNameError">
+              <span data-lang="ko">경기·대회명을 입력해 주세요.</span>
+              <span data-lang="en" hidden>Please enter the game or event name.</span>
+            </span>
+          </div>
+
+          <div class="ev-inquiry-field">
+            <label class="inquiry-label" for="spEventDate">
+              <span data-lang="ko">경기 날짜</span><span data-lang="en" hidden>Game Date</span>
+              <span class="inquiry-required">*</span>
+            </label>
+            <input type="date" class="inquiry-input" id="spEventDate" name="eventDate" required
+                   aria-describedby="spEventDateError">
+            <span class="ev-inquiry-error-msg" id="spEventDateError">
+              <span data-lang="ko">날짜를 선택해 주세요.</span>
+              <span data-lang="en" hidden>Please pick a date.</span>
+            </span>
+          </div>
+
+          <div class="ev-inquiry-field ev-inquiry-field--full">
+            <label class="inquiry-label" for="spEventVenue">
+              <span data-lang="ko">경기장</span><span data-lang="en" hidden>Venue</span>
+            </label>
+            <select class="ev-inquiry-select" id="spEventVenue" name="eventVenue">
+              <option value="">선택하세요 / Select</option>
+              <option value="잠실야구장">잠실야구장 / Jamsil Baseball Stadium</option>
+              <option value="고척스카이돔">고척스카이돔 / Gocheok Sky Dome</option>
+              <option value="서울월드컵경기장">서울월드컵경기장 / Seoul World Cup Stadium</option>
+              <option value="수원KT위즈파크">수원KT위즈파크 / Suwon KT Wiz Park</option>
+              <option value="인천SSG랜더스필드">인천SSG랜더스필드 / Incheon SSG Landers Field</option>
+              <option value="창원NC파크">창원NC파크 / Changwon NC Park</option>
+              <option value="부산 아시아드 컨트리클럽">부산 아시아드 컨트리클럽 / Busan Asiad CC</option>
+              <option value="KSPO DOME">KSPO DOME</option>
+              <option value="기타">기타 / Other</option>
+            </select>
+            <input type="text" class="inquiry-input ev-inquiry-venue-other" id="spEventVenueOther"
+                   name="eventVenueOther"
+                   autocomplete="off"
+                   placeholder="경기장을 직접 입력해 주세요 / Enter venue">
+          </div>
+
+          <div class="ev-inquiry-field">
+            <label class="inquiry-label" for="spGroupSize">
+              <span data-lang="ko">인원</span><span data-lang="en" hidden>Group size</span>
+              <span class="inquiry-required">*</span>
+            </label>
+            <select class="ev-inquiry-select" id="spGroupSize" name="groupSize" required
+                    aria-describedby="spGroupSizeError">
+              <option value="">선택하세요 / Select</option>
+              <option value="1">1명 / 1 person</option>
+              <option value="2">2명 / 2 people</option>
+              <option value="3-4">3-4명 / 3-4 people</option>
+              <option value="5-9">5-9명 / 5-9 people</option>
+              <option value="10-19">10-19명 / 10-19 people</option>
+              <option value="20+">20명 이상 / 20+ people</option>
+            </select>
+            <span class="ev-inquiry-error-msg" id="spGroupSizeError">
+              <span data-lang="ko">인원을 선택해 주세요.</span>
+              <span data-lang="en" hidden>Please select a group size.</span>
+            </span>
+          </div>
+
+          <div class="ev-inquiry-field">
+            <label class="inquiry-label" for="spDeparture">
+              <span data-lang="ko">출발지</span><span data-lang="en" hidden>Departure</span>
+            </label>
+            <input type="text" class="inquiry-input" id="spDeparture" name="departure"
+                   autocomplete="off"
+                   placeholder="예: 서울역, 강남역" data-placeholder-en="e.g. Seoul Station, Gangnam Station">
+          </div>
+
+          <div class="ev-inquiry-field">
+            <label class="inquiry-label" for="spPhone">
+              <span data-lang="ko">연락처</span><span data-lang="en" hidden>Contact</span>
+              <span class="inquiry-required">*</span>
+            </label>
+            <input type="tel" class="inquiry-input" id="spPhone" name="phone"
+                   autocomplete="tel" inputmode="tel" spellcheck="false"
+                   placeholder="010-0000-0000" required
+                   pattern="[0-9\-+ ]{9,20}"
+                   aria-describedby="spPhoneError">
+            <span class="ev-inquiry-error-msg" id="spPhoneError">
+              <span data-lang="ko">연락처를 올바르게 입력해 주세요.</span>
+              <span data-lang="en" hidden>Please enter a valid phone number.</span>
+            </span>
+          </div>
+
+          <div class="ev-inquiry-field ev-inquiry-field--full">
+            <label class="inquiry-label" for="spMemo">
+              <span data-lang="ko">메모</span><span data-lang="en" hidden>Notes</span>
+            </label>
+            <textarea class="inquiry-textarea" id="spMemo" name="memo" rows="4"
+                      placeholder="추가 요청사항이 있으시면 입력해 주세요." data-placeholder-en="Any special requests or notes"></textarea>
+          </div>
+
+          <div class="ev-inquiry-consent ev-inquiry-field--full">
+            <input type="checkbox" id="spPrivacyConsent" name="privacyConsent" required
+                   aria-describedby="spPrivacyConsentError">
+            <label for="spPrivacyConsent">
+              <span class="required"><span data-lang="ko">(필수)</span><span data-lang="en" hidden>(Required)</span></span>
+              <span data-lang="ko">개인정보 수집·이용에 동의합니다.</span>
+              <span data-lang="en" hidden>I agree to the collection and use of my personal information.</span>
+              <details>
+                <summary>
+                  <span data-lang="ko">자세히 보기</span>
+                  <span data-lang="en" hidden>View details</span>
+                </summary>
+                <p data-lang="ko">수집 항목: 이름·연락처·문의 내용. 이용 목적: 셔틀 문의 응대 및 안내. 보유 기간: 문의 종료 후 6개월. 귀하는 동의를 거부할 권리가 있으며, 거부 시 문의 응대가 제한될 수 있습니다.</p>
+                <p data-lang="en" hidden>Collected: name, contact, inquiry content. Purpose: shuttle inquiry response. Retention: 6 months after inquiry closure. You may refuse consent, in which case our response may be limited.</p>
+              </details>
+            </label>
+          </div>
+
+          <div class="ev-inquiry-submit-row ev-inquiry-field--full">
+            <button type="submit" class="ev-inquiry-submit-btn" id="spInquirySubmit">
+              <span data-lang="ko">셔틀 문의 제출</span>
+              <span data-lang="en" hidden>Submit Inquiry</span>
+            </button>
+            <p class="ev-inquiry-note">
+              <span data-lang="ko">접수 후 24시간 이내 카카오톡 또는 전화로 안내드립니다.</span>
+              <span data-lang="en" hidden>We will contact you within 24 hours via KakaoTalk or phone.</span>
+            </p>
+          </div>
+
+          <!-- Success state -->
+          <div class="ev-inquiry-success" id="spInquirySuccess" role="status" aria-live="polite">
+            <div class="ev-inquiry-success-icon" aria-hidden="true">
+              <svg aria-hidden="true" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M20 6L9 17l-5-5"/>
+              </svg>
+            </div>
+            <h3 class="ev-inquiry-success-title">
+              <span data-lang="ko">문의가 접수되었습니다</span>
+              <span data-lang="en" hidden>Inquiry received</span>
+            </h3>
+            <p class="ev-inquiry-success-desc">
+              <span data-lang="ko">24시간 이내에 카카오톡 또는 전화로 연락드리겠습니다.<br>감사합니다.</span>
+              <span data-lang="en" hidden>We will contact you within 24 hours via KakaoTalk or phone.<br>Thank you.</span>
+            </p>
+            <button type="button" class="ev-inquiry-success-reset" id="spInquiryReset">
+              <span data-lang="ko">다시 작성하기</span>
+              <span data-lang="en" hidden>Write again</span>
+            </button>
+          </div>
+
+        </form>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- Shared footer -->
+
+  </main>
+
+  <div data-include="footer"></div>
+
+
+  <!-- Scripts -->
+  <script src="../js/includes.js?v=20260427"></script>
+  <script src="../js/main.js?v=20260427"></script>
+  <script>
+    // Reveal fallback — force visible after 1s if observer didn't trigger
+    setTimeout(function(){
+      document.body.classList.add('sports-page-loaded');
+    }, 1000);
+
+    // View tabs: Sports / Esports switcher
+    (function(){
+      var tabs = document.querySelectorAll('.sp-view-tab');
+      if (!tabs.length) return;
+
+      function setView(view){
+        document.body.classList.remove('view-sports', 'view-esports');
+        document.body.classList.add('view-' + view);
+        tabs.forEach(function(t){
+          t.classList.toggle('active', t.getAttribute('data-view-tab') === view);
+        });
+        // Reset first visible hero slide
+        var visibleSlides = document.querySelectorAll('.hero-slide[data-view="' + view + '"]');
+        document.querySelectorAll('.hero-slide').forEach(function(s){ s.classList.remove('active'); });
+        if (visibleSlides[0]) visibleSlides[0].classList.add('active');
+      }
+
+      tabs.forEach(function(tab){
+        tab.addEventListener('click', function(){
+          setView(tab.getAttribute('data-view-tab'));
+        });
+      });
+    })();
+
+    // Hero slideshow: handled by js/main.js (visibleSlides filter skips
+    // display:none slides, so view-swap via body.view-sports/view-esports
+    // naturally filters sports/esports image sets)
+
+    // Schedule filter: Sport type tabs only
+    (function(){
+      var tickets = Array.prototype.slice.call(document.querySelectorAll('.sp-ticket'));
+      if (!tickets.length) return;
+
+      var tabs = document.querySelectorAll('#spTypeTabs .sp-type-tab');
+      var emptyState = document.getElementById('spEmptyState');
+      var currentType = 'baseball';
+
+      function render(){
+        var visibleCount = 0;
+        tickets.forEach(function(t){
+          var ty = t.getAttribute('data-type');
+          var match = (currentType === 'all' || ty === currentType);
+          if (match) {
+            t.classList.remove('is-hidden');
+            visibleCount++;
+          } else {
+            t.classList.add('is-hidden');
+          }
+        });
+        if (visibleCount === 0) emptyState.classList.add('visible');
+        else emptyState.classList.remove('visible');
+      }
+
+      tabs.forEach(function(tab){
+        tab.addEventListener('click', function(){
+          tabs.forEach(function(t){ t.classList.remove('active'); });
+          tab.classList.add('active');
+          currentType = tab.getAttribute('data-type');
+          render();
+        });
+      });
+
+      render();
+    })();
+
+    // Spotlight Carousel — slide transition (JS 전담 transform 제어)
+    (function(){
+      var carousel = document.getElementById('spotlightCarousel');
+      if (!carousel) return;
+      var imgs     = carousel.querySelectorAll('.sp-carousel-img');
+      var contents = carousel.querySelectorAll('.sp-carousel-content');
+      var dots     = carousel.querySelectorAll('.sp-carousel-dot');
+      var current  = 0;
+      var total    = dots.length;
+      var timer;
+      var sliding  = false;
+      var EASE     = 'transform 0.55s cubic-bezier(0.25, 0.46, 0.45, 0.94)';
+
+      var EASE_FADE = 'transform 0.55s cubic-bezier(0.25, 0.46, 0.45, 0.94), opacity 0.45s ease';
+
+      // 초기 위치 설정 (슬라이드 0 = 보임, 나머지 = 오른쪽 대기)
+      imgs.forEach(function(img, i) {
+        img.style.transform = i === 0 ? 'translateX(0)' : 'translateX(100%)';
+      });
+      contents.forEach(function(c, i) {
+        c.style.transform = i === 0 ? 'translateX(0)' : 'translateX(100%)';
+        c.style.opacity   = i === 0 ? '1' : '0';
+      });
+
+      function goTo(idx) {
+        if (sliding) return;
+        var next = (idx + total) % total;
+        if (next === current) return;
+        sliding = true;
+
+        var isForward = (next > current) || (current === total - 1 && next === 0);
+        var enterFrom = isForward ? '100%' : '-100%';
+        var exitTo    = isForward ? '-100%' : '100%';
+
+        // 이미지: 진입 위치 순간이동 (no transition)
+        imgs[next].style.transition = 'none';
+        imgs[next].style.transform  = 'translateX(' + enterFrom + ')';
+
+        // 콘텐츠: 진입 위치 + 투명 (no transition)
+        contents[next].style.transition = 'none';
+        contents[next].style.transform  = 'translateX(' + enterFrom + ')';
+        contents[next].style.opacity    = '0';
+
+        imgs[next].offsetHeight; // reflow
+
+        // 이미지: 순수 슬라이드
+        imgs[next].style.transition    = EASE;
+        imgs[next].style.transform     = 'translateX(0)';
+        imgs[current].style.transition = EASE;
+        imgs[current].style.transform  = 'translateX(' + exitTo + ')';
+
+        // 콘텐츠: 슬라이드 + 페이드인
+        contents[next].style.transition = EASE_FADE;
+        contents[next].style.transform  = 'translateX(0)';
+        contents[next].style.opacity    = '1';
+
+        // 콘텐츠: 슬라이드 + 페이드아웃
+        contents[current].style.transition = EASE_FADE;
+        contents[current].style.transform  = 'translateX(' + exitTo + ')';
+        contents[current].style.opacity    = '0';
+
+        // 포인터 및 dot 상태
+        contents[current].classList.remove('active');
+        contents[next].classList.add('active');
+        dots[current].classList.remove('active');
+        dots[next].classList.add('active');
+
+        current = next;
+
+        setTimeout(function() {
+          // 나간 슬라이드 대기 위치 초기화
+          imgs.forEach(function(el, i) {
+            if (i !== current) { el.style.transition = 'none'; el.style.transform = 'translateX(100%)'; }
+          });
+          contents.forEach(function(el, i) {
+            if (i !== current) {
+              el.style.transition = 'none';
+              el.style.transform  = 'translateX(100%)';
+              el.style.opacity    = '0';
+            }
+          });
+          sliding = false;
+        }, 600);
+      }
+
+      function startAuto(){
+        clearInterval(timer);
+        timer = setInterval(function(){ goTo(current + 1); }, 6000);
+      }
+
+      dots.forEach(function(dot){
+        dot.addEventListener('click', function(){
+          goTo(parseInt(dot.getAttribute('data-index'), 10));
+          startAuto();
+        });
+      });
+
+      var prevBtn = carousel.querySelector('.sp-carousel-prev');
+      var nextBtn = carousel.querySelector('.sp-carousel-next');
+      if (prevBtn) prevBtn.addEventListener('click', function(){ goTo(current - 1); startAuto(); });
+      if (nextBtn) nextBtn.addEventListener('click', function(){ goTo(current + 1); startAuto(); });
+
+      startAuto();
+    })();
+  </script>
+</body>
+</html>

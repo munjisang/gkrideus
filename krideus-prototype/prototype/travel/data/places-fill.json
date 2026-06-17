@@ -1,0 +1,50 @@
+[
+  {
+    "slug": "seoul_city",
+    "card": "서울 시티투어",
+    "kto_title": "경복궁",
+    "image": "https://tong.visitkorea.or.kr/cms/resource/98/3487598_image2_1.jpg",
+    "mapx": "126.97672186606306",
+    "mapy": "37.576030700049394"
+  },
+  {
+    "slug": "gyeongju_city",
+    "card": "경주 역사 시티투어",
+    "kto_title": "경주 불국사 [유네스코 세계유산]",
+    "image": "https://tong.visitkorea.or.kr/cms/resource/70/3506170_image2_1.jpg",
+    "mapx": "129.331725391321",
+    "mapy": "35.7923023161251"
+  },
+  {
+    "slug": "myeongdong",
+    "card": "명동·강남 쇼핑투어",
+    "kto_title": "동명동성당",
+    "image": "http://tong.visitkorea.or.kr/cms/resource/98/2792798_image2_1.jpg",
+    "mapx": "128.5958129203",
+    "mapy": "38.2135064568"
+  },
+  {
+    "slug": "busan_city",
+    "card": "부산 시티투어",
+    "kto_title": "해운대해수욕장",
+    "image": "https://tong.visitkorea.or.kr/cms/resource/34/3090534_image2_1.JPG",
+    "mapx": "129.160278564827",
+    "mapy": "35.1590840227225"
+  },
+  {
+    "slug": "jeonju",
+    "card": "전주 한옥마을",
+    "kto_title": "경기전",
+    "image": "http://tong.visitkorea.or.kr/cms/resource/74/3422574_image2_1.jpg",
+    "mapx": "127.1500366062",
+    "mapy": "35.8142143363"
+  },
+  {
+    "slug": "jeju_outlet",
+    "card": "제주 프리미엄 아울렛",
+    "kto_title": "제주신화월드 호텔 앤 리조트 랜딩관",
+    "image": "https://tong.visitkorea.or.kr/cms/resource/61/2561861_image2_1.jpg",
+    "mapx": "126.31973665348082",
+    "mapy": "33.30723203976931"
+  }
+]

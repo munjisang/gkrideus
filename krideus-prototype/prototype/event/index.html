@@ -1,0 +1,838 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>이벤트 — K.Rideus</title>
+<meta name="description" content="콘서트·페스티벌·스포츠. 일정만 있으면 현장까지, 셔틀과 프라이빗으로. K.Rideus 이벤트 이동.">
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+/* ============================================================
+   K.Rideus 이벤트(Event) 허브 — v1
+   구조: 강렬한 공연장 히어로(sticky 패럴럭스) → 올해 이벤트(유형×상태 필터)
+        → 주요 공연장(여행 카드 유사) → 문의 배너(여행 move 유사)
+   톤: 여행 허브 토큰 계승 + 이벤트 라이브 무드(다크 히어로·포스터 카드·시간 긴장감)
+   색 체계: 셔틀=오렌지 · 프라이빗=바이올렛 · 둘다=블루
+   ============================================================ */
+:root{
+  --bg:#FAF8F5;--surface:#FFFEFC;--card:#FFFFFF;
+  --ink:#1B2027;--ink-soft:#5C6675;--ink-faint:#97A0AC;
+  --accent:#2C51DB;--accent-soft:#E4E9FB;
+  --shuttle:#E8632F;--shuttle-soft:#F6E8DC;
+  --private:#5B45B8;--private-soft:#ECE6F7;
+  --hair:#ECE7DF;--hair-soft:#F3EFE8;
+  --shadow:18 24 33;--maxw:1280px;
+  --fd:'Outfit','Pretendard',sans-serif;--fb:'Pretendard',-apple-system,BlinkMacSystemFont,sans-serif;
+  --e-out:cubic-bezier(.16,1,.3,1);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:var(--fb);background:var(--bg);color:var(--ink);line-height:1.4;letter-spacing:-.005em;-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;overflow-x:clip;word-break:keep-all;overflow-wrap:break-word}
+img{max-width:100%;display:block}
+a,button{color:inherit;text-decoration:none;font:inherit}
+button{background:none;border:none;cursor:pointer}
+ul,li{list-style:none}
+.wrap{max-width:var(--maxw);margin:0 auto;padding:0 clamp(24px,4vw,56px)}
+
+/* ---------- Navbar — 다크 히어로 일체화 (최상단 투명+흰 텍스트 / 스크롤 시 글래스+원래 색) ---------- */
+.nav{position:fixed;top:0;left:0;right:0;z-index:60;background:transparent;transition:background .35s var(--e-out);
+  --nav-ink:#fff;--nav-soft:rgba(255,255,255,.78);--nav-faint:rgba(255,255,255,.55);--nav-chip:rgba(255,255,255,.16);--nav-hover:rgba(255,255,255,.14)}
+.nav.is-solid,.nav.is-open{background:color-mix(in srgb, var(--bg) 92%, transparent);backdrop-filter:saturate(140%) blur(12px);-webkit-backdrop-filter:saturate(140%) blur(12px);
+  --nav-ink:var(--ink);--nav-soft:var(--ink-soft);--nav-faint:var(--ink-faint);--nav-chip:var(--hair-soft);--nav-hover:var(--hair-soft)}
+.nav__in{max-width:var(--maxw);margin:0 auto;padding:20px clamp(24px,4vw,56px);display:flex;align-items:center;gap:44px}
+.brand{display:inline-flex;align-items:center}.brand img{height:28px;width:auto;display:block;transition:filter .35s var(--e-out)}
+.nav:not(.is-solid):not(.is-open) .brand img{filter:brightness(0) invert(1)}
+.nav__menu{display:flex;gap:32px;font-size:.95rem;font-weight:500}
+.nav__menu a{color:var(--nav-soft);padding:8px 0;transition:color .25s var(--e-out)}
+.nav__menu a:hover{color:var(--nav-ink)}
+.nav__menu a[aria-current]{color:var(--nav-ink);font-weight:600}
+.nav__right{margin-left:auto;display:flex;align-items:center;gap:8px;color:var(--nav-soft)}
+.nav__lang{display:flex;align-items:center;gap:2px;background:var(--nav-chip);border-radius:999px;padding:4px;font-size:.78rem;font-weight:600}
+.nav__lang span{padding:4px 12px;border-radius:999px;color:var(--nav-faint)}
+.nav__lang span.on{background:#fff;color:var(--accent)}
+.nav__ic{width:40px;height:40px;display:grid;place-items:center;border-radius:50%;transition:background .25s var(--e-out)}
+.nav__ic:hover{background:var(--nav-hover)}
+/* 모바일 nav (햄버거 + 드로어) — 4페이지 공통 */
+.nav__burger{display:none;width:42px;height:42px;flex-direction:column;align-items:center;justify-content:center;gap:5px;border:none;background:none;cursor:pointer}
+.nav__burger span{display:block;width:22px;height:2px;background:var(--nav-ink);border-radius:2px;transition:transform .3s cubic-bezier(.16,1,.3,1),opacity .2s,background .35s}
+.nav.is-open .nav__burger span:nth-child(1){transform:translateY(7px) rotate(45deg)}
+.nav.is-open .nav__burger span:nth-child(2){opacity:0}
+.nav.is-open .nav__burger span:nth-child(3){transform:translateY(-7px) rotate(-45deg)}
+.nav__drawer{display:none;flex-direction:column;max-width:1280px;margin:0 auto;padding:4px clamp(24px,4vw,56px) 18px}
+.nav__drawer a{padding:14px 4px;font-size:1.05rem;font-weight:600;color:#1B2027;border-bottom:1px solid #F3EFE8;text-decoration:none}
+.nav__drawer a.is-disabled{color:#97A0AC}
+.nav__drawer a[aria-current]{color:#2C51DB}
+.nav__drawer-lang{display:inline-flex;align-self:flex-start;margin-top:14px;align-items:center;gap:2px;background:#F3EFE8;border-radius:999px;padding:4px;font-size:.78rem;font-weight:600}
+.nav__drawer-lang span{padding:4px 12px;border-radius:999px;color:#97A0AC}
+.nav__drawer-lang span.on{background:#fff;color:#2C51DB}
+@media (max-width:768px){
+  .nav__menu,.nav__ic,.nav__lang{display:none}
+  .nav__burger{display:flex}
+  .nav.is-open .nav__drawer{display:flex;animation:navDrop .3s cubic-bezier(.16,1,.3,1)}
+}
+@keyframes navDrop{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:none}}
+
+/* ---------- Buttons ---------- */
+.btn{display:inline-flex;align-items:center;gap:8px;height:52px;padding:0 28px;border-radius:999px;font-weight:600;font-size:1rem;letter-spacing:-.01em;white-space:nowrap;transition:transform .25s var(--e-out),background .25s var(--e-out),box-shadow .25s var(--e-out),color .25s var(--e-out)}
+.btn svg{width:17px;height:17px}
+.btn--primary{background:var(--ink);color:#fff}
+.btn--primary:hover{transform:translateY(-2px);background:#000}
+.btn--light{background:#fff;color:var(--ink)}
+.btn--light:hover{transform:translateY(-2px)}
+.btn--linelight{background:transparent;color:#fff;box-shadow:inset 0 0 0 1.5px rgba(255,255,255,.36)}
+.btn--linelight:hover{box-shadow:inset 0 0 0 1.5px rgba(255,255,255,.75)}
+
+/* ============================================================
+   S1. 히어로 — 공연장 분위기 강렬 + sticky 패럴럭스 커튼
+   ============================================================ */
+.ehero{position:sticky;top:0;height:100svh;min-height:560px;z-index:1;overflow:hidden;background:#0B0D12;display:flex;align-items:center}
+.ehero__bg{position:absolute;inset:-2% 0;z-index:0;will-change:transform}
+.ehero__bg img{width:100%;height:100%;object-fit:cover;object-position:center 38%}
+.ehero__scrim{position:absolute;inset:0;z-index:1;background:
+   linear-gradient(180deg,rgba(8,10,16,.42) 0%,rgba(8,10,16,.18) 30%,rgba(8,10,16,.55) 72%,rgba(8,10,16,.92) 100%),
+   radial-gradient(120% 90% at 18% 30%,rgba(44,81,219,.20),transparent 60%)}
+.ehero__in{position:relative;z-index:2;max-width:var(--maxw);width:100%;margin:0 auto;padding:0 clamp(24px,4vw,56px);color:#fff;will-change:transform,opacity}
+.ehero__tagline{display:inline-flex;align-items:center;gap:8px;font-family:var(--fd);font-size:.8rem;font-weight:600;letter-spacing:.02em;color:rgba(255,255,255,.82);background:rgba(255,255,255,.1);backdrop-filter:blur(6px);border-radius:999px;padding:8px 16px;margin-bottom:clamp(20px,3vw,32px)}
+.ehero__tagline i{width:7px;height:7px;border-radius:50%;background:var(--shuttle);box-shadow:0 0 0 4px rgba(232,99,47,.25)}
+.ehero__title{font-weight:800;letter-spacing:-.035em;line-height:1.02;font-size:clamp(2.7rem,6.6vw,5.2rem);text-wrap:balance;text-shadow:0 2px 40px rgba(0,0,0,.3)}
+.ehero__title em{font-style:normal;color:#fff;background:linear-gradient(100deg,#9CB2FF,#fff 60%);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+.ehero__sub{margin-top:clamp(20px,2.4vw,28px);font-size:clamp(1.02rem,1.5vw,1.28rem);font-weight:500;color:rgba(255,255,255,.85);max-width:40ch;line-height:1.55}
+.ehero__cta{margin-top:clamp(28px,3.4vw,40px);display:flex;gap:12px;flex-wrap:wrap}
+.ehero__scroll{position:absolute;left:50%;bottom:28px;transform:translateX(-50%);z-index:2;display:flex;flex-direction:column;align-items:center;gap:8px;color:rgba(255,255,255,.6);font-family:var(--fd);font-size:.66rem;font-weight:500;letter-spacing:.22em;text-transform:uppercase}
+.ehero__scroll-line{width:1px;height:40px;background:linear-gradient(180deg,rgba(255,255,255,.6),transparent);animation:scrollPulse 2s var(--e-out) infinite}
+@keyframes scrollPulse{0%,100%{opacity:.3;transform:scaleY(.6)}50%{opacity:1;transform:scaleY(1)}}
+
+/* 콘텐츠 플로우 — 히어로 위로 올라와 덮는 커튼 */
+.ev-flow{position:relative;z-index:2;background:var(--bg);border-radius:clamp(20px,2.6vw,36px) clamp(20px,2.6vw,36px) 0 0;box-shadow:0 -30px 60px -20px rgba(8,10,16,.4);margin-top:-2px}
+
+/* ---------- 섹션 헤더 ---------- */
+.sec{padding:clamp(52px,6.5vw,88px) 0}
+.sec__head{margin-bottom:clamp(24px,3vw,36px)}
+.sec__title{font-weight:700;letter-spacing:-.03em;line-height:1.1;font-size:clamp(1.6rem,3.2vw,2.3rem);color:var(--ink)}
+.sec__lead{margin-top:12px;font-size:clamp(.98rem,1.2vw,1.12rem);color:var(--ink-soft);font-weight:500;max-width:52ch;line-height:1.55}
+
+/* ============================================================
+   S2. 올해 이벤트 — 유형×상태 필터 + 포스터 카드
+   ============================================================ */
+.ev{padding-top:clamp(40px,5vw,64px)}
+.filters{position:sticky;top:69px;z-index:40;display:flex;flex-wrap:wrap;align-items:center;gap:20px 24px;padding:16px 0;margin-bottom:clamp(20px,2.4vw,32px);background:color-mix(in srgb,var(--bg) 90%,transparent);backdrop-filter:blur(8px)}
+.fgroup{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.fgroup__label{font-family:var(--fd);font-size:.68rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-faint);margin-right:2px}
+.chip{display:inline-flex;align-items:center;gap:8px;height:40px;padding:0 16px;border-radius:999px;font-size:.88rem;font-weight:600;letter-spacing:-.01em;color:var(--ink-soft);background:var(--card);box-shadow:inset 0 0 0 1px var(--hair);transition:color .2s var(--e-out),background .2s var(--e-out),box-shadow .2s var(--e-out)}
+.chip:hover{color:var(--ink);box-shadow:inset 0 0 0 1px var(--ink-faint)}
+.chip.on{background:var(--ink);color:#fff;box-shadow:none}
+.fgroup--status .chip.on{background:var(--accent)}
+.fdiv{width:1px;height:24px;background:var(--hair);margin:0 2px}
+
+.egrid{display:grid;grid-template-columns:repeat(4,1fr);gap:clamp(16px,1.7vw,24px)}
+.ecard{position:relative;opacity:0;transform:translateY(20px);transition:opacity .55s var(--e-out),transform .55s var(--e-out)}
+.ecard.is-in{opacity:1;transform:none}
+.ecard__link{position:relative;display:block;aspect-ratio:3/4;border-radius:clamp(16px,1.1vw,20px);overflow:clip;background:linear-gradient(135deg,#23262E,#14161C);box-shadow:0 1px 2px rgb(var(--shadow)/.05),0 16px 34px -22px rgb(var(--shadow)/.3);transition:transform .3s var(--e-out),box-shadow .3s var(--e-out)}
+.ecard__link:hover{transform:translateY(-4px);box-shadow:0 1px 2px rgb(var(--shadow)/.06),0 28px 50px -24px rgb(var(--shadow)/.46)}
+.ecard__img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;transition:transform .5s var(--e-out)}
+.ecard__link:hover .ecard__img{transform:scale(1.06)}
+.ecard__link::before{content:'';position:absolute;inset:0;z-index:1;background:linear-gradient(180deg,rgba(8,10,15,.72) 0%,rgba(8,10,15,.28) 22%,transparent 46%)}
+.ecard__link::after{content:'';position:absolute;inset:0;z-index:1;background:linear-gradient(0deg,rgba(8,10,15,.9) 0%,rgba(8,10,15,.44) 24%,transparent 50%);transition:background .35s var(--e-out)}
+.ecard__link:hover::after{background:linear-gradient(0deg,rgba(8,10,15,.94) 0%,rgba(8,10,15,.62) 36%,transparent 64%)}
+.ecard__top{position:absolute;top:0;left:0;right:0;z-index:2;padding:20px 20px 0;display:flex;flex-direction:column;align-items:flex-start}
+.ecard__dday{position:absolute;top:50%;left:16px;right:16px;z-index:3;transform:translateY(-50%);text-align:center;font-family:var(--fd);font-size:2.05rem;font-weight:700;letter-spacing:.03em;color:#fff;opacity:0;transition:opacity .4s var(--e-out);text-shadow:0 2px 24px rgba(0,0,0,.6)}
+.ecard__dday--ended{font-size:1.4rem;font-weight:600;letter-spacing:.08em;color:rgba(255,255,255,.78);text-shadow:0 2px 18px rgba(0,0,0,.55)}
+.ecard__link:hover .ecard__dday{opacity:1;transform:none}
+.ecard__date{font-family:var(--fd);font-size:.82rem;font-weight:600;letter-spacing:.04em;color:rgba(255,255,255,.86);margin-bottom:4px}
+.ecard__name{font-size:1.34rem;font-weight:700;letter-spacing:-.025em;color:#fff;line-height:1.16;text-shadow:0 1px 20px rgba(0,0,0,.5)}
+.ecard__bottom{position:absolute;left:0;right:0;bottom:0;z-index:2;padding:0 20px 20px;display:flex;flex-direction:column}
+.ecard__link:hover .ecard__desc{opacity:1;max-height:3.4em;transform:none;margin-bottom:12px}
+.ecard__desc{opacity:0;max-height:0;overflow:hidden;transform:translateY(8px);transition:opacity .35s var(--e-out),max-height .4s var(--e-out),transform .4s var(--e-out),margin .4s var(--e-out);font-size:.85rem;font-weight:500;color:rgba(255,255,255,.84);line-height:1.45}
+.ecard__foot{display:flex;align-items:center;gap:8px}
+.ecard__venue{display:flex;align-items:center;gap:4px;font-size:.78rem;color:rgba(255,255,255,.7);font-weight:500;min-width:0}
+.ecard__venue span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ecard__venue::before{content:'';width:11px;height:11px;flex-shrink:0;background:currentColor;-webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M12 2C8.1 2 5 5.1 5 9c0 5.2 7 13 7 13s7-7.8 7-13c0-3.9-3.1-7-7-7zm0 9.5a2.5 2.5 0 110-5 2.5 2.5 0 010 5z'/%3E%3C/svg%3E") center/contain no-repeat;mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M12 2C8.1 2 5 5.1 5 9c0 5.2 7 13 7 13s7-7.8 7-13c0-3.9-3.1-7-7-7zm0 9.5a2.5 2.5 0 110-5 2.5 2.5 0 010 5z'/%3E%3C/svg%3E") center/contain no-repeat}
+.ecard__svc{display:flex;flex-wrap:wrap;gap:8px;margin-left:auto;flex-shrink:0}
+.ecard--ended .ecard__img{filter:grayscale(.18) brightness(.86)}
+@media (hover:none){.ecard__dday{opacity:1;transform:none}.ecard__desc{opacity:1;max-height:3.4em;transform:none;margin-bottom:12px}.ecard__link::after{background:linear-gradient(0deg,rgba(8,10,15,.94) 0%,rgba(8,10,15,.62) 36%,transparent 64%)}}
+.ev__empty{display:none;padding:56px 0;text-align:center;color:var(--ink-faint);font-size:.98rem}
+.ev.is-empty .egrid{display:none}
+.ev.is-empty .ev__empty{display:block}
+
+/* ============================================================
+   S3. 주요 공연장 — 여행 카드 유사
+   ============================================================ */
+.venues{background:var(--surface)}
+.vgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:clamp(16px,1.6vw,24px)}
+.vcard{display:flex;flex-direction:column;opacity:0;transform:translateY(16px);transition:opacity .55s var(--e-out),transform .55s var(--e-out)}
+.vcard.is-in{opacity:1;transform:none}
+.vcard__link{display:flex;flex-direction:column;background:var(--card);border-radius:clamp(16px,1.2vw,20px);overflow:clip;height:100%;transition:transform .28s var(--e-out),box-shadow .28s var(--e-out)}
+.vcard__link:hover{transform:translateY(-4px);box-shadow:0 1px 1px rgb(var(--shadow)/.04),0 20px 38px -22px rgb(var(--shadow)/.32)}
+.vcard__media{position:relative;aspect-ratio:16/10;overflow:hidden;background:#E9E4DC}
+.vcard__media img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;transition:transform .5s var(--e-out)}
+.vcard__link:hover .vcard__media img{transform:scale(1.04)}
+.vcard__pin{position:absolute;top:12px;left:12px;z-index:2;display:inline-flex;align-items:center;height:24px;padding:0 12px;border-radius:999px;font-size:.71rem;font-weight:600;background:rgba(255,254,252,.92);color:var(--ink-soft);backdrop-filter:blur(4px)}
+.vcard__body{padding:16px 16px 20px;display:flex;flex-direction:column;flex:1}
+.vcard__name{font-size:1.08rem;font-weight:700;letter-spacing:-.015em;color:var(--ink);line-height:1.25}
+.vcard__desc{margin-top:8px;font-size:.86rem;color:var(--ink-soft);font-weight:500;line-height:1.5}
+.vcard__meta{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-top:auto;padding-top:12px}
+.tag{display:inline-flex;align-items:center;height:24px;padding:0 8px;border-radius:999px;font-size:.71rem;font-weight:700;letter-spacing:-.01em;white-space:nowrap}
+.tag--type{background:var(--hair-soft);color:var(--ink-soft)}
+.tag--shuttle,.tag--private,.tag--both{padding-left:8px}
+.tag--shuttle::before,.tag--private::before,.tag--both::before{content:'';width:5px;height:5px;border-radius:50%;margin-right:4px;flex-shrink:0}
+.tag--shuttle{background:var(--shuttle-soft);color:var(--shuttle)}.tag--shuttle::before{background:var(--shuttle)}
+.tag--private{background:var(--private-soft);color:var(--private)}.tag--private::before{background:var(--private)}
+.tag--both{background:var(--accent-soft);color:var(--accent)}.tag--both::before{background:var(--accent)}
+
+/* ============================================================
+   S4. 문의 배너 — 여행 move 유사
+   ============================================================ */
+.move{padding:clamp(8px,2vw,32px) 0 clamp(64px,8vw,104px);background:var(--surface)}
+.move__in{position:relative;overflow:hidden;border-radius:clamp(20px,2vw,28px);max-width:var(--maxw);margin:0 auto;padding:clamp(44px,5.5vw,76px) clamp(28px,4vw,64px);background-image:linear-gradient(90deg,rgba(11,13,18,.92) 0%,rgba(11,13,18,.78) 38%,rgba(11,13,18,.42) 62%,rgba(44,81,219,.2) 100%),url('/assets/ev_hero_02.webp');background-size:cover;background-position:center;color:#fff;isolation:isolate}
+.move__title{font-weight:700;letter-spacing:-.03em;line-height:1.12;font-size:clamp(1.6rem,3.2vw,2.4rem);max-width:22ch}
+.move__sub{margin-top:16px;font-size:clamp(.96rem,1.2vw,1.1rem);color:rgba(255,255,255,.82);font-weight:500;max-width:50ch}
+.move__row{margin-top:clamp(28px,3vw,36px);display:flex;flex-wrap:wrap;gap:12px}
+
+/* ---------- Footer ---------- */
+.foot{position:relative;z-index:2;background:var(--ink);color:rgba(255,255,255,.66);padding:clamp(48px,6vw,72px) 0 28px}
+.foot__in{max-width:var(--maxw);margin:0 auto;padding:0 clamp(24px,4vw,56px);display:grid;grid-template-columns:1.5fr 1fr 1fr 1fr;gap:clamp(28px,4vw,48px)}
+.foot__brand .logo{font-family:var(--fd);font-weight:700;font-size:1.3rem;letter-spacing:-.02em;color:#fff;margin-bottom:16px}
+.foot__brand .logo b{color:#8AA0FF}
+.foot__brand p{font-size:.84rem;line-height:1.7;color:rgba(255,255,255,.5)}
+.foot__col h4{font-size:.82rem;font-weight:600;color:#fff;margin-bottom:16px}
+.foot__col ul{display:grid;gap:8px}
+.foot__col li{font-size:.86rem;display:flex;align-items:center;gap:8px}
+.foot__col a{color:rgba(255,255,255,.5);transition:color .2s var(--e-out)}
+.foot__col a:hover{color:#fff}
+.foot__col .soon{font-size:.66rem;color:rgba(255,255,255,.32)}
+.foot__bottom{max-width:var(--maxw);margin:clamp(32px,4vw,44px) auto 0;padding:24px clamp(24px,4vw,56px) 0;border-top:1px solid rgba(255,255,255,.12);display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px;font-size:.74rem;color:rgba(255,255,255,.4)}
+
+/* reveal */
+.rv{opacity:0;transform:translateY(24px)}
+.rv.in{opacity:1;transform:none;transition:opacity .8s var(--e-out),transform .9s var(--e-out)}
+@media (prefers-reduced-motion:reduce){
+  .rv,.ecard,.vcard{opacity:1!important;transform:none!important}
+  .ehero__bg,.ehero__in{transform:none!important}
+  .ehero__scroll-line{animation:none}
+  html{scroll-behavior:auto}
+}
+
+/* 반응형 */
+@media (max-width:1080px){.egrid{grid-template-columns:repeat(3,1fr)}}
+@media (max-width:860px){
+  .vgrid{grid-template-columns:repeat(2,1fr)}
+  .foot__in{grid-template-columns:1fr 1fr;gap:28px}
+}
+@media (max-width:780px){
+  .nav__in{gap:16px;padding-left:20px;padding-right:20px}
+  .nav__menu{gap:16px;font-size:.9rem}
+  .nav__lang{display:none}
+  .egrid{grid-template-columns:repeat(2,1fr)}
+  .filters{top:65px;gap:12px 16px}
+  .fdiv{display:none}
+  .fgroup{width:100%;overflow-x:auto;flex-wrap:nowrap;scrollbar-width:none}
+  .fgroup::-webkit-scrollbar{display:none}
+  .chip{flex-shrink:0}
+}
+@media (max-width:480px){
+  .egrid{grid-template-columns:1fr 1fr;gap:12px}
+  .vgrid{grid-template-columns:1fr}
+  .foot__in{grid-template-columns:1fr}
+  .ehero__cta .btn{flex:1;justify-content:center}
+}
+</style>
+</head>
+<body data-base="../" data-nav-mode="scroll">
+
+<div data-include="navbar"></div>
+
+<main>
+
+  <!-- ================= S1. 히어로 (sticky 패럴럭스) ================= -->
+  <header class="ehero" id="ehero">
+    <div class="ehero__bg" id="eheroBg">
+      <img src="/assets/ev_hero_01.webp" alt="공연장의 무대 조명과 관객" fetchpriority="high" decoding="async">
+    </div>
+    <div class="ehero__scrim"></div>
+    <div class="ehero__in" id="eheroIn">
+      <span class="ehero__tagline"><i></i><span data-lang="ko">주요 공연장 상시 운행 · 공연 연계 이동</span><span data-lang="en" hidden>Concerts · Festivals · MICE · Sports — we get you there</span></span>
+      <h1 class="ehero__title"><span data-lang="ko">무대의 열기,<br><em>이동부터 시작된다</em></span><span data-lang="en" hidden>Never late.<br><em>Never stranded.</em></span></h1>
+      <p class="ehero__sub"><span data-lang="ko">콘서트·페스티벌·스포츠. 일정만 있으면 현장까지, 셔틀과 프라이빗으로 모십니다.</span><span data-lang="en" hidden>BTS, ITS Congress, K-pop, festivals — shuttle planned around your event, return guaranteed after the show.</span></p>
+      <div class="ehero__cta">
+        <a href="#events" class="btn btn--light"><span data-lang="ko">올해 이벤트 보기</span><span data-lang="en" hidden>See this year's events</span>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12l7 7 7-7"/></svg>
+        </a>
+        <a href="#inquiry" class="btn btn--linelight"><span data-lang="ko">셔틀 문의하기</span><span data-lang="en" hidden>Inquire about shuttles</span></a>
+      </div>
+    </div>
+    <div class="ehero__scroll" aria-hidden="true">
+      <span>Scroll</span>
+      <div class="ehero__scroll-line"></div>
+    </div>
+  </header>
+
+  <div class="ev-flow">
+
+    <!-- ================= S2. 올해 이벤트 ================= -->
+    <section class="sec ev" id="events" aria-label="올해 이벤트">
+      <div class="wrap">
+        <div class="sec__head rv">
+          <h2 class="sec__title"><span data-lang="ko">올해의 이벤트</span><span data-lang="en" hidden>This year's events</span></h2>
+          <p class="sec__lead"><span data-lang="ko">콘서트부터 페스티벌, 스포츠까지. 유형과 일정으로 골라 보고, 현장까지 가장 편한 이동을 찾아보세요.</span><span data-lang="en" hidden>From concerts to festivals and sports. Filter by type and date, and find the easiest way to get there.</span></p>
+        </div>
+
+        <div class="filters">
+          <div class="fgroup fgroup--type" role="tablist" aria-label="유형 선택">
+            <span class="fgroup__label"><span data-lang="ko">유형</span><span data-lang="en" hidden>Type</span></span>
+            <button class="chip on" data-type="all"><span data-lang="ko">전체</span><span data-lang="en" hidden>All</span></button>
+            <button class="chip" data-type="concert"><span data-lang="ko">콘서트</span><span data-lang="en" hidden>Concert</span></button>
+            <button class="chip" data-type="festival"><span data-lang="ko">페스티벌</span><span data-lang="en" hidden>Festival</span></button>
+            <button class="chip" data-type="sports"><span data-lang="ko">스포츠</span><span data-lang="en" hidden>Sports</span></button>
+          </div>
+          <span class="fdiv" aria-hidden="true"></span>
+          <div class="fgroup fgroup--status" role="tablist" aria-label="상태 선택">
+            <span class="fgroup__label"><span data-lang="ko">일정</span><span data-lang="en" hidden>Status</span></span>
+            <button class="chip on" data-status="all"><span data-lang="ko">전체</span><span data-lang="en" hidden>All</span></button>
+            <button class="chip" data-status="upcoming"><span data-lang="ko">예정</span><span data-lang="en" hidden>Upcoming</span></button>
+            <button class="chip" data-status="ended"><span data-lang="ko">종료</span><span data-lang="en" hidden>Ended</span></button>
+          </div>
+        </div>
+
+        <div class="egrid" id="egrid">
+
+          <!-- ===== 예정 (D-Day 가까운 순) ===== -->
+          <a href="gtws-muju/index.html" class="ecard" data-type="sports" data-status="upcoming" data-date="2026-10-23">
+            <div class="ecard__link">
+              <img class="ecard__img" src="/sports-shuttle/images/banner_gtws_muju.webp" alt="GTWS 그랜드 파이널 2026 무주 덕유산 트레일러닝" loading="lazy" decoding="async">
+              <span class="ecard__dday">D-DAY</span>
+              <div class="ecard__top">
+                <span class="ecard__date">10.23–25</span>
+                <h3 class="ecard__name"><span data-lang="ko">GTWS 그랜드 파이널 2026 · 무주</span><span data-lang="en" hidden>GTWS Grand Final 2026 · Muju</span></h3>
+              </div>
+              <div class="ecard__bottom">
+                <p class="ecard__desc"><span data-lang="ko">한국 최초 국제 트레일러닝 결승전</span><span data-lang="en" hidden>Korea's first international trail-running final</span></p>
+                <div class="ecard__foot">
+                  <span class="ecard__venue"><span><span data-lang="ko">무주 덕유산 국립공원</span><span data-lang="en" hidden>Muju Deogyusan National Park</span></span></span>
+                  <div class="ecard__svc"><span class="tag tag--both"><span data-lang="ko">셔틀·프라이빗</span><span data-lang="en" hidden>Shuttle·Private</span></span></div>
+                </div>
+              </div>
+            </div>
+          </a>
+
+          <a class="ecard" data-type="sports" data-status="upcoming" data-date="2026-06-14">
+            <div class="ecard__link">
+              <img class="ecard__img" src="/assets/ev_card_sports_01.webp" alt="KBO 프로야구 NC 다이노스 홈경기" loading="lazy" decoding="async">
+              <span class="ecard__dday">D-DAY</span>
+              <div class="ecard__top">
+                <span class="ecard__date"><span data-lang="ko">06.14 (토)</span><span data-lang="en" hidden>06.14 (Sat)</span></span>
+                <h3 class="ecard__name"><span data-lang="ko">KBO 프로야구 · NC 다이노스 홈경기</span><span data-lang="en" hidden>KBO League · NC Dinos Home Game</span></h3>
+              </div>
+              <div class="ecard__bottom">
+                <p class="ecard__desc"><span data-lang="ko">정규시즌 홈경기, 창원 직행 셔틀</span><span data-lang="en" hidden>Regular-season home game, direct shuttle to Changwon</span></p>
+                <div class="ecard__foot">
+                  <span class="ecard__venue"><span><span data-lang="ko">창원 NC파크</span><span data-lang="en" hidden>Changwon NC Park</span></span></span>
+                  <div class="ecard__svc"><span class="tag tag--shuttle"><span data-lang="ko">셔틀</span><span data-lang="en" hidden>Shuttle</span></span></div>
+                </div>
+              </div>
+            </div>
+          </a>
+
+          <a href="bof-busan/index.html" class="ecard" data-type="festival" data-status="upcoming" data-date="2026-06-27">
+            <div class="ecard__link">
+              <img class="ecard__img" src="/event/bof-busan/images/2026_poster.webp" alt="2026 부산원아시아페스티벌" loading="lazy" decoding="async">
+              <span class="ecard__dday">D-DAY</span>
+              <div class="ecard__top">
+                <span class="ecard__date">06.27–28</span>
+                <h3 class="ecard__name"><span data-lang="ko">2026 부산원아시아페스티벌</span><span data-lang="en" hidden>2026 Busan One Asia Festival</span></h3>
+              </div>
+              <div class="ecard__bottom">
+                <p class="ecard__desc"><span data-lang="ko">아시아 대표 K-POP 페스티벌</span><span data-lang="en" hidden>Asia's flagship K-POP festival</span></p>
+                <div class="ecard__foot">
+                  <span class="ecard__venue"><span><span data-lang="ko">부산아시아드 주경기장</span><span data-lang="en" hidden>Busan Asiad Main Stadium</span></span></span>
+                  <div class="ecard__svc"><span class="tag tag--both"><span data-lang="ko">셔틀·프라이빗</span><span data-lang="en" hidden>Shuttle·Private</span></span></div>
+                </div>
+              </div>
+            </div>
+          </a>
+
+          <a class="ecard" data-type="festival" data-status="upcoming" data-date="2026-07-11">
+            <div class="ecard__link">
+              <img class="ecard__img" src="/assets/ev_card_festival_01.webp" alt="워터밤 서울 2026" loading="lazy" decoding="async">
+              <span class="ecard__dday">D-DAY</span>
+              <div class="ecard__top">
+                <span class="ecard__date">07.11–12</span>
+                <h3 class="ecard__name"><span data-lang="ko">워터밤 서울 2026</span><span data-lang="en" hidden>Waterbomb Seoul 2026</span></h3>
+              </div>
+              <div class="ecard__bottom">
+                <p class="ecard__desc"><span data-lang="ko">여름을 적시는 워터 뮤직 페스티벌</span><span data-lang="en" hidden>A water music festival to cool off summer</span></p>
+                <div class="ecard__foot">
+                  <span class="ecard__venue"><span><span data-lang="ko">잠실종합운동장</span><span data-lang="en" hidden>Jamsil Sports Complex</span></span></span>
+                  <div class="ecard__svc"><span class="tag tag--shuttle"><span data-lang="ko">셔틀</span><span data-lang="en" hidden>Shuttle</span></span></div>
+                </div>
+              </div>
+            </div>
+          </a>
+
+          <a class="ecard" data-type="concert" data-status="upcoming" data-date="2026-07-18">
+            <div class="ecard__link">
+              <img class="ecard__img" src="/assets/ev_card_concert_01.webp" alt="싸이 흠뻑쇼 2026" loading="lazy" decoding="async">
+              <span class="ecard__dday">D-DAY</span>
+              <div class="ecard__top">
+                <span class="ecard__date">07.18</span>
+                <h3 class="ecard__name"><span data-lang="ko">싸이 흠뻑쇼 2026</span><span data-lang="en" hidden>PSY Heumppeok Show 2026</span></h3>
+              </div>
+              <div class="ecard__bottom">
+                <p class="ecard__desc"><span data-lang="ko">물과 음악, 싸이의 여름 콘서트</span><span data-lang="en" hidden>Water and music — PSY's summer concert</span></p>
+                <div class="ecard__foot">
+                  <span class="ecard__venue"><span><span data-lang="ko">KSPO DOME · 올림픽공원</span><span data-lang="en" hidden>KSPO DOME · Olympic Park</span></span></span>
+                  <div class="ecard__svc"><span class="tag tag--both"><span data-lang="ko">셔틀·프라이빗</span><span data-lang="en" hidden>Shuttle·Private</span></span></div>
+                </div>
+              </div>
+            </div>
+          </a>
+
+          <a class="ecard" data-type="festival" data-status="upcoming" data-date="2026-08-07">
+            <div class="ecard__link">
+              <img class="ecard__img" src="/assets/ev_card_festival_02.webp" alt="펜타포트 록 페스티벌 2026" loading="lazy" decoding="async">
+              <span class="ecard__dday">D-DAY</span>
+              <div class="ecard__top">
+                <span class="ecard__date">08.07–09</span>
+                <h3 class="ecard__name"><span data-lang="ko">인천 펜타포트 록 페스티벌</span><span data-lang="en" hidden>Incheon Pentaport Rock Festival</span></h3>
+              </div>
+              <div class="ecard__bottom">
+                <p class="ecard__desc"><span data-lang="ko">국내 최대 규모 록 페스티벌</span><span data-lang="en" hidden>Korea's largest rock festival</span></p>
+                <div class="ecard__foot">
+                  <span class="ecard__venue"><span><span data-lang="ko">인천 송도 달빛축제공원</span><span data-lang="en" hidden>Incheon Songdo Moonlight Festival Park</span></span></span>
+                  <div class="ecard__svc"><span class="tag tag--shuttle"><span data-lang="ko">셔틀</span><span data-lang="en" hidden>Shuttle</span></span></div>
+                </div>
+              </div>
+            </div>
+          </a>
+
+          <a class="ecard" data-type="sports" data-status="upcoming" data-date="2026-08-22">
+            <div class="ecard__link">
+              <img class="ecard__img" src="/assets/ev_card_sports_02.webp" alt="K리그 FC서울 홈경기" loading="lazy" decoding="async">
+              <span class="ecard__dday">D-DAY</span>
+              <div class="ecard__top">
+                <span class="ecard__date"><span data-lang="ko">08.22 (토)</span><span data-lang="en" hidden>08.22 (Sat)</span></span>
+                <h3 class="ecard__name"><span data-lang="ko">K리그 · FC서울 홈경기</span><span data-lang="en" hidden>K League · FC Seoul Home Game</span></h3>
+              </div>
+              <div class="ecard__bottom">
+                <p class="ecard__desc"><span data-lang="ko">단체 응원 직행, 경기장 앞 하차</span><span data-lang="en" hidden>Direct group ride, drop-off at the stadium</span></p>
+                <div class="ecard__foot">
+                  <span class="ecard__venue"><span><span data-lang="ko">서울월드컵경기장</span><span data-lang="en" hidden>Seoul World Cup Stadium</span></span></span>
+                  <div class="ecard__svc"><span class="tag tag--shuttle"><span data-lang="ko">셔틀</span><span data-lang="en" hidden>Shuttle</span></span></div>
+                </div>
+              </div>
+            </div>
+          </a>
+
+          <a class="ecard" data-type="concert" data-status="upcoming" data-date="2026-09-05">
+            <div class="ecard__link">
+              <img class="ecard__img" src="/assets/ev_card_concert_02.webp" alt="10cm 단독 콘서트 2026" loading="lazy" decoding="async">
+              <span class="ecard__dday">D-DAY</span>
+              <div class="ecard__top">
+                <span class="ecard__date">09.05–06</span>
+                <h3 class="ecard__name"><span data-lang="ko">10cm 단독 콘서트 2026</span><span data-lang="en" hidden>10cm Solo Concert 2026</span></h3>
+              </div>
+              <div class="ecard__bottom">
+                <p class="ecard__desc"><span data-lang="ko">감성 어쿠스틱 단독 콘서트</span><span data-lang="en" hidden>An intimate acoustic solo concert</span></p>
+                <div class="ecard__foot">
+                  <span class="ecard__venue"><span><span data-lang="ko">올림픽홀 · 올림픽공원</span><span data-lang="en" hidden>Olympic Hall · Olympic Park</span></span></span>
+                  <div class="ecard__svc"><span class="tag tag--private"><span data-lang="ko">프라이빗</span><span data-lang="en" hidden>Private</span></span></div>
+                </div>
+              </div>
+            </div>
+          </a>
+
+          <!-- ===== 종료 (최근 순) ===== -->
+          <a class="ecard ecard--ended" data-type="concert" data-status="ended">
+            <div class="ecard__link">
+              <img class="ecard__img" src="/assets/event_tuki.webp" alt="tuki. 아시아 투어 서울" loading="lazy" decoding="async">
+              <span class="ecard__dday ecard__dday--ended"><span data-lang="ko">종료</span><span data-lang="en" hidden>Ended</span></span>
+              <div class="ecard__top">
+                <span class="ecard__date">04.11–12</span>
+                <h3 class="ecard__name"><span data-lang="ko">tuki. 아시아 투어 서울</span><span data-lang="en" hidden>tuki. Asia Tour Seoul</span></h3>
+              </div>
+              <div class="ecard__bottom">
+                <p class="ecard__desc"><span data-lang="ko">일본 싱어송라이터 첫 내한</span><span data-lang="en" hidden>Japanese singer-songwriter's first Korea show</span></p>
+                <div class="ecard__foot">
+                  <span class="ecard__venue"><span><span data-lang="ko">인스파이어 아레나</span><span data-lang="en" hidden>Inspire Arena</span></span></span>
+                  <div class="ecard__svc"><span class="tag tag--private"><span data-lang="ko">프라이빗</span><span data-lang="en" hidden>Private</span></span></div>
+                </div>
+              </div>
+            </div>
+          </a>
+
+          <a class="ecard ecard--ended" data-type="concert" data-status="ended">
+            <div class="ecard__link">
+              <img class="ecard__img" src="/assets/event_bts.webp" alt="방탄소년단 월드투어 고양" loading="lazy" decoding="async">
+              <span class="ecard__dday ecard__dday--ended"><span data-lang="ko">종료</span><span data-lang="en" hidden>Ended</span></span>
+              <div class="ecard__top">
+                <span class="ecard__date">04.09–12</span>
+                <h3 class="ecard__name"><span data-lang="ko">방탄소년단 월드투어 고양</span><span data-lang="en" hidden>BTS World Tour Goyang</span></h3>
+              </div>
+              <div class="ecard__bottom">
+                <p class="ecard__desc"><span data-lang="ko">방탄소년단 월드투어 고양 공연</span><span data-lang="en" hidden>BTS World Tour in Goyang</span></p>
+                <div class="ecard__foot">
+                  <span class="ecard__venue"><span><span data-lang="ko">고양종합운동장</span><span data-lang="en" hidden>Goyang Sports Complex</span></span></span>
+                  <div class="ecard__svc"><span class="tag tag--both"><span data-lang="ko">셔틀·프라이빗</span><span data-lang="en" hidden>Shuttle·Private</span></span></div>
+                </div>
+              </div>
+            </div>
+          </a>
+
+          <a class="ecard ecard--ended" data-type="concert" data-status="ended">
+            <div class="ecard__link">
+              <img class="ecard__img" src="/assets/ev_card_kpop.webp" alt="세븐틴 월드투어 앙코르" loading="lazy" decoding="async">
+              <span class="ecard__dday ecard__dday--ended"><span data-lang="ko">종료</span><span data-lang="en" hidden>Ended</span></span>
+              <div class="ecard__top">
+                <span class="ecard__date">04.04–05</span>
+                <h3 class="ecard__name"><span data-lang="ko">세븐틴 월드투어 앙코르</span><span data-lang="en" hidden>SEVENTEEN World Tour Encore</span></h3>
+              </div>
+              <div class="ecard__bottom">
+                <p class="ecard__desc"><span data-lang="ko">세븐틴 월드투어 앙코르 공연</span><span data-lang="en" hidden>SEVENTEEN World Tour encore show</span></p>
+                <div class="ecard__foot">
+                  <span class="ecard__venue"><span><span data-lang="ko">인천 아시아드 주경기장</span><span data-lang="en" hidden>Incheon Asiad Main Stadium</span></span></span>
+                  <div class="ecard__svc"><span class="tag tag--both"><span data-lang="ko">셔틀·프라이빗</span><span data-lang="en" hidden>Shuttle·Private</span></span></div>
+                </div>
+              </div>
+            </div>
+          </a>
+
+          <a class="ecard ecard--ended" data-type="concert" data-status="ended">
+            <div class="ecard__link">
+              <img class="ecard__img" src="/assets/event_seiko.webp" alt="마츠다 세이코 콘서트" loading="lazy" decoding="async">
+              <span class="ecard__dday ecard__dday--ended"><span data-lang="ko">종료</span><span data-lang="en" hidden>Ended</span></span>
+              <div class="ecard__top">
+                <span class="ecard__date">02.22</span>
+                <h3 class="ecard__name"><span data-lang="ko">마츠다 세이코 콘서트</span><span data-lang="en" hidden>Seiko Matsuda Concert</span></h3>
+              </div>
+              <div class="ecard__bottom">
+                <p class="ecard__desc"><span data-lang="ko">일본 시티팝 레전드 내한</span><span data-lang="en" hidden>Japanese city-pop legend in Korea</span></p>
+                <div class="ecard__foot">
+                  <span class="ecard__venue"><span><span data-lang="ko">인스파이어 아레나</span><span data-lang="en" hidden>Inspire Arena</span></span></span>
+                  <div class="ecard__svc"><span class="tag tag--private"><span data-lang="ko">프라이빗</span><span data-lang="en" hidden>Private</span></span></div>
+                </div>
+              </div>
+            </div>
+          </a>
+
+          <a class="ecard ecard--ended" data-type="concert" data-status="ended">
+            <div class="ecard__link">
+              <img class="ecard__img" src="/assets/event_hoshino.webp" alt="호시노 겐 내한공연" loading="lazy" decoding="async">
+              <span class="ecard__dday ecard__dday--ended"><span data-lang="ko">종료</span><span data-lang="en" hidden>Ended</span></span>
+              <div class="ecard__top">
+                <span class="ecard__date">02.06</span>
+                <h3 class="ecard__name"><span data-lang="ko">호시노 겐 내한공연</span><span data-lang="en" hidden>Gen Hoshino Live in Korea</span></h3>
+              </div>
+              <div class="ecard__bottom">
+                <p class="ecard__desc"><span data-lang="ko">호시노 겐 첫 단독 내한</span><span data-lang="en" hidden>Gen Hoshino's first solo Korea show</span></p>
+                <div class="ecard__foot">
+                  <span class="ecard__venue"><span><span data-lang="ko">인스파이어 아레나</span><span data-lang="en" hidden>Inspire Arena</span></span></span>
+                  <div class="ecard__svc"><span class="tag tag--private"><span data-lang="ko">프라이빗</span><span data-lang="en" hidden>Private</span></span></div>
+                </div>
+              </div>
+            </div>
+          </a>
+
+          <a class="ecard ecard--ended" data-type="sports" data-status="ended">
+            <div class="ecard__link">
+              <img class="ecard__img" src="/assets/event_black_combat.webp" alt="BLACK COMBAT XVI: EXODUS" loading="lazy" decoding="async">
+              <span class="ecard__dday ecard__dday--ended"><span data-lang="ko">종료</span><span data-lang="en" hidden>Ended</span></span>
+              <div class="ecard__top">
+                <span class="ecard__date">01.31</span>
+                <h3 class="ecard__name">BLACK COMBAT XVI: EXODUS</h3>
+              </div>
+              <div class="ecard__bottom">
+                <p class="ecard__desc"><span data-lang="ko">국내 대표 종합격투기 이벤트</span><span data-lang="en" hidden>Korea's premier MMA event</span></p>
+                <div class="ecard__foot">
+                  <span class="ecard__venue"><span><span data-lang="ko">인스파이어 아레나</span><span data-lang="en" hidden>Inspire Arena</span></span></span>
+                  <div class="ecard__svc"><span class="tag tag--both"><span data-lang="ko">셔틀·프라이빗</span><span data-lang="en" hidden>Shuttle·Private</span></span></div>
+                </div>
+              </div>
+            </div>
+          </a>
+
+          <a class="ecard ecard--ended" data-type="concert" data-status="ended">
+            <div class="ecard__link">
+              <img class="ecard__img" src="/assets/event_cxm.webp" alt="CxM [DOUBLE UP] LIVE PARTY" loading="lazy" decoding="async">
+              <span class="ecard__dday ecard__dday--ended"><span data-lang="ko">종료</span><span data-lang="en" hidden>Ended</span></span>
+              <div class="ecard__top">
+                <span class="ecard__date">01.23–25</span>
+                <h3 class="ecard__name">CxM [DOUBLE UP] LIVE PARTY</h3>
+              </div>
+              <div class="ecard__bottom">
+                <p class="ecard__desc"><span data-lang="ko">EDM 라이브 파티 나이트</span><span data-lang="en" hidden>An EDM live party night</span></p>
+                <div class="ecard__foot">
+                  <span class="ecard__venue"><span><span data-lang="ko">인스파이어 아레나</span><span data-lang="en" hidden>Inspire Arena</span></span></span>
+                  <div class="ecard__svc"><span class="tag tag--shuttle"><span data-lang="ko">셔틀</span><span data-lang="en" hidden>Shuttle</span></span></div>
+                </div>
+              </div>
+            </div>
+          </a>
+
+        </div>
+        <p class="ev__empty"><span data-lang="ko">조건에 맞는 이벤트가 없어요. 다른 유형이나 일정을 골라보세요.</span><span data-lang="en" hidden>No events match your filters. Try a different type or date.</span></p>
+      </div>
+    </section>
+
+    <!-- ================= S3. 주요 공연장 ================= -->
+    <section class="sec venues" aria-label="주요 공연장 상시 서비스">
+      <div class="wrap">
+        <div class="sec__head rv">
+          <h2 class="sec__title"><span data-lang="ko">주요 공연장 상시 서비스</span><span data-lang="en" hidden>Year-round venue service</span></h2>
+          <p class="sec__lead"><span data-lang="ko">대표 아레나와 스타디움은 일정과 상관없이 상시 운행합니다. 자주 가는 공연장을 골라 미리 확인하세요.</span><span data-lang="en" hidden>Major arenas and stadiums are served year-round, regardless of the schedule. Pick a venue you visit often and check ahead.</span></p>
+        </div>
+
+        <div class="vgrid">
+
+          <a class="vcard">
+            <div class="vcard__link">
+              <div class="vcard__media">
+                <img src="/assets/ev_venue_inspire.webp" alt="인스파이어 아레나" loading="lazy" decoding="async">
+                <span class="vcard__pin"><span data-lang="ko">영종도</span><span data-lang="en" hidden>Yeongjong Island</span></span>
+              </div>
+              <div class="vcard__body">
+                <h3 class="vcard__name"><span data-lang="ko">인스파이어 아레나</span><span data-lang="en" hidden>Inspire Arena</span></h3>
+                <p class="vcard__desc"><span data-lang="ko">15,000석 · 국내 최초 공연 전용 다목적홀</span><span data-lang="en" hidden>15,000 seats · Korea's first concert-dedicated multipurpose hall</span></p>
+                <div class="vcard__meta">
+                  <span class="tag tag--both"><span data-lang="ko">셔틀·프라이빗</span><span data-lang="en" hidden>Shuttle·Private</span></span>
+                  <span class="tag tag--type"><span data-lang="ko">서울 약 1시간</span><span data-lang="en" hidden>~1 hr from Seoul</span></span>
+                </div>
+              </div>
+            </div>
+          </a>
+
+          <a class="vcard">
+            <div class="vcard__link">
+              <div class="vcard__media">
+                <img src="/assets/ev_venue_incheon_asiad.webp" alt="인천 아시아드 주경기장" loading="lazy" decoding="async">
+                <span class="vcard__pin"><span data-lang="ko">인천</span><span data-lang="en" hidden>Incheon</span></span>
+              </div>
+              <div class="vcard__body">
+                <h3 class="vcard__name"><span data-lang="ko">인천 아시아드 주경기장</span><span data-lang="en" hidden>Incheon Asiad Main Stadium</span></h3>
+                <p class="vcard__desc"><span data-lang="ko">월드투어급 스타디움 공연장</span><span data-lang="en" hidden>World-tour-class stadium venue</span></p>
+                <div class="vcard__meta">
+                  <span class="tag tag--both"><span data-lang="ko">셔틀·프라이빗</span><span data-lang="en" hidden>Shuttle·Private</span></span>
+                  <span class="tag tag--type"><span data-lang="ko">서울 약 1시간</span><span data-lang="en" hidden>~1 hr from Seoul</span></span>
+                </div>
+              </div>
+            </div>
+          </a>
+
+          <a class="vcard">
+            <div class="vcard__link">
+              <div class="vcard__media">
+                <img src="/assets/ev_venue_goyang.webp" alt="고양종합운동장" loading="lazy" decoding="async">
+                <span class="vcard__pin"><span data-lang="ko">고양</span><span data-lang="en" hidden>Goyang</span></span>
+              </div>
+              <div class="vcard__body">
+                <h3 class="vcard__name"><span data-lang="ko">고양종합운동장</span><span data-lang="en" hidden>Goyang Sports Complex</span></h3>
+                <p class="vcard__desc"><span data-lang="ko">글로벌 뮤직 페스티벌의 중심지</span><span data-lang="en" hidden>A hub for global music festivals</span></p>
+                <div class="vcard__meta">
+                  <span class="tag tag--shuttle"><span data-lang="ko">셔틀</span><span data-lang="en" hidden>Shuttle</span></span>
+                  <span class="tag tag--type"><span data-lang="ko">서울 약 40분</span><span data-lang="en" hidden>~40 min from Seoul</span></span>
+                </div>
+              </div>
+            </div>
+          </a>
+
+          <a class="vcard">
+            <div class="vcard__link">
+              <div class="vcard__media">
+                <img src="/assets/ev_venue_kspo.webp" alt="KSPO DOME" loading="lazy" decoding="async">
+                <span class="vcard__pin"><span data-lang="ko">송파</span><span data-lang="en" hidden>Songpa</span></span>
+              </div>
+              <div class="vcard__body">
+                <h3 class="vcard__name"><span data-lang="ko">KSPO DOME 체조경기장</span><span data-lang="en" hidden>KSPO DOME Gymnastics Arena</span></h3>
+                <p class="vcard__desc"><span data-lang="ko">K-POP 팬들의 성지 · 올림픽공원</span><span data-lang="en" hidden>A mecca for K-POP fans · Olympic Park</span></p>
+                <div class="vcard__meta">
+                  <span class="tag tag--private"><span data-lang="ko">프라이빗</span><span data-lang="en" hidden>Private</span></span>
+                  <span class="tag tag--type"><span data-lang="ko">송파구</span><span data-lang="en" hidden>Songpa-gu</span></span>
+                </div>
+              </div>
+            </div>
+          </a>
+
+          <a class="vcard">
+            <div class="vcard__link">
+              <div class="vcard__media">
+                <img src="/assets/ev_venue_busan_asiad.webp" alt="부산아시아드 주경기장" loading="lazy" decoding="async">
+                <span class="vcard__pin"><span data-lang="ko">부산</span><span data-lang="en" hidden>Busan</span></span>
+              </div>
+              <div class="vcard__body">
+                <h3 class="vcard__name"><span data-lang="ko">부산아시아드 주경기장</span><span data-lang="en" hidden>Busan Asiad Main Stadium</span></h3>
+                <p class="vcard__desc"><span data-lang="ko">53,000석 · 2002 월드컵의 유산</span><span data-lang="en" hidden>53,000 seats · legacy of the 2002 World Cup</span></p>
+                <div class="vcard__meta">
+                  <span class="tag tag--shuttle"><span data-lang="ko">셔틀</span><span data-lang="en" hidden>Shuttle</span></span>
+                  <span class="tag tag--type"><span data-lang="ko">연제구</span><span data-lang="en" hidden>Yeonje-gu</span></span>
+                </div>
+              </div>
+            </div>
+          </a>
+
+          <a class="vcard">
+            <div class="vcard__link">
+              <div class="vcard__media">
+                <img src="/assets/ev_venue_kintex.webp" alt="킨텍스 KINTEX" loading="lazy" decoding="async">
+                <span class="vcard__pin"><span data-lang="ko">일산</span><span data-lang="en" hidden>Ilsan</span></span>
+              </div>
+              <div class="vcard__body">
+                <h3 class="vcard__name"><span data-lang="ko">킨텍스 KINTEX</span><span data-lang="en" hidden>KINTEX</span></h3>
+                <p class="vcard__desc"><span data-lang="ko">국내 최대 전시·컨벤션 · 사계절 실내 공연장</span><span data-lang="en" hidden>Korea's largest expo·convention · all-season indoor venue</span></p>
+                <div class="vcard__meta">
+                  <span class="tag tag--private"><span data-lang="ko">프라이빗</span><span data-lang="en" hidden>Private</span></span>
+                  <span class="tag tag--type"><span data-lang="ko">고양시</span><span data-lang="en" hidden>Goyang-si</span></span>
+                </div>
+              </div>
+            </div>
+          </a>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= S4. 문의 배너 ================= -->
+    <section class="move" id="inquiry" aria-label="이벤트 문의">
+      <div class="wrap" style="padding:0">
+        <div class="move__in rv">
+          <h2 class="move__title"><span data-lang="ko">단체·기업 이벤트 이동도,<br>맞춤으로</span><span data-lang="en" hidden>Group & corporate event transfers,<br>tailored to you</span></h2>
+          <p class="move__sub"><span data-lang="ko">공연 관람, 원정 응원, 기업 행사까지. 인원과 일정만 알려주시면 가장 알맞은 셔틀·프라이빗 이동을 안내해 드립니다.</span><span data-lang="en" hidden>Concerts, away-game support, corporate events. Just tell us your party size and schedule, and we'll arrange the best shuttle or private ride.</span></p>
+          <div class="move__row">
+            <a href="#" class="btn btn--light"><span data-lang="ko">이벤트 문의하기</span><span data-lang="en" hidden>Inquire about events</span>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
+            </a>
+            <a href="#" class="btn btn--linelight"><span data-lang="ko">프라이빗 상담</span><span data-lang="en" hidden>Private consultation</span></a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </div><!-- /.ev-flow -->
+
+</main>
+
+<div data-include="footer"></div>
+
+<script>
+(function(){
+  var reduce=matchMedia('(prefers-reduced-motion:reduce)').matches;
+
+  /* ---------- S1 히어로 패럴럭스 (배경 줌인 + 텍스트 시차 페이드) ---------- */
+  var hero=document.getElementById('ehero');
+  var heroBg=document.getElementById('eheroBg');
+  var heroIn=document.getElementById('eheroIn');
+  if(hero&&heroBg&&!reduce){
+    var ticking=false;
+    function onParallax(){
+      ticking=false;
+      var h=hero.offsetHeight||window.innerHeight;
+      var p=Math.min(1,Math.max(0,window.scrollY/h));
+      // 배경: 천천히 따라오며 살짝 확대 (콘텐츠가 위로 덮는 동안 깊이감)
+      heroBg.style.transform='translate3d(0,'+(p*14)+'%,0) scale('+(1+p*0.12)+')';
+      // 텍스트: 더 빠르게 위로 빠지며 페이드아웃
+      heroIn.style.transform='translate3d(0,'+(p*-240)+'px,0)';
+      heroIn.style.opacity=String(Math.max(0,1-p*1.15));
+    }
+    function reqParallax(){if(!ticking){ticking=true;requestAnimationFrame(onParallax);}}
+    addEventListener('scroll',reqParallax,{passive:true});
+    addEventListener('resize',reqParallax,{passive:true});
+    onParallax();
+  }
+
+  /* ---------- S2 유형×상태 필터 ---------- */
+  var typeChips=[].slice.call(document.querySelectorAll('.fgroup--type .chip'));
+  var statusChips=[].slice.call(document.querySelectorAll('.fgroup--status .chip'));
+  var cards=[].slice.call(document.querySelectorAll('#egrid .ecard'));
+  var evSec=document.getElementById('events');
+  var aType='all', aStatus='all';
+
+  function staggerIn(shown){
+    if(reduce){shown.forEach(function(c){c.classList.add('is-in');});return;}
+    requestAnimationFrame(function(){requestAnimationFrame(function(){
+      shown.forEach(function(c,i){c.style.transitionDelay=(0.04+i*0.04)+'s';c.classList.add('is-in');});
+    });});
+  }
+  function applyFilter(animate){
+    var shown=[];
+    cards.forEach(function(c){
+      var tOk=(aType==='all')||(c.getAttribute('data-type')===aType);
+      var sOk=(aStatus==='all')||(c.getAttribute('data-status')===aStatus);
+      var show=tOk&&sOk;
+      c.style.display=show?'':'none';
+      c.classList.remove('is-in');c.style.transitionDelay='';
+      if(show)shown.push(c);
+    });
+    evSec.classList.toggle('is-empty',shown.length===0);
+    if(animate)staggerIn(shown);
+  }
+  typeChips.forEach(function(c){c.addEventListener('click',function(){
+    aType=c.getAttribute('data-type');
+    typeChips.forEach(function(x){x.classList.toggle('on',x===c);});
+    applyFilter(true);
+  });});
+  statusChips.forEach(function(c){c.addEventListener('click',function(){
+    aStatus=c.getAttribute('data-status');
+    statusChips.forEach(function(x){x.classList.toggle('on',x===c);});
+    applyFilter(true);
+  });});
+
+  /* ---------- D-Day 계산 (예정 카드) — 언어 토글 시 '진행중'/'Now on' 갱신 ---------- */
+  var today=new Date();today.setHours(0,0,0,0);
+  function paintDday(){
+    cards.forEach(function(c){
+      if(c.getAttribute('data-status')!=='upcoming')return;
+      var ds=c.getAttribute('data-date');if(!ds)return;
+      var d=new Date(ds);d.setHours(0,0,0,0);
+      var diff=Math.round((d-today)/86400000);
+      var badge=c.querySelector('.ecard__dday');
+      if(!badge)return;
+      var inprog=document.documentElement.lang==='en'?'Now on':'진행중';
+      badge.textContent=diff>0?('D-'+diff):(diff===0?'D-DAY':inprog);
+    });
+  }
+  paintDday();
+  window.addEventListener('langchange',paintDday);
+
+  /* ---------- 카드 첫 등장 ---------- */
+  var grid=document.getElementById('egrid');
+  if(grid&&'IntersectionObserver' in window){
+    var gio=new IntersectionObserver(function(es){
+      if(es[0].isIntersecting){staggerIn(cards.filter(function(c){return c.style.display!=='none';}));gio.disconnect();}
+    },{threshold:.1});
+    gio.observe(grid);
+  } else {staggerIn(cards);}
+
+  /* 공연장 카드 등장 */
+  var vcards=[].slice.call(document.querySelectorAll('.vcard'));
+  if('IntersectionObserver' in window){
+    var vio=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting){e.target.classList.add('is-in');vio.unobserve(e.target);}});},{threshold:.12});
+    vcards.forEach(function(el,i){el.style.transitionDelay=(i%3*0.05)+'s';vio.observe(el);});
+  } else {vcards.forEach(function(el){el.classList.add('is-in');});}
+
+  /* 이벤트 최신순 정렬 (예정·종료 통합, 날짜 내림차순) — data-date 없는 종료 카드는 ecard__date(MM.DD) 파싱 */
+  (function(){
+    var grid=document.getElementById('egrid');
+    function dkey(c){var d=c.getAttribute('data-date');if(d)return d;var t=c.querySelector('.ecard__date');var m=t&&t.textContent.match(/(\d{2})\.(\d{2})/);return m?('2026-'+m[1]+'-'+m[2]):'0';}
+    [].slice.call(grid.children).sort(function(a,b){var ka=dkey(a),kb=dkey(b);return ka<kb?1:ka>kb?-1:0;}).forEach(function(c){grid.appendChild(c);});
+  })();
+
+  applyFilter(false);
+
+  /* ---------- 모바일 nav 토글 + 다크 히어로 스크롤 전환 ---------- */
+  var _nav=document.getElementById('nav'),_burger=document.getElementById('navBurger');
+  if(_nav&&_burger){
+    _burger.addEventListener('click',function(){var o=_nav.classList.toggle('is-open');_burger.setAttribute('aria-expanded',o?'true':'false');_burger.setAttribute('aria-label',o?'메뉴 닫기':'메뉴 열기');});
+    document.querySelectorAll('#navDrawer a').forEach(function(a){a.addEventListener('click',function(){_nav.classList.remove('is-open');});});
+  }
+
+  /* ---------- reveal ---------- */
+  if('IntersectionObserver' in window){
+    var io=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target);}});},{threshold:.18,rootMargin:'0px 0px -8% 0px'});
+    document.querySelectorAll('.rv').forEach(function(el){io.observe(el);});
+  } else {document.querySelectorAll('.rv').forEach(function(el){el.classList.add('in');});}
+})();
+</script>
+  <script src="../js/includes.js"></script>
+</body>
+</html>

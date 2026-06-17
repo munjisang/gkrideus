@@ -1,0 +1,657 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="theme-color" content="#FAF8F5" />
+<title>여행 — 좋은 장소를 만나는 일 | K.RIDEUS Place</title>
+<meta name="description" content="지역을 고르면 그 도의 모양으로 펼쳐지는 K.Rideus 여행 장소 컬렉션. 대표 여행지와 이동 서비스를 함께 안내합니다." />
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/flubber@0.4.2/build/flubber.min.js"></script>
+
+<style>
+/* ============================================================
+   K.Rideus 여행(Place) 허브 — 지도 모핑 v6
+   히어로: 좌 텍스트 + 우 '도 지도 모양' 이미지(지역 전환 시 형태 모핑)
+   ※ 도 모양은 추상 근사 — 정확 시도 SVG path로 교체 예정
+   지역: 서울·경기·인천·강원·경상·전라·제주
+   Warm Cream. 색 체계: 셔틀=오렌지·프라이빗=바이올렛·둘다=블루
+   ============================================================ */
+:root{
+  --bg:#FAF8F5;--surface:#FFFEFC;--card:#FFFFFF;
+  --ink:#1B2027;--ink-soft:#5C6675;--ink-faint:#97A0AC;
+  --accent:#2C51DB;--accent-soft:#E4E9FB;
+  --shuttle:#E8632F;--shuttle-soft:#F6E8DC;
+  --private:#5B45B8;--private-soft:#ECE6F7;
+  --hair:#ECE7DF;--hair-soft:#F3EFE8;
+  --shadow:18 24 33;--maxw:1280px;
+  --fd:'Outfit','Pretendard',sans-serif;--fb:'Pretendard',-apple-system,BlinkMacSystemFont,sans-serif;
+  --e-out:cubic-bezier(.16,1,.3,1);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{overflow-x:clip;scroll-behavior:smooth}
+body{font-family:var(--fb);background:var(--bg);color:var(--ink);line-height:1.4;letter-spacing:-.005em;-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;overflow-x:clip;word-break:keep-all;overflow-wrap:break-word}
+img{max-width:100%;display:block}
+a,button{color:inherit;text-decoration:none;font:inherit}
+button{background:none;border:none;cursor:pointer}
+ul,li{list-style:none}
+.wrap{max-width:var(--maxw);margin:0 auto;padding:0 clamp(24px,4vw,56px)}
+
+/* ---------- Navbar ---------- */
+.nav{position:sticky;top:0;z-index:60;background:color-mix(in srgb, var(--bg) 86%, transparent);backdrop-filter:saturate(140%) blur(12px);-webkit-backdrop-filter:saturate(140%) blur(12px)}
+.nav__in{max-width:var(--maxw);margin:0 auto;padding:20px clamp(24px,4vw,56px);display:flex;align-items:center;gap:44px}
+.brand{display:inline-flex;align-items:center}.brand img{height:28px;width:auto;display:block}
+.brand b{color:var(--accent);font-weight:700}
+.nav__menu{display:flex;gap:32px;font-size:.95rem;font-weight:500}
+.nav__menu a{color:var(--ink-soft);padding:8px 0;transition:color .25s var(--e-out)}
+.nav__menu a:hover{color:var(--ink)}
+.nav__menu a[aria-current]{color:var(--ink);font-weight:600}
+.nav__right{margin-left:auto;display:flex;align-items:center;gap:8px;color:var(--ink-soft)}
+.nav__lang{display:flex;align-items:center;gap:2px;background:var(--hair-soft);border-radius:999px;padding:4px;font-size:.78rem;font-weight:600}
+.nav__lang span{padding:4px 12px;border-radius:999px;color:var(--ink-faint)}
+.nav__lang span.on{background:#fff;color:var(--accent)}
+.nav__ic{width:40px;height:40px;display:grid;place-items:center;border-radius:50%;transition:background .25s var(--e-out)}
+.nav__ic:hover{background:var(--hair-soft)}
+/* 모바일 nav (햄버거 + 드로어) — 4페이지 공통 */
+.nav__burger{display:none;width:42px;height:42px;flex-direction:column;align-items:center;justify-content:center;gap:5px;border:none;background:none;cursor:pointer}
+.nav__burger span{display:block;width:22px;height:2px;background:#1B2027;border-radius:2px;transition:transform .3s cubic-bezier(.16,1,.3,1),opacity .2s}
+.nav.is-open .nav__burger span:nth-child(1){transform:translateY(7px) rotate(45deg)}
+.nav.is-open .nav__burger span:nth-child(2){opacity:0}
+.nav.is-open .nav__burger span:nth-child(3){transform:translateY(-7px) rotate(-45deg)}
+.nav__drawer{display:none;flex-direction:column;max-width:1280px;margin:0 auto;padding:4px clamp(24px,4vw,56px) 18px}
+.nav__drawer a{padding:14px 4px;font-size:1.05rem;font-weight:600;color:#1B2027;border-bottom:1px solid #F3EFE8;text-decoration:none}
+.nav__drawer a.is-disabled{color:#97A0AC}
+.nav__drawer a[aria-current]{color:#2C51DB}
+.nav__drawer-lang{display:inline-flex;align-self:flex-start;margin-top:14px;align-items:center;gap:2px;background:#F3EFE8;border-radius:999px;padding:4px;font-size:.78rem;font-weight:600}
+.nav__drawer-lang span{padding:4px 12px;border-radius:999px;color:#97A0AC}
+.nav__drawer-lang span.on{background:#fff;color:#2C51DB}
+@media (max-width:768px){
+  .nav__menu,.nav__ic,.nav__lang{display:none}
+  .nav__burger{display:flex}
+  .nav.is-open .nav__drawer{display:flex;animation:navDrop .3s cubic-bezier(.16,1,.3,1)}
+}
+@keyframes navDrop{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:none}}
+
+/* ---------- S1. 지도 모핑 히어로 (좌 텍스트 / 우 도 모양) ---------- */
+.hero{max-width:var(--maxw);margin:0 auto;padding:40px clamp(24px,4vw,56px) clamp(24px,3vw,40px);display:grid;grid-template-columns:0.92fr 1.08fr;gap:clamp(28px,4vw,64px);align-items:center;min-height:clamp(420px,58vh,580px)}
+.hero__txt{max-width:40ch;padding-left:clamp(8px,1.8vw,32px)}
+.hero__label{font-family:var(--fd);font-size:.74rem;font-weight:600;letter-spacing:.24em;text-transform:uppercase;color:var(--ink-faint);margin-bottom:clamp(16px,2vw,26px)}
+.hero__over{font-family:var(--fd);font-size:.82rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--accent);margin-bottom:12px;line-height:1.3;min-height:1.3em;white-space:nowrap;transition:opacity .4s var(--e-out)}
+.hero__name{font-weight:700;letter-spacing:-.04em;line-height:1;font-size:clamp(2.8rem,6.2vw,4.6rem);color:var(--ink);white-space:nowrap;transition:opacity .4s var(--e-out)}
+.hero__tag{margin-top:16px;font-size:clamp(1.05rem,1.5vw,1.4rem);font-weight:600;letter-spacing:-.02em;color:var(--ink);max-width:22ch}
+.hero__desc{margin-top:14px;font-size:clamp(.96rem,1.2vw,1.1rem);color:var(--ink-soft);font-weight:500;max-width:42ch;line-height:1.55;min-height:calc(1.55em * 2);display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;line-clamp:2;overflow:hidden}
+.hero__cta{margin-top:clamp(24px,3vw,34px);display:flex;gap:12px}
+.hero__cta .btn{flex:1;justify-content:center}
+.btn{display:inline-flex;align-items:center;gap:8px;height:52px;padding:0 28px;border-radius:999px;font-weight:600;font-size:1rem;letter-spacing:-.01em;white-space:nowrap;transition:transform .25s var(--e-out),background .25s var(--e-out),box-shadow .25s var(--e-out),color .25s var(--e-out)}
+.btn svg{width:17px;height:17px}
+.btn--primary{background:var(--ink);color:#fff}
+.btn--primary:hover{transform:translateY(-2px);background:#000}
+.btn--ghost{background:transparent;color:var(--ink);box-shadow:inset 0 0 0 1.5px var(--hair)}
+.btn--ghost:hover{box-shadow:inset 0 0 0 1.5px var(--ink-soft)}
+/* 도 모양 비주얼 */
+.hero__map{position:relative;width:100%;aspect-ratio:1/1;max-width:620px;margin:0 auto;filter:drop-shadow(0 26px 46px rgb(var(--shadow)/.2))}
+.hero__map svg{width:100%;height:100%;display:block;overflow:visible}
+.mapimg{opacity:0;transition:opacity .55s var(--e-out)}
+.mapimg.on{opacity:1}
+
+/* ---------- S1-1. 지역 메뉴 (카드 strip) ---------- */
+.regnav{position:relative;z-index:5;padding-bottom:clamp(8px,1vw,14px)}
+.regnav__in{max-width:var(--maxw);margin:0 auto;padding:0 clamp(24px,4vw,56px);display:grid;grid-template-columns:repeat(6,1fr);gap:clamp(10px,1vw,14px)}
+.regcard{display:flex;flex-direction:column;align-items:flex-start;gap:12px;padding:clamp(16px,1.5vw,22px) clamp(14px,1.3vw,20px);border-radius:16px;background:var(--card);text-align:left;box-shadow:0 1px 2px rgb(var(--shadow)/.04),0 14px 30px -20px rgb(var(--shadow)/.2);transition:transform .25s var(--e-out),box-shadow .25s var(--e-out)}
+.regcard:hover{transform:translateY(-4px);box-shadow:0 1px 2px rgb(var(--shadow)/.05),0 20px 36px -20px rgb(var(--shadow)/.3)}
+.regcard__ic{width:30px;height:30px;color:var(--ink-faint);transition:color .25s var(--e-out)}
+.regcard__ic svg{width:100%;height:100%}
+.regcard__name{font-size:clamp(1rem,1.2vw,1.14rem);font-weight:700;letter-spacing:-.02em;color:var(--ink)}
+.regcard__sub{display:flex;align-items:center;gap:6px;font-family:var(--fd);font-size:.66rem;font-weight:500;letter-spacing:.06em;color:var(--ink-faint)}
+.regcard__sub i{width:6px;height:6px;border-radius:50%;background:var(--accent)}
+.regcard__sub i.soon{background:transparent;box-shadow:inset 0 0 0 1.4px var(--ink-faint)}
+.regcard.on{box-shadow:inset 0 0 0 2px var(--accent),0 14px 30px -18px rgb(var(--shadow)/.28)}
+.regcard.on .regcard__ic{color:var(--accent)}
+.regcard.on .regcard__name{color:var(--accent)}
+
+/* ---------- S2. 컬렉션 ---------- */
+.coll{padding:clamp(48px,6vw,80px) 0 clamp(56px,7vw,92px)}
+.coll__head{display:flex;align-items:flex-end;justify-content:space-between;gap:24px;flex-wrap:wrap;margin-bottom:22px}
+.coll__title{font-weight:700;letter-spacing:-.03em;line-height:1.1;font-size:clamp(1.5rem,3vw,2.1rem);color:var(--ink)}
+.coll__theme{margin-top:8px;font-size:clamp(.95rem,1.2vw,1.08rem);color:var(--ink-soft);font-weight:500;max-width:54ch;line-height:1.5;min-height:1.5em;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:1;line-clamp:1;overflow:hidden}
+.coll__count{font-size:.84rem;color:var(--ink-faint);font-weight:500;white-space:nowrap}
+.types{position:sticky;top:69px;z-index:40;display:flex;flex-wrap:wrap;gap:8px;padding:14px 0;margin-bottom:8px;background:color-mix(in srgb,var(--bg) 90%,transparent);backdrop-filter:blur(8px)}
+.tchip{display:inline-flex;align-items:center;gap:7px;height:38px;padding:0 16px;border-radius:999px;font-size:.88rem;font-weight:600;letter-spacing:-.01em;color:var(--ink-soft);background:var(--card);box-shadow:inset 0 0 0 1px var(--hair);transition:color .2s var(--e-out),background .2s var(--e-out),box-shadow .2s var(--e-out)}
+.tchip .en{font-family:var(--fd);font-size:.66rem;font-weight:400;color:var(--ink-faint)}
+.tchip:hover{color:var(--ink);box-shadow:inset 0 0 0 1px var(--ink-faint)}
+.tchip.on{background:var(--ink);color:#fff;box-shadow:none}
+.tchip.on .en{color:rgba(255,255,255,.6)}
+
+.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:clamp(16px,1.6vw,22px)}
+.pcard{display:flex;flex-direction:column;opacity:0;transform:translateY(16px);transition:opacity .55s var(--e-out),transform .55s var(--e-out)}
+.pcard.is-in{opacity:1;transform:none}
+.pcard__link{display:flex;flex-direction:column;background:var(--card);border-radius:clamp(14px,1.2vw,18px);overflow:clip;height:100%;transition:transform .28s var(--e-out),box-shadow .28s var(--e-out)}
+.pcard__link:hover{transform:translateY(-4px);box-shadow:0 1px 1px rgb(var(--shadow)/.04),0 20px 38px -22px rgb(var(--shadow)/.32)}
+.pcard__media{position:relative;aspect-ratio:4/3;overflow:hidden;display:flex;align-items:flex-end;background:linear-gradient(135deg,#F4EFE8,#ECE6DD)}
+.pcard__media[data-type="리조트"]{background:linear-gradient(135deg,#EAEFEF,#DCE5E4)}
+.pcard__media[data-type="테마파크"]{background:linear-gradient(135deg,#EFE9F1,#E4DCEA)}
+.pcard__media[data-type="쇼핑"]{background:linear-gradient(135deg,#F4ECE6,#ECDFD4)}
+.pcard__media[data-type="시티투어"]{background:linear-gradient(135deg,#E8EEFB,#DCE5F4)}
+.pcard__media[data-type="자연"]{background:linear-gradient(135deg,#E7F0E6,#D8E6D6)}
+.pcard__img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block}
+.pcard__ph{position:absolute;left:16px;bottom:14px;font-family:var(--fd);font-size:.72rem;font-weight:500;letter-spacing:.1em;text-transform:uppercase;color:rgba(27,32,39,.34)}
+.pcard__pin{position:absolute;top:12px;left:12px;z-index:2;display:inline-flex;align-items:center;height:25px;padding:0 11px;border-radius:999px;font-size:.71rem;font-weight:600;letter-spacing:-.01em;background:rgba(255,254,252,.92);color:var(--ink-soft);backdrop-filter:blur(4px)}
+.pcard__body{padding:15px 17px 18px;display:flex;flex-direction:column;flex:1}
+.pcard__loc{font-family:var(--fd);font-size:.74rem;font-weight:600;letter-spacing:-.005em;color:var(--ink-faint);display:flex;align-items:center;gap:4px;margin-bottom:5px}
+.pcard__loc::before{content:'';width:10px;height:10px;flex-shrink:0;background:currentColor;-webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M12 2C8.1 2 5 5.1 5 9c0 5.2 7 13 7 13s7-7.8 7-13c0-3.9-3.1-7-7-7zm0 9.5a2.5 2.5 0 110-5 2.5 2.5 0 010 5z'/%3E%3C/svg%3E") center/contain no-repeat;mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M12 2C8.1 2 5 5.1 5 9c0 5.2 7 13 7 13s7-7.8 7-13c0-3.9-3.1-7-7-7zm0 9.5a2.5 2.5 0 110-5 2.5 2.5 0 010 5z'/%3E%3C/svg%3E") center/contain no-repeat}
+.pcard__title{font-size:1.05rem;font-weight:700;letter-spacing:-.015em;color:var(--ink);line-height:1.25}
+.pcard__meta{display:flex;flex-wrap:wrap;align-items:center;gap:7px;margin-top:auto;padding-top:13px}
+.tag{display:inline-flex;align-items:center;height:23px;padding:0 9px;border-radius:999px;font-size:.71rem;font-weight:700;letter-spacing:-.01em;white-space:nowrap}
+.tag--type{background:var(--hair-soft);color:var(--ink-soft)}
+.tag--shuttle,.tag--private{padding-left:8px}
+.tag--shuttle::before,.tag--private::before{content:'';width:5px;height:5px;border-radius:50%;margin-right:5px;flex-shrink:0}
+.tag--shuttle{background:var(--shuttle-soft);color:var(--shuttle)}
+.tag--shuttle::before{background:var(--shuttle)}
+.tag--private{background:var(--private-soft);color:var(--private)}
+.tag--private::before{background:var(--private)}
+.pcard__region{font-size:.8rem;color:var(--ink-faint);font-weight:500}
+.pcard--soon .pcard__link{cursor:default}
+.pcard--soon .pcard__media{filter:grayscale(.32) brightness(1.02)}
+.pcard--soon .pcard__media::after{content:'';position:absolute;inset:0;background:rgba(250,248,245,.34)}
+.pcard--soon .pcard__link:hover{transform:none;box-shadow:none}
+.pcard--soon .pcard__title{color:var(--ink-soft)}
+.coll__empty{display:none;padding:48px 0;text-align:center;color:var(--ink-faint);font-size:.95rem}
+.coll.is-empty .grid{display:none}
+.coll.is-empty .coll__empty{display:block}
+
+/* ---------- S3. 여행 특장점 — 길 따라 USP ---------- */
+.journey{position:relative;padding:clamp(64px,8vw,112px) 0 clamp(72px,9vw,128px);background:linear-gradient(180deg,var(--surface),#F4F0EA);overflow:clip}
+.journey__head{text-align:center;margin-bottom:clamp(8px,1.5vw,18px)}
+.journey__eyebrow{font-family:var(--fd);font-size:.76rem;font-weight:600;letter-spacing:.2em;text-transform:uppercase;color:var(--accent);margin-bottom:14px}
+.journey__title{font-weight:700;letter-spacing:-.03em;line-height:1.12;font-size:clamp(1.6rem,3.4vw,2.5rem);color:var(--ink);text-wrap:balance}
+.journey__track{position:relative;max-width:960px;margin:clamp(28px,4vw,56px) auto 0;padding:24px 0}
+.journey__road{position:absolute;top:0;left:50%;transform:translateX(-50%);width:120px;height:100%;z-index:0;pointer-events:none}
+.journey__road svg{width:100%;height:100%;display:block}
+.road-base{fill:none;stroke:var(--hair);stroke-width:24;stroke-linecap:round}
+.road-prog{fill:none;stroke:var(--accent);stroke-width:7;stroke-linecap:round;opacity:.9}
+.road-dash{fill:none;stroke:#FFFEFC;stroke-width:2.4;stroke-linecap:round;stroke-dasharray:1 15}
+.journey__marker{position:absolute;left:50%;top:0;width:36px;height:36px;transform:translate(-50%,-50%) rotate(-45deg);z-index:3;display:grid;place-items:center;background:var(--shuttle);color:#fff;border-radius:50% 50% 50% 0;box-shadow:0 7px 18px -5px rgba(232,99,47,.5)}
+.journey__marker svg{width:17px;height:17px;rotate:45deg}
+.stop{position:relative;z-index:1;display:grid;grid-template-columns:1fr 120px 1fr;align-items:center;min-height:clamp(220px,26vw,300px)}
+.stop__node{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);z-index:2;width:18px;height:18px;border-radius:50%;background:var(--surface);box-shadow:inset 0 0 0 3px var(--hair);transition:box-shadow .45s var(--e-out)}
+.stop.in .stop__node{box-shadow:inset 0 0 0 5px var(--accent)}
+.stop__usp{grid-column:1;padding-right:clamp(24px,3.4vw,52px);text-align:right}
+.stop__media{grid-column:3;padding-left:clamp(24px,3.4vw,52px)}
+.stop:nth-child(even) .stop__usp{grid-column:3;padding-right:0;padding-left:clamp(24px,3.4vw,52px);text-align:left}
+.stop:nth-child(even) .stop__media{grid-column:1;padding-left:0;padding-right:clamp(24px,3.4vw,52px)}
+.stop__num{font-family:var(--fd);font-size:clamp(2.6rem,4vw,3.6rem);font-weight:600;line-height:1;color:var(--accent);letter-spacing:-.02em;margin-bottom:12px}
+.stop__t{font-size:clamp(1.2rem,1.7vw,1.4rem);font-weight:700;letter-spacing:-.02em;color:var(--ink);margin-bottom:10px}
+.stop__d{font-size:clamp(.92rem,1.1vw,1rem);line-height:1.62;color:var(--ink-soft);font-weight:500;max-width:36ch;margin-left:auto}
+.stop:nth-child(even) .stop__d{margin-left:0;margin-right:auto}
+.stop:nth-of-type(2) .stop__usp{position:relative;top:clamp(72px,6vw,96px)}
+.stop:nth-of-type(2) .stop__media{position:relative;top:clamp(-112px,-7vw,-72px)}
+.stop__img{display:block}
+.stop__img img{display:block;width:100%;height:auto;filter:drop-shadow(0 12px 20px rgba(20,24,31,.15))}
+.stop__usp{opacity:0;transform:translateX(-54px);transition:opacity .7s var(--e-out),transform .85s var(--e-out)}
+.stop__media{opacity:0;transform:translateX(54px);transition:opacity .7s var(--e-out),transform .85s var(--e-out)}
+.stop:nth-child(even) .stop__usp{transform:translateX(54px)}
+.stop:nth-child(even) .stop__media{transform:translateX(-54px)}
+.stop.in .stop__usp,.stop.in .stop__media{opacity:1;transform:none}
+.stop.in .stop__media{transition-delay:.08s}
+
+/* ---------- S4. 더보기 ---------- */
+.more{padding:clamp(48px,6vw,80px) 0}
+.more__grid{display:grid;grid-template-columns:1fr 1fr;gap:clamp(16px,1.6vw,22px)}
+.more__card{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:clamp(24px,2.6vw,32px) clamp(26px,2.8vw,36px);border-radius:clamp(14px,1.2vw,18px);background:var(--card);box-shadow:inset 0 0 0 1px var(--hair);transition:box-shadow .25s var(--e-out),transform .25s var(--e-out)}
+.more__card:hover{transform:translateY(-3px);box-shadow:inset 0 0 0 1px var(--ink-faint)}
+.more__t{font-size:1.12rem;font-weight:700;letter-spacing:-.02em;color:var(--ink)}
+.more__dsc{margin-top:6px;font-size:.88rem;color:var(--ink-soft);font-weight:500}
+.more__arrow{width:44px;height:44px;border-radius:50%;flex-shrink:0;display:grid;place-items:center;background:var(--bg);color:var(--ink);transition:background .25s var(--e-out),color .25s var(--e-out)}
+.more__arrow svg{width:18px;height:18px}
+.more__card:hover .more__arrow{background:var(--ink);color:#fff}
+
+/* ---------- S5. 이동 CTA ---------- */
+.move{padding:clamp(24px,4vw,56px) 0 clamp(72px,8vw,112px)}
+.move__in{position:relative;overflow:hidden;border-radius:clamp(18px,2vw,28px);padding:clamp(44px,5.5vw,76px) clamp(28px,4vw,64px);background-image:linear-gradient(90deg,rgba(27,32,39,.92) 0%,rgba(27,32,39,.82) 36%,rgba(27,32,39,.48) 58%,rgba(35,57,132,.18) 100%),linear-gradient(120deg,rgba(27,32,39,.5),rgba(42,53,80,.14)),url('img/banner002.png');background-size:cover,cover,cover;background-position:center,center,center right;background-repeat:no-repeat;color:#fff;isolation:isolate}
+.move__in::after{content:'';position:absolute;inset:0;z-index:-1;background:radial-gradient(120% 140% at 88% 10%,rgba(44,81,219,.14),transparent 58%)}
+.move__eyebrow{font-family:var(--fd);font-size:.76rem;font-weight:600;letter-spacing:.2em;text-transform:uppercase;color:rgba(255,255,255,.72);margin-bottom:16px}
+.move__title{font-weight:700;letter-spacing:-.03em;line-height:1.12;font-size:clamp(1.6rem,3.2vw,2.4rem);max-width:22ch}
+.move__sub{margin-top:16px;font-size:clamp(.96rem,1.2vw,1.1rem);color:rgba(255,255,255,.82);font-weight:500;max-width:50ch}
+.move__row{margin-top:clamp(26px,3vw,36px);display:flex;flex-wrap:wrap;gap:12px}
+.btn--light{background:#fff;color:var(--ink)}
+.btn--light:hover{transform:translateY(-2px)}
+.btn--linelight{background:transparent;color:#fff;box-shadow:inset 0 0 0 1.5px rgba(255,255,255,.36)}
+.btn--linelight:hover{box-shadow:inset 0 0 0 1.5px rgba(255,255,255,.75)}
+
+/* ---------- Footer ---------- */
+.foot{background:var(--ink);color:rgba(255,255,255,.66);padding:clamp(48px,6vw,72px) 0 28px}
+.foot__in{max-width:var(--maxw);margin:0 auto;padding:0 clamp(24px,4vw,56px);display:grid;grid-template-columns:1.5fr 1fr 1fr 1fr;gap:clamp(28px,4vw,48px)}
+.foot__brand .logo{font-family:var(--fd);font-weight:700;font-size:1.3rem;letter-spacing:-.02em;color:#fff;margin-bottom:14px}
+.foot__brand .logo b{color:#8AA0FF}
+.foot__brand p{font-size:.84rem;line-height:1.7;color:rgba(255,255,255,.5)}
+.foot__col h4{font-size:.82rem;font-weight:600;color:#fff;margin-bottom:14px}
+.foot__col ul{display:grid;gap:9px}
+.foot__col li{font-size:.86rem;display:flex;align-items:center;gap:9px}
+.foot__col a{color:rgba(255,255,255,.5);transition:color .2s var(--e-out)}
+.foot__col a:hover{color:#fff}
+.foot__col .soon{font-size:.66rem;color:rgba(255,255,255,.32)}
+.foot__bottom{max-width:var(--maxw);margin:clamp(32px,4vw,44px) auto 0;padding:22px clamp(24px,4vw,56px) 0;border-top:1px solid rgba(255,255,255,.12);display:flex;justify-content:space-between;flex-wrap:wrap;gap:10px;font-size:.74rem;color:rgba(255,255,255,.4)}
+
+/* reveal */
+.rv{opacity:0;transform:translateY(22px)}
+.rv.in{opacity:1;transform:none;transition:opacity .8s var(--e-out),transform .9s var(--e-out)}
+@media (prefers-reduced-motion:reduce){.rv,.stop__usp,.stop__media,.pcard{opacity:1!important;transform:none!important}.pcard{transition:none}.mapimg{transition:none}.road-prog,.journey__marker{display:none}}
+
+/* 반응형 */
+@media (max-width:1080px){.grid{grid-template-columns:repeat(3,1fr)}}
+@media (max-width:920px){.regnav__in{grid-template-columns:repeat(3,1fr)}}
+@media (max-width:880px){
+  .hero{grid-template-columns:1fr;gap:24px;min-height:auto;text-align:left}
+  .hero__txt{max-width:none}
+  .hero__map{order:-1;max-width:380px}
+  .foot__in{grid-template-columns:1fr 1fr;gap:28px}
+}
+@media (max-width:780px){
+  .nav__in{gap:14px;padding-left:20px;padding-right:20px}
+  .nav__menu{gap:16px;font-size:.9rem}
+  .nav__menu a{white-space:nowrap}
+  .nav__lang{display:none}
+  .grid{grid-template-columns:repeat(2,1fr)}
+  .more__grid{grid-template-columns:1fr}
+  .types{top:65px}
+  .regnav__in{display:flex;gap:10px;overflow-x:auto;padding-bottom:6px;scrollbar-width:none;scroll-snap-type:x mandatory}
+  .regnav__in::-webkit-scrollbar{display:none}
+  .regcard{flex:0 0 132px;scroll-snap-align:start}
+  .journey__road{left:17px;transform:none;width:54px}
+  .journey__marker{left:51px}
+  .stop{grid-template-columns:1fr;min-height:auto;padding:24px 0 24px 78px}
+  .stop__node{left:44px;top:47px;transform:translate(-50%,-50%)}
+  .stop__usp,.stop:nth-child(even) .stop__usp{grid-column:1;text-align:left;padding:0;top:0;transform:translateX(30px)}
+  .stop.in .stop__usp{transform:none}
+  .stop__d,.stop:nth-child(even) .stop__d{margin-left:0;margin-right:auto;max-width:none}
+  .stop__media,.stop:nth-child(even) .stop__media{display:none}
+}
+@media (max-width:480px){
+  .grid{grid-template-columns:1fr}
+  .foot__in{grid-template-columns:1fr}
+  .hero__cta .btn{flex:1;justify-content:center}
+  .hero__map{max-width:300px}
+}
+</style>
+</head>
+<body data-base="../">
+
+<div data-include="navbar"></div>
+
+<main>
+
+  <!-- ================= S1. 지도 모핑 히어로 ================= -->
+  <header class="hero">
+    <div class="hero__txt">
+      <h1 class="hero__name" id="heroName"><span data-lang="ko">강원</span><span data-lang="en" hidden>Gangwon</span></h1>
+      <p class="hero__tag" id="heroTag"><span data-lang="ko">설산과 리조트, 동해 바다를 따라 떠나는 여행</span><span data-lang="en" hidden>Snowy peaks, resorts, and the East Sea coast</span></p>
+      <p class="hero__desc" id="heroDesc"><span data-lang="ko">스키 리조트·해안 도시·로컬 투어, 사계절 강원 여행.</span><span data-lang="en" hidden>Ski resorts, coastal towns, and local tours all year round.</span></p>
+      <div class="hero__cta">
+        <a href="#collection" class="btn btn--primary"><span data-lang="ko">장소 둘러보기</span><span data-lang="en" hidden>Browse places</span>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12l7 7 7-7"/></svg>
+        </a>
+        <a href="#" class="btn btn--ghost"><span data-lang="ko">이동 문의하기</span><span data-lang="en" hidden>Inquire about rides</span></a>
+      </div>
+    </div>
+
+    <div class="hero__map">
+      <svg viewBox="0 0 200 200" aria-hidden="true">
+        <defs><clipPath id="mapClip"><path id="clipShape" d="" clip-rule="evenodd"/></clipPath></defs>
+        <g clip-path="url(#mapClip)">
+          <image class="mapimg" data-region="gangwon"    href="heroImg/gangwon.png"        x="3.0" y="13.3" width="194.0" height="173.5" preserveAspectRatio="xMidYMid slice"/>
+          <image class="mapimg" data-region="seoul"      href="heroImg/seoul.png"          x="3.0" y="22.3" width="194.0" height="155.4" preserveAspectRatio="xMidYMid slice"/>
+          <image class="mapimg" data-region="gyeonggi"   href="heroImg/kyungIn.png" x="27.7" y="3.0" width="144.7" height="194.0" preserveAspectRatio="xMidYMid slice"/>
+          <image class="mapimg" data-region="gyeongsang" href="heroImg/kyungsang.png"       x="33.9" y="3.0" width="132.1" height="194.0" preserveAspectRatio="xMidYMid slice"/>
+          <image class="mapimg" data-region="jeolla"     href="heroImg/jeola.png"          x="27.9" y="3.0" width="144.2" height="194.0" preserveAspectRatio="xMidYMid slice"/>
+          <image class="mapimg" data-region="jeju"       href="heroImg/jeju.png"           x="-9.0" y="39.5" width="218.0" height="121.0" preserveAspectRatio="xMidYMid slice"/>
+        </g>
+      </svg>
+    </div>
+  </header>
+
+  <!-- ================= S1-1. 지역 메뉴 ================= -->
+  <nav class="regnav" aria-label="지역 선택">
+    <div class="regnav__in">
+      <button class="regcard" data-region="seoul">
+        <span class="regcard__ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18M6 21V8l5-3 5 3v13M9 11h.01M13 11h.01M9 15h.01M13 15h.01"/></svg></span>
+        <span class="regcard__name"><span data-lang="ko">서울</span><span data-lang="en" hidden>Seoul</span></span>
+      </button>
+      <button class="regcard" data-region="gyeonggi">
+        <span class="regcard__ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8"/><path d="M12 4v16M4 12h16M6.3 6.3l11.4 11.4M17.7 6.3L6.3 17.7"/></svg></span>
+        <span class="regcard__name"><span data-lang="ko">경기·인천</span><span data-lang="en" hidden>Gyeonggi·Incheon</span></span>
+      </button>
+      <button class="regcard on" data-region="gangwon">
+        <span class="regcard__ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 20l5-9 4 5 3-5 6 9z"/></svg></span>
+        <span class="regcard__name"><span data-lang="ko">강원</span><span data-lang="en" hidden>Gangwon</span></span>
+      </button>
+      <button class="regcard" data-region="gyeongsang">
+        <span class="regcard__ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 16c2-2 4 2 6 0s4 2 6 0 4 2 6 0M3 20c2-2 4 2 6 0s4 2 6 0 4 2 6 0M12 11V4l3 2"/></svg></span>
+        <span class="regcard__name"><span data-lang="ko">경상</span><span data-lang="en" hidden>Gyeongsang</span></span>
+      </button>
+      <button class="regcard" data-region="jeolla">
+        <span class="regcard__ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-6 9 6M5 10v9h14v-9M3 11h18"/></svg></span>
+        <span class="regcard__name"><span data-lang="ko">전라</span><span data-lang="en" hidden>Jeolla</span></span>
+      </button>
+      <button class="regcard" data-region="jeju">
+        <span class="regcard__ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 18c3-1 5 1 9 0s6 1 9 0M7 14c1.5-4 3.5-6 5-6s3.5 2 5 6"/></svg></span>
+        <span class="regcard__name"><span data-lang="ko">제주</span><span data-lang="en" hidden>Jeju</span></span>
+      </button>
+    </div>
+  </nav>
+
+  <!-- ================= S2. 컬렉션 ================= -->
+  <section class="coll" id="collection" aria-label="장소 컬렉션">
+    <div class="wrap">
+      <div class="coll__head rv">
+        <div>
+          <h2 class="coll__title" id="collTitle"><span data-lang="ko">강원 대표 장소</span><span data-lang="en" hidden>Featured places in Gangwon</span></h2>
+          <p class="coll__theme" id="collTheme"><span data-lang="ko">스키 리조트·해안 도시·자연 명소의 강원</span><span data-lang="en" hidden>Gangwon, home to ski resorts, coastal towns, and nature</span></p>
+        </div>
+        <span class="coll__count" id="collCount"></span>
+      </div>
+
+      <div class="types" role="tablist" aria-label="유형 선택">
+        <button class="tchip on" data-type="all"><span data-lang="ko">전체</span><span data-lang="en" hidden>All</span></button>
+        <button class="tchip" data-type="리조트"><span data-lang="ko">리조트</span><span data-lang="en" hidden>Resort</span></button>
+        <button class="tchip" data-type="쇼핑"><span data-lang="ko">쇼핑</span><span data-lang="en" hidden>Shopping</span></button>
+        <button class="tchip" data-type="테마파크"><span data-lang="ko">테마파크</span><span data-lang="en" hidden>Theme Park</span></button>
+        <button class="tchip" data-type="시티투어"><span data-lang="ko">시티투어</span><span data-lang="en" hidden>City Tour</span></button>
+        <button class="tchip" data-type="자연"><span data-lang="ko">자연</span><span data-lang="en" hidden>Nature</span></button>
+      </div>
+
+      <div class="grid" id="grid">
+        <!-- 강원 -->
+        <article class="pcard" data-region="gangwon" data-type="리조트" data-status="have"><a class="pcard__link" href="#place-detail"><div class="pcard__media" data-type="리조트"><img class="pcard__img" src="/assets/yongpyung.webp" alt="모나 용평 리조트" loading="lazy"></div><div class="pcard__body"><span class="pcard__loc"><span data-lang="ko">강원 · 평창</span><span data-lang="en" hidden>Gangwon · Pyeongchang</span></span><h3 class="pcard__title"><span data-lang="ko">모나 용평 리조트</span><span data-lang="en" hidden>Mona Yongpyong Resort</span></h3><div class="pcard__meta"><span class="tag tag--type"><span data-lang="ko">리조트</span><span data-lang="en" hidden>Resort</span></span><span class="tag tag--shuttle"><span data-lang="ko">셔틀</span><span data-lang="en" hidden>Shuttle</span></span></div></div></a></article>
+        <article class="pcard" data-region="gangwon" data-type="리조트" data-status="have"><a class="pcard__link" href="#place-detail"><div class="pcard__media" data-type="리조트"><img class="pcard__img" src="/assets/high1.webp" alt="하이원 리조트" loading="lazy"></div><div class="pcard__body"><span class="pcard__loc"><span data-lang="ko">강원 · 정선</span><span data-lang="en" hidden>Gangwon · Jeongseon</span></span><h3 class="pcard__title"><span data-lang="ko">하이원 리조트</span><span data-lang="en" hidden>High1 Resort</span></h3><div class="pcard__meta"><span class="tag tag--type"><span data-lang="ko">리조트</span><span data-lang="en" hidden>Resort</span></span><span class="tag tag--shuttle"><span data-lang="ko">셔틀</span><span data-lang="en" hidden>Shuttle</span></span></div></div></a></article>
+        <article class="pcard" data-region="gangwon" data-type="리조트" data-status="have"><a class="pcard__link" href="#place-detail"><div class="pcard__media" data-type="리조트"><img class="pcard__img" src="img/place_alpensia.webp" alt="알펜시아 리조트" loading="lazy"></div><div class="pcard__body"><span class="pcard__loc"><span data-lang="ko">강원 · 평창</span><span data-lang="en" hidden>Gangwon · Pyeongchang</span></span><h3 class="pcard__title"><span data-lang="ko">알펜시아 리조트</span><span data-lang="en" hidden>Alpensia Resort</span></h3><div class="pcard__meta"><span class="tag tag--type"><span data-lang="ko">리조트</span><span data-lang="en" hidden>Resort</span></span><span class="tag tag--shuttle"><span data-lang="ko">셔틀</span><span data-lang="en" hidden>Shuttle</span></span></div></div></a></article>
+        <article class="pcard" data-region="gangwon" data-type="리조트" data-status="have"><a class="pcard__link" href="resort-vivaldi/index.html"><div class="pcard__media" data-type="리조트"><img class="pcard__img" src="img/place_vivaldi.webp" alt="비발디파크" loading="lazy"></div><div class="pcard__body"><span class="pcard__loc"><span data-lang="ko">강원 · 홍천</span><span data-lang="en" hidden>Gangwon · Hongcheon</span></span><h3 class="pcard__title"><span data-lang="ko">비발디파크</span><span data-lang="en" hidden>Vivaldi Park</span></h3><div class="pcard__meta"><span class="tag tag--type"><span data-lang="ko">리조트</span><span data-lang="en" hidden>Resort</span></span><span class="tag tag--shuttle"><span data-lang="ko">셔틀</span><span data-lang="en" hidden>Shuttle</span></span></div></div></a></article>
+        <article class="pcard" data-region="gangwon" data-type="테마파크" data-status="have"><a class="pcard__link" href="#place-detail"><div class="pcard__media" data-type="테마파크"><img class="pcard__img" src="/assets/theme_legoland_hero.webp" alt="레고랜드 코리아" loading="lazy"></div><div class="pcard__body"><span class="pcard__loc"><span data-lang="ko">강원 · 춘천</span><span data-lang="en" hidden>Gangwon · Chuncheon</span></span><h3 class="pcard__title"><span data-lang="ko">레고랜드 코리아</span><span data-lang="en" hidden>Legoland Korea</span></h3><div class="pcard__meta"><span class="tag tag--type"><span data-lang="ko">테마파크</span><span data-lang="en" hidden>Theme Park</span></span><span class="tag tag--shuttle"><span data-lang="ko">셔틀</span><span data-lang="en" hidden>Shuttle</span></span></div></div></a></article>
+        <article class="pcard" data-region="gangwon" data-type="테마파크" data-status="have"><a class="pcard__link" href="#place-detail"><div class="pcard__media" data-type="테마파크"><img class="pcard__img" src="/assets/theme_ocean-world_hero.webp" alt="오션월드" loading="lazy"></div><div class="pcard__body"><span class="pcard__loc"><span data-lang="ko">강원 · 홍천</span><span data-lang="en" hidden>Gangwon · Hongcheon</span></span><h3 class="pcard__title"><span data-lang="ko">오션월드</span><span data-lang="en" hidden>Ocean World</span></h3><div class="pcard__meta"><span class="tag tag--type"><span data-lang="ko">테마파크</span><span data-lang="en" hidden>Theme Park</span></span><span class="tag tag--shuttle"><span data-lang="ko">셔틀</span><span data-lang="en" hidden>Shuttle</span></span></div></div></a></article>
+        <article class="pcard pcard--soon" data-region="gangwon" data-type="자연" data-status="soon"><a class="pcard__link" href="#place-detail"><div class="pcard__media" data-type="자연"><img class="pcard__img" src="img/place_seoraksan.webp" alt="설악산 국립공원" loading="lazy"><span class="pcard__pin"><span data-lang="ko">가이드 후보</span><span data-lang="en" hidden>Guide candidate</span></span></div><div class="pcard__body"><span class="pcard__loc"><span data-lang="ko">강원 · 속초</span><span data-lang="en" hidden>Gangwon · Sokcho</span></span><h3 class="pcard__title"><span data-lang="ko">설악산 국립공원</span><span data-lang="en" hidden>Seoraksan National Park</span></h3><div class="pcard__meta"><span class="tag tag--type"><span data-lang="ko">자연</span><span data-lang="en" hidden>Nature</span></span></div></div></a></article>
+
+        <!-- 서울 -->
+        <article class="pcard" data-region="seoul" data-type="테마파크" data-status="have"><a class="pcard__link" href="#place-detail"><div class="pcard__media" data-type="테마파크"><img class="pcard__img" src="/assets/theme_lotte-world_hero.webp" alt="롯데월드" loading="lazy"></div><div class="pcard__body"><span class="pcard__loc"><span data-lang="ko">서울 · 잠실</span><span data-lang="en" hidden>Seoul · Jamsil</span></span><h3 class="pcard__title"><span data-lang="ko">롯데월드</span><span data-lang="en" hidden>Lotte World</span></h3><div class="pcard__meta"><span class="tag tag--type"><span data-lang="ko">테마파크</span><span data-lang="en" hidden>Theme Park</span></span><span class="tag tag--shuttle"><span data-lang="ko">셔틀</span><span data-lang="en" hidden>Shuttle</span></span></div></div></a></article>
+        <article class="pcard pcard--soon" data-region="seoul" data-type="시티투어" data-status="soon"><a class="pcard__link" href="#place-detail"><div class="pcard__media" data-type="시티투어"><img class="pcard__img" src="img/place_seoul_city.webp" alt="서울 시티투어" loading="lazy"><span class="pcard__pin"><span data-lang="ko">준비 중</span><span data-lang="en" hidden>Coming soon</span></span></div><div class="pcard__body"><span class="pcard__loc"><span data-lang="ko">서울 · 도심</span><span data-lang="en" hidden>Seoul · Downtown</span></span><h3 class="pcard__title"><span data-lang="ko">서울 시티투어</span><span data-lang="en" hidden>Seoul City Tour</span></h3><div class="pcard__meta"><span class="tag tag--type"><span data-lang="ko">시티투어</span><span data-lang="en" hidden>City Tour</span></span></div></div></a></article>
+        <article class="pcard pcard--soon" data-region="seoul" data-type="쇼핑" data-status="soon"><a class="pcard__link" href="#place-detail"><div class="pcard__media" data-type="쇼핑"><img class="pcard__img" src="img/place_myeongdong.webp" alt="명동·강남 쇼핑투어" loading="lazy"><span class="pcard__pin"><span data-lang="ko">준비 중</span><span data-lang="en" hidden>Coming soon</span></span></div><div class="pcard__body"><span class="pcard__loc"><span data-lang="ko">서울</span><span data-lang="en" hidden>Seoul</span></span><h3 class="pcard__title"><span data-lang="ko">명동·강남 쇼핑투어</span><span data-lang="en" hidden>Myeongdong·Gangnam Shopping Tour</span></h3><div class="pcard__meta"><span class="tag tag--type"><span data-lang="ko">쇼핑</span><span data-lang="en" hidden>Shopping</span></span></div></div></a></article>
+        <article class="pcard pcard--soon" data-region="seoul" data-type="자연" data-status="soon"><a class="pcard__link" href="#place-detail"><div class="pcard__media" data-type="자연"><img class="pcard__img" src="img/place_namsan.webp" alt="남산·N서울타워" loading="lazy"><span class="pcard__pin"><span data-lang="ko">가이드 후보</span><span data-lang="en" hidden>Guide candidate</span></span></div><div class="pcard__body"><span class="pcard__loc"><span data-lang="ko">서울 · 중구</span><span data-lang="en" hidden>Seoul · Jung-gu</span></span><h3 class="pcard__title"><span data-lang="ko">남산·N서울타워</span><span data-lang="en" hidden>Namsan·N Seoul Tower</span></h3><div class="pcard__meta"><span class="tag tag--type"><span data-lang="ko">자연</span><span data-lang="en" hidden>Nature</span></span></div></div></a></article>
+
+        <!-- 경기·인천 -->
+        <article class="pcard" data-region="gyeonggi" data-type="테마파크" data-status="have"><a class="pcard__link" href="../theme-park/everland/index.html"><div class="pcard__media" data-type="테마파크"><img class="pcard__img" src="/assets/theme_everland_hero.webp" alt="에버랜드" loading="lazy"></div><div class="pcard__body"><span class="pcard__loc"><span data-lang="ko">경기 · 용인</span><span data-lang="en" hidden>Gyeonggi · Yongin</span></span><h3 class="pcard__title"><span data-lang="ko">에버랜드</span><span data-lang="en" hidden>Everland</span></h3><div class="pcard__meta"><span class="tag tag--type"><span data-lang="ko">테마파크</span><span data-lang="en" hidden>Theme Park</span></span><span class="tag tag--shuttle"><span data-lang="ko">셔틀</span><span data-lang="en" hidden>Shuttle</span></span></div></div></a></article>
+        <article class="pcard" data-region="gyeonggi" data-type="쇼핑" data-status="have"><a class="pcard__link" href="shopping-yeoju/index.html"><div class="pcard__media" data-type="쇼핑"><img class="pcard__img" src="/assets/shopping_yeoju_hero.webp" alt="여주 프리미엄 아울렛" loading="lazy"></div><div class="pcard__body"><span class="pcard__loc"><span data-lang="ko">경기 · 여주</span><span data-lang="en" hidden>Gyeonggi · Yeoju</span></span><h3 class="pcard__title"><span data-lang="ko">여주 프리미엄 아울렛</span><span data-lang="en" hidden>Yeoju Premium Outlet</span></h3><div class="pcard__meta"><span class="tag tag--type"><span data-lang="ko">쇼핑</span><span data-lang="en" hidden>Shopping</span></span><span class="tag tag--shuttle"><span data-lang="ko">셔틀</span><span data-lang="en" hidden>Shuttle</span></span></div></div></a></article>
+        <article class="pcard" data-region="gyeonggi" data-type="쇼핑" data-status="have"><a class="pcard__link" href="shopping-paju/index.html"><div class="pcard__media" data-type="쇼핑"><img class="pcard__img" src="/assets/shopping_paju_hero.webp" alt="파주 프리미엄 아울렛" loading="lazy"></div><div class="pcard__body"><span class="pcard__loc"><span data-lang="ko">경기 · 파주</span><span data-lang="en" hidden>Gyeonggi · Paju</span></span><h3 class="pcard__title"><span data-lang="ko">파주 프리미엄 아울렛</span><span data-lang="en" hidden>Paju Premium Outlet</span></h3><div class="pcard__meta"><span class="tag tag--type"><span data-lang="ko">쇼핑</span><span data-lang="en" hidden>Shopping</span></span><span class="tag tag--shuttle"><span data-lang="ko">셔틀</span><span data-lang="en" hidden>Shuttle</span></span></div></div></a></article>
+        <article class="pcard" data-region="gyeonggi" data-type="쇼핑" data-status="have"><a class="pcard__link" href="shopping-siheung/"><div class="pcard__media" data-type="쇼핑"><img class="pcard__img" src="/assets/shopping_siheung_hero.webp" alt="시흥 프리미엄 아울렛" loading="lazy"></div><div class="pcard__body"><span class="pcard__loc"><span data-lang="ko">경기 · 시흥</span><span data-lang="en" hidden>Gyeonggi · Siheung</span></span><h3 class="pcard__title"><span data-lang="ko">시흥 프리미엄 아울렛</span><span data-lang="en" hidden>Siheung Premium Outlet</span></h3><div class="pcard__meta"><span class="tag tag--type"><span data-lang="ko">쇼핑</span><span data-lang="en" hidden>Shopping</span></span><span class="tag tag--shuttle"><span data-lang="ko">셔틀</span><span data-lang="en" hidden>Shuttle</span></span></div></div></a></article>
+        <article class="pcard pcard--soon" data-region="gyeonggi" data-type="리조트" data-status="soon"><a class="pcard__link" href="#place-detail"><div class="pcard__media" data-type="리조트"><img class="pcard__img" src="img/place_konjiam.webp" alt="곤지암 리조트" loading="lazy"><span class="pcard__pin"><span data-lang="ko">가이드 후보</span><span data-lang="en" hidden>Guide candidate</span></span></div><div class="pcard__body"><span class="pcard__loc"><span data-lang="ko">경기 · 광주</span><span data-lang="en" hidden>Gyeonggi · Gwangju</span></span><h3 class="pcard__title"><span data-lang="ko">곤지암 리조트</span><span data-lang="en" hidden>Konjiam Resort</span></h3><div class="pcard__meta"><span class="tag tag--type"><span data-lang="ko">리조트</span><span data-lang="en" hidden>Resort</span></span></div></div></a></article>
+
+        <!-- 경상 -->
+        <article class="pcard" data-region="gyeongsang" data-type="테마파크" data-status="have"><a class="pcard__link" href="#place-detail"><div class="pcard__media" data-type="테마파크"><img class="pcard__img" src="/assets/theme_gyeongju_hero.webp" alt="경주월드" loading="lazy"></div><div class="pcard__body"><span class="pcard__loc"><span data-lang="ko">경상 · 경주</span><span data-lang="en" hidden>Gyeongsang · Gyeongju</span></span><h3 class="pcard__title"><span data-lang="ko">경주월드</span><span data-lang="en" hidden>Gyeongju World</span></h3><div class="pcard__meta"><span class="tag tag--type"><span data-lang="ko">테마파크</span><span data-lang="en" hidden>Theme Park</span></span><span class="tag tag--shuttle"><span data-lang="ko">셔틀</span><span data-lang="en" hidden>Shuttle</span></span></div></div></a></article>
+        <article class="pcard" data-region="gyeongsang" data-type="시티투어" data-status="have"><a class="pcard__link" href="city-tour-gyeongju/index.html"><div class="pcard__media" data-type="시티투어"><img class="pcard__img" src="img/place_gyeongju_city.webp" alt="경주 시티투어" loading="lazy"></div><div class="pcard__body"><span class="pcard__loc"><span data-lang="ko">경상 · 경주</span><span data-lang="en" hidden>Gyeongsang · Gyeongju</span></span><h3 class="pcard__title"><span data-lang="ko">경주 시티투어</span><span data-lang="en" hidden>Gyeongju City Tour</span></h3><div class="pcard__meta"><span class="tag tag--type"><span data-lang="ko">시티투어</span><span data-lang="en" hidden>City Tour</span></span><span class="tag tag--shuttle"><span data-lang="ko">셔틀</span><span data-lang="en" hidden>Shuttle</span></span></div></div></a></article>
+        <article class="pcard pcard--soon" data-region="gyeongsang" data-type="시티투어" data-status="soon"><a class="pcard__link" href="#place-detail"><div class="pcard__media" data-type="시티투어"><img class="pcard__img" src="img/place_busan_city.webp" alt="부산 시티투어" loading="lazy"><span class="pcard__pin"><span data-lang="ko">준비 중</span><span data-lang="en" hidden>Coming soon</span></span></div><div class="pcard__body"><span class="pcard__loc"><span data-lang="ko">경상 · 부산</span><span data-lang="en" hidden>Gyeongsang · Busan</span></span><h3 class="pcard__title"><span data-lang="ko">부산 시티투어</span><span data-lang="en" hidden>Busan City Tour</span></h3><div class="pcard__meta"><span class="tag tag--type"><span data-lang="ko">시티투어</span><span data-lang="en" hidden>City Tour</span></span></div></div></a></article>
+        <article class="pcard pcard--soon" data-region="gyeongsang" data-type="자연" data-status="soon"><a class="pcard__link" href="#place-detail"><div class="pcard__media" data-type="자연"><img class="pcard__img" src="img/place_tongyeong.webp" alt="통영·남해 한려수도" loading="lazy"><span class="pcard__pin"><span data-lang="ko">가이드 후보</span><span data-lang="en" hidden>Guide candidate</span></span></div><div class="pcard__body"><span class="pcard__loc"><span data-lang="ko">경상 · 통영</span><span data-lang="en" hidden>Gyeongsang · Tongyeong</span></span><h3 class="pcard__title"><span data-lang="ko">통영·남해 한려수도</span><span data-lang="en" hidden>Tongyeong·Namhae Hallyeo Waterway</span></h3><div class="pcard__meta"><span class="tag tag--type"><span data-lang="ko">자연</span><span data-lang="en" hidden>Nature</span></span></div></div></a></article>
+
+        <!-- 전라 -->
+        <article class="pcard pcard--soon" data-region="jeolla" data-type="시티투어" data-status="soon"><a class="pcard__link" href="#place-detail"><div class="pcard__media" data-type="시티투어"><img class="pcard__img" src="img/place_jeonju.webp" alt="전주 한옥마을" loading="lazy"><span class="pcard__pin"><span data-lang="ko">준비 중</span><span data-lang="en" hidden>Coming soon</span></span></div><div class="pcard__body"><span class="pcard__loc"><span data-lang="ko">전라 · 전주</span><span data-lang="en" hidden>Jeolla · Jeonju</span></span><h3 class="pcard__title"><span data-lang="ko">전주 한옥마을</span><span data-lang="en" hidden>Jeonju Hanok Village</span></h3><div class="pcard__meta"><span class="tag tag--type"><span data-lang="ko">시티투어</span><span data-lang="en" hidden>City Tour</span></span></div></div></a></article>
+        <article class="pcard pcard--soon" data-region="jeolla" data-type="자연" data-status="soon"><a class="pcard__link" href="#place-detail"><div class="pcard__media" data-type="자연"><img class="pcard__img" src="img/place_suncheonman.webp" alt="순천만 국가정원·습지" loading="lazy"><span class="pcard__pin"><span data-lang="ko">가이드 후보</span><span data-lang="en" hidden>Guide candidate</span></span></div><div class="pcard__body"><span class="pcard__loc"><span data-lang="ko">전라 · 순천</span><span data-lang="en" hidden>Jeolla · Suncheon</span></span><h3 class="pcard__title"><span data-lang="ko">순천만 국가정원·습지</span><span data-lang="en" hidden>Suncheonman Bay National Garden·Wetland</span></h3><div class="pcard__meta"><span class="tag tag--type"><span data-lang="ko">자연</span><span data-lang="en" hidden>Nature</span></span></div></div></a></article>
+        <article class="pcard pcard--soon" data-region="jeolla" data-type="리조트" data-status="soon"><a class="pcard__link" href="#place-detail"><div class="pcard__media" data-type="리조트"><img class="pcard__img" src="img/place_muju.webp" alt="무주 덕유산 리조트" loading="lazy"><span class="pcard__pin"><span data-lang="ko">가이드 후보</span><span data-lang="en" hidden>Guide candidate</span></span></div><div class="pcard__body"><span class="pcard__loc"><span data-lang="ko">전라 · 무주</span><span data-lang="en" hidden>Jeolla · Muju</span></span><h3 class="pcard__title"><span data-lang="ko">무주 덕유산 리조트</span><span data-lang="en" hidden>Muju Deogyusan Resort</span></h3><div class="pcard__meta"><span class="tag tag--type"><span data-lang="ko">리조트</span><span data-lang="en" hidden>Resort</span></span></div></div></a></article>
+
+        <!-- 제주 -->
+        <article class="pcard pcard--soon" data-region="jeju" data-type="자연" data-status="soon"><a class="pcard__link" href="#place-detail"><div class="pcard__media" data-type="자연"><img class="pcard__img" src="img/place_seongsan.webp" alt="한라산·성산일출봉" loading="lazy"><span class="pcard__pin"><span data-lang="ko">가이드 후보</span><span data-lang="en" hidden>Guide candidate</span></span></div><div class="pcard__body"><span class="pcard__loc"><span data-lang="ko">제주</span><span data-lang="en" hidden>Jeju</span></span><h3 class="pcard__title"><span data-lang="ko">한라산·성산일출봉</span><span data-lang="en" hidden>Hallasan·Seongsan Ilchulbong</span></h3><div class="pcard__meta"><span class="tag tag--type"><span data-lang="ko">자연</span><span data-lang="en" hidden>Nature</span></span></div></div></a></article>
+        <article class="pcard pcard--soon" data-region="jeju" data-type="쇼핑" data-status="soon"><a class="pcard__link" href="#place-detail"><div class="pcard__media" data-type="쇼핑"><img class="pcard__img" src="img/place_jeju_outlet.webp" alt="제주 프리미엄 아울렛" loading="lazy"><span class="pcard__pin"><span data-lang="ko">준비 중</span><span data-lang="en" hidden>Coming soon</span></span></div><div class="pcard__body"><span class="pcard__loc"><span data-lang="ko">제주 · 서귀포</span><span data-lang="en" hidden>Jeju · Seogwipo</span></span><h3 class="pcard__title"><span data-lang="ko">제주 프리미엄 아울렛</span><span data-lang="en" hidden>Jeju Premium Outlet</span></h3><div class="pcard__meta"><span class="tag tag--type"><span data-lang="ko">쇼핑</span><span data-lang="en" hidden>Shopping</span></span></div></div></a></article>
+      </div>
+
+      <p class="coll__empty" id="collEmpty"><span data-lang="ko">선택한 유형의 장소는 <b>준비 중</b>입니다 — 곧 새로운 가이드로 채워집니다.</span><span data-lang="en" hidden>Places of this type are <b>coming soon</b> — new guides will be added shortly.</span></p>
+    </div>
+  </section>
+
+  <!-- ================= S3. 여행 특장점 — 길 따라 USP ================= -->
+  <section class="journey" aria-label="K.Rideus 여행의 특장점">
+    <div class="wrap">
+      <div class="journey__head rv">
+        <h2 class="journey__title"><span data-lang="ko">좋은 장소를,<br>더 편하게 만나는 방법</span><span data-lang="en" hidden>An easier way<br>to reach great places</span></h2>
+      </div>
+      <div class="journey__track" id="journey">
+        <div class="journey__road" aria-hidden="true">
+          <svg viewBox="0 0 120 1000" preserveAspectRatio="none">
+            <path class="road-base" d="M60,0 C88,150 88,185 60,330 C32,475 32,510 60,660 C88,810 88,845 60,1000"/>
+            <path class="road-prog" d="M60,0 C88,150 88,185 60,330 C32,475 32,510 60,660 C88,810 88,845 60,1000"/>
+            <path class="road-dash" d="M60,0 C88,150 88,185 60,330 C32,475 32,510 60,660 C88,810 88,845 60,1000"/>
+          </svg>
+        </div>
+        <div class="journey__marker" id="journeyMarker" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-6-5.7-6-10a6 6 0 0 1 12 0c0 4.3-6 10-6 10z"/><circle cx="12" cy="11" r="2.2"/></svg>
+        </div>
+
+        <article class="stop">
+          <div class="stop__node"></div>
+          <div class="stop__usp">
+            <div class="stop__num">01</div>
+            <h3 class="stop__t"><span data-lang="ko">장소 선택부터 이동까지</span><span data-lang="en" hidden>From choosing a place to getting there</span></h3>
+            <p class="stop__d"><span data-lang="ko">여행지는 고르기 쉽지만, 이동은 복잡할 수 있습니다. K.Rideus는 목적지에 맞는 이동 방식을 함께 안내합니다.</span><span data-lang="en" hidden>Picking a destination is easy, but getting there can be complex. K.Rideus guides you to the right ride for each destination.</span></p>
+          </div>
+          <div class="stop__media"><div class="stop__img"><img src="heroImg/trip001.png" alt="가고 싶은 장소를 고르면 이동까지 이어지는 K.Rideus 여정" loading="lazy" decoding="async"></div></div>
+        </article>
+
+        <article class="stop">
+          <div class="stop__node"></div>
+          <div class="stop__usp">
+            <div class="stop__num">02</div>
+            <h3 class="stop__t"><span data-lang="ko">공항·호텔·목적지를 자연스럽게</span><span data-lang="en" hidden>Airport, hotel, destination — seamlessly</span></h3>
+            <p class="stop__d"><span data-lang="ko">도착 직후의 여행, 반나절 이동, 리조트 왕복까지. 여정에 맞는 차량 이동을 막힘없이 연결합니다.</span><span data-lang="en" hidden>From arrival transfers to half-day trips and resort round-trips — we connect every leg of your journey seamlessly.</span></p>
+          </div>
+          <div class="stop__media"><div class="stop__img"><img src="heroImg/trip002.png" alt="공항·호텔·목적지를 차량으로 자연스럽게 잇는 이동" loading="lazy" decoding="async"></div></div>
+        </article>
+
+        <article class="stop">
+          <div class="stop__node"></div>
+          <div class="stop__usp">
+            <div class="stop__num">03</div>
+            <h3 class="stop__t"><span data-lang="ko">개인 여행부터 단체 이동까지</span><span data-lang="en" hidden>From solo trips to group transfers</span></h3>
+            <p class="stop__d"><span data-lang="ko">가족, 외국인 게스트, 기업 행사, 단체 여행까지. 상황에 맞는 셔틀·프라이빗 이동 옵션을 제안합니다.</span><span data-lang="en" hidden>Families, international guests, corporate events, group tours — we suggest the right shuttle or private option for you.</span></p>
+          </div>
+          <div class="stop__media"><div class="stop__img"><img src="heroImg/trip003.png" alt="개인부터 가족·단체까지 함께 이동하는 모습" loading="lazy" decoding="async"></div></div>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= S5. 이동 CTA ================= -->
+  <section class="move" aria-label="이동 문의">
+    <div class="wrap">
+      <div class="move__in rv">
+        <h2 class="move__title"><span data-lang="ko">어디로 갈지 정했다면<br>이동은 Rideus</span><span data-lang="en" hidden>Decided where to go?<br>Leave the ride to Rideus</span></h2>
+        <p class="move__sub"><span data-lang="ko">출발지, 인원, 일정만 알려주세요. 공항에서 바로, 호텔에서 편하게 — 목적지에 맞는 이동 방식을 안내해 드립니다.</span><span data-lang="en" hidden>Just tell us your pickup, party size, and schedule. Straight from the airport or easy from your hotel — we'll guide you to the right ride.</span></p>
+        <div class="move__row">
+          <a href="#" class="btn btn--light"><span data-lang="ko">이동 문의하기</span><span data-lang="en" hidden>Inquire about rides</span>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
+          </a>
+          <a href="#" class="btn btn--linelight"><span data-lang="ko">프라이빗 차량 상담</span><span data-lang="en" hidden>Private vehicle consultation</span></a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<div data-include="footer"></div>
+
+<script>
+(function(){
+  /* 지역 데이터 — 도 모양 path + 히어로 텍스트 + 컬렉션
+     ※ SHAPE는 추상 근사. 정확 시도 SVG path로 교체 예정 (구조 동일, 값만 교체) */
+  var SHAPE = {
+    seoul: {d: "M3.0,103.6 L25.3,124.7 L30.6,153.6 L44.2,149.7 L58.6,173.1 L85.4,176.4 L127.7,163.7 L131.5,177.7 L172.2,159.2 L197.0,106.0 L189.5,95.7 L161.2,106.2 L165.7,77.5 L155.3,34.6 L148.1,22.9 L118.2,22.3 L105.9,31.0 L98.8,58.9 L69.2,64.4 L56.7,88.7 L42.7,94.9 L17.7,80.3 L3.0,103.6 Z", full: "M3.0,103.6 L25.3,124.7 L30.6,153.6 L44.2,149.7 L58.6,173.1 L85.4,176.4 L127.7,163.7 L131.5,177.7 L172.2,159.2 L197.0,106.0 L189.5,95.7 L161.2,106.2 L165.7,77.5 L155.3,34.6 L148.1,22.9 L118.2,22.3 L105.9,31.0 L98.8,58.9 L69.2,64.4 L56.7,88.7 L42.7,94.9 L17.7,80.3 L3.0,103.6 Z", hole: null, holeStart: null},
+    gyeonggi: {d: "M88.8,3.0 L76.1,14.8 L66.2,13.6 L58.0,20.2 L54.4,25.9 L58.5,31.2 L65.5,31.6 L70.3,35.9 L67.5,40.4 L64.0,40.1 L61.3,45.3 L61.1,48.5 L63.3,50.6 L62.6,57.5 L59.9,57.9 L57.7,55.1 L57.9,48.9 L55.6,46.3 L53.0,47.4 L51.8,50.5 L46.8,48.1 L45.6,50.1 L47.1,56.2 L52.8,59.7 L54.8,62.6 L53.7,64.4 L44.4,67.3 L43.7,70.7 L37.7,73.2 L29.2,73.3 L27.7,75.2 L29.0,90.5 L33.7,99.9 L36.2,99.2 L34.4,100.7 L36.4,103.2 L30.8,107.1 L36.4,104.1 L37.6,110.5 L41.2,112.2 L37.9,112.7 L35.3,117.8 L39.1,120.5 L39.8,119.3 L40.6,122.8 L45.1,127.3 L40.5,132.0 L46.2,126.9 L49.7,127.3 L52.0,124.6 L51.5,121.3 L54.3,125.0 L56.4,123.4 L57.0,118.1 L57.9,119.4 L57.3,122.5 L55.3,125.9 L51.9,125.5 L51.7,128.2 L45.7,134.1 L39.0,136.3 L33.0,139.2 L32.0,141.9 L29.3,140.6 L31.9,145.3 L29.8,152.3 L32.1,153.7 L33.3,150.7 L37.5,150.7 L38.6,148.2 L40.9,153.6 L42.2,151.3 L33.9,142.3 L34.1,139.8 L40.0,136.3 L46.7,134.4 L52.5,138.2 L59.3,139.3 L64.3,142.8 L63.4,144.3 L59.1,140.9 L56.1,149.2 L53.7,149.6 L53.6,146.6 L45.7,144.2 L41.9,155.8 L42.1,158.7 L46.0,159.4 L43.9,161.7 L45.5,164.0 L52.9,157.3 L57.4,155.9 L57.1,159.4 L60.7,159.5 L53.9,164.2 L54.2,171.1 L52.6,174.0 L53.5,176.4 L57.0,176.5 L57.3,181.3 L60.7,181.5 L62.9,186.4 L70.0,191.7 L70.6,195.2 L76.3,193.6 L83.1,195.2 L96.0,190.7 L104.5,196.5 L111.4,197.0 L123.6,191.6 L123.6,188.2 L129.3,184.4 L132.6,178.8 L135.7,181.7 L137.3,178.5 L143.6,178.1 L149.4,174.5 L151.5,165.3 L157.0,166.7 L159.6,160.2 L162.8,159.0 L164.6,135.6 L168.5,125.8 L166.4,117.3 L172.3,109.7 L170.7,106.7 L160.6,105.1 L155.2,100.7 L148.8,98.2 L142.4,98.7 L140.1,96.1 L141.9,86.6 L138.7,87.7 L138.4,84.9 L140.9,82.5 L140.9,69.8 L149.3,64.5 L150.1,61.1 L148.0,54.6 L144.8,53.5 L141.3,48.6 L137.8,49.0 L132.5,44.7 L131.5,34.3 L126.5,32.4 L120.1,34.1 L114.8,31.4 L113.3,28.4 L114.7,22.6 L106.4,26.5 L103.6,24.6 L100.5,13.2 L98.8,11.0 L95.3,11.0 L94.3,6.1 L91.8,3.7 L88.8,3.0 Z", full: "M88.8,3.0 L76.1,14.8 L66.2,13.6 L58.0,20.2 L54.4,25.9 L58.5,31.2 L65.5,31.6 L70.3,35.9 L67.5,40.4 L64.0,40.1 L61.3,45.3 L61.1,48.5 L63.3,50.6 L62.6,57.5 L59.9,57.9 L57.7,55.1 L57.9,48.9 L55.6,46.3 L53.0,47.4 L51.8,50.5 L46.8,48.1 L45.6,50.1 L47.1,56.2 L52.8,59.7 L54.8,62.6 L53.7,64.4 L44.4,67.3 L43.7,70.7 L37.7,73.2 L29.2,73.3 L27.7,75.2 L29.0,90.5 L33.7,99.9 L36.2,99.2 L34.4,100.7 L36.4,103.2 L30.8,107.1 L36.4,104.1 L37.6,110.5 L41.2,112.2 L37.9,112.7 L35.3,117.8 L39.1,120.5 L39.8,119.3 L40.6,122.8 L45.1,127.3 L40.5,132.0 L46.2,126.9 L49.7,127.3 L52.0,124.6 L51.5,121.3 L54.3,125.0 L56.4,123.4 L57.0,118.1 L57.9,119.4 L57.3,122.5 L55.3,125.9 L51.9,125.5 L51.7,128.2 L45.7,134.1 L39.0,136.3 L33.0,139.2 L32.0,141.9 L29.3,140.6 L31.9,145.3 L29.8,152.3 L32.1,153.7 L33.3,150.7 L37.5,150.7 L38.6,148.2 L40.9,153.6 L42.2,151.3 L33.9,142.3 L34.1,139.8 L40.0,136.3 L46.7,134.4 L52.5,138.2 L59.3,139.3 L64.3,142.8 L63.4,144.3 L59.1,140.9 L56.1,149.2 L53.7,149.6 L53.6,146.6 L45.7,144.2 L41.9,155.8 L42.1,158.7 L46.0,159.4 L43.9,161.7 L45.5,164.0 L52.9,157.3 L57.4,155.9 L57.1,159.4 L60.7,159.5 L53.9,164.2 L54.2,171.1 L52.6,174.0 L53.5,176.4 L57.0,176.5 L57.3,181.3 L60.7,181.5 L62.9,186.4 L70.0,191.7 L70.6,195.2 L76.3,193.6 L83.1,195.2 L96.0,190.7 L104.5,196.5 L111.4,197.0 L123.6,191.6 L123.6,188.2 L129.3,184.4 L132.6,178.8 L135.7,181.7 L137.3,178.5 L143.6,178.1 L149.4,174.5 L151.5,165.3 L157.0,166.7 L159.6,160.2 L162.8,159.0 L164.6,135.6 L168.5,125.8 L166.4,117.3 L172.3,109.7 L170.7,106.7 L160.6,105.1 L155.2,100.7 L148.8,98.2 L142.4,98.7 L140.1,96.1 L141.9,86.6 L138.7,87.7 L138.4,84.9 L140.9,82.5 L140.9,69.8 L149.3,64.5 L150.1,61.1 L148.0,54.6 L144.8,53.5 L141.3,48.6 L137.8,49.0 L132.5,44.7 L131.5,34.3 L126.5,32.4 L120.1,34.1 L114.8,31.4 L113.3,28.4 L114.7,22.6 L106.4,26.5 L103.6,24.6 L100.5,13.2 L98.8,11.0 L95.3,11.0 L94.3,6.1 L91.8,3.7 L88.8,3.0 Z M66.3,102.5 L69.5,101.1 L72.3,95.5 L79.1,94.3 L80.8,87.9 L83.6,85.9 L90.3,85.9 L94.8,98.2 L93.4,104.9 L99.8,102.9 L101.8,104.6 L98.5,109.5 L98.1,115.1 L93.8,118.9 L87.3,121.3 L86.0,118.9 L83.2,118.4 L76.8,121.2 L70.3,121.0 L67.4,114.8 L64.2,116.3 L62.4,110.1 L58.0,104.9 L54.8,109.2 L57.2,105.7 L56.1,102.5 L60.6,99.1 L66.3,102.5 Z", hole: "M66.3,102.5 L69.5,101.1 L72.3,95.5 L79.1,94.3 L80.8,87.9 L83.6,85.9 L90.3,85.9 L94.8,98.2 L93.4,104.9 L99.8,102.9 L101.8,104.6 L98.5,109.5 L98.1,115.1 L93.8,118.9 L87.3,121.3 L86.0,118.9 L83.2,118.4 L76.8,121.2 L70.3,121.0 L67.4,114.8 L64.2,116.3 L62.4,110.1 L58.0,104.9 L54.8,109.2 L57.2,105.7 L56.1,102.5 L60.6,99.1 L66.3,102.5 Z", holeStart: "M77.1,105.7 L78.1,105.7 L78.1,106.7 L77.1,106.7 Z"},
+    gangwon: {d: "M110.7,13.3 L115.1,19.6 L115.8,24.0 L119.5,30.2 L119.8,34.2 L131.3,56.5 L132.0,63.3 L151.2,90.5 L151.5,92.9 L169.0,113.3 L170.2,120.0 L175.6,125.9 L174.9,128.4 L176.8,132.9 L195.7,161.3 L194.4,165.9 L197.0,173.0 L187.3,179.6 L186.0,181.9 L186.9,184.4 L185.6,185.2 L175.6,182.2 L171.2,184.1 L159.2,181.2 L156.3,185.7 L153.6,185.7 L146.8,181.8 L143.1,186.7 L121.7,178.4 L116.8,179.7 L112.9,174.0 L105.5,176.1 L103.3,174.9 L103.1,172.7 L107.2,169.3 L106.9,167.2 L104.4,168.1 L97.5,164.7 L93.4,167.4 L90.8,166.7 L83.8,170.2 L82.2,168.9 L80.8,163.9 L78.2,163.2 L73.5,165.5 L73.7,170.6 L70.6,174.3 L68.1,173.3 L63.6,175.4 L61.3,174.9 L58.4,170.8 L59.4,152.5 L62.6,142.3 L60.4,138.3 L65.5,132.6 L64.4,130.3 L57.1,128.4 L48.0,123.4 L43.0,123.7 L41.0,122.1 L42.2,114.5 L39.1,113.5 L40.9,111.6 L40.8,101.6 L47.6,97.8 L47.2,90.0 L42.6,87.7 L42.1,85.2 L37.0,84.3 L35.0,82.5 L34.3,74.5 L32.6,72.5 L23.8,73.4 L21.7,71.9 L20.1,69.9 L21.6,65.2 L19.2,64.6 L15.2,67.9 L12.8,67.0 L9.4,56.0 L6.7,56.0 L3.0,48.8 L15.1,44.2 L20.1,45.6 L27.6,43.8 L37.4,47.3 L44.6,43.5 L52.2,44.8 L62.3,42.9 L65.7,46.9 L72.6,44.5 L85.8,46.3 L92.9,43.2 L104.8,32.4 L107.2,24.8 L107.0,16.7 L110.7,13.3 Z", full: "M110.7,13.3 L115.1,19.6 L115.8,24.0 L119.5,30.2 L119.8,34.2 L131.3,56.5 L132.0,63.3 L151.2,90.5 L151.5,92.9 L169.0,113.3 L170.2,120.0 L175.6,125.9 L174.9,128.4 L176.8,132.9 L195.7,161.3 L194.4,165.9 L197.0,173.0 L187.3,179.6 L186.0,181.9 L186.9,184.4 L185.6,185.2 L175.6,182.2 L171.2,184.1 L159.2,181.2 L156.3,185.7 L153.6,185.7 L146.8,181.8 L143.1,186.7 L121.7,178.4 L116.8,179.7 L112.9,174.0 L105.5,176.1 L103.3,174.9 L103.1,172.7 L107.2,169.3 L106.9,167.2 L104.4,168.1 L97.5,164.7 L93.4,167.4 L90.8,166.7 L83.8,170.2 L82.2,168.9 L80.8,163.9 L78.2,163.2 L73.5,165.5 L73.7,170.6 L70.6,174.3 L68.1,173.3 L63.6,175.4 L61.3,174.9 L58.4,170.8 L59.4,152.5 L62.6,142.3 L60.4,138.3 L65.5,132.6 L64.4,130.3 L57.1,128.4 L48.0,123.4 L43.0,123.7 L41.0,122.1 L42.2,114.5 L39.1,113.5 L40.9,111.6 L40.8,101.6 L47.6,97.8 L47.2,90.0 L42.6,87.7 L42.1,85.2 L37.0,84.3 L35.0,82.5 L34.3,74.5 L32.6,72.5 L23.8,73.4 L21.7,71.9 L20.1,69.9 L21.6,65.2 L19.2,64.6 L15.2,67.9 L12.8,67.0 L9.4,56.0 L6.7,56.0 L3.0,48.8 L15.1,44.2 L20.1,45.6 L27.6,43.8 L37.4,47.3 L44.6,43.5 L52.2,44.8 L62.3,42.9 L65.7,46.9 L72.6,44.5 L85.8,46.3 L92.9,43.2 L104.8,32.4 L107.2,24.8 L107.0,16.7 L110.7,13.3 Z", hole: null, holeStart: null},
+    gyeongsang: {d: "M54.2,105.0 L48.6,110.6 L44.9,111.3 L40.1,118.0 L35.2,134.0 L38.0,138.9 L38.3,142.9 L39.6,144.1 L39.3,146.3 L36.4,149.4 L36.0,153.4 L33.9,156.7 L35.4,158.3 L37.2,166.4 L40.4,169.1 L42.0,172.8 L46.1,177.4 L47.0,181.4 L51.8,181.8 L55.1,176.4 L56.0,178.8 L57.9,177.9 L59.1,179.3 L60.3,178.9 L60.7,176.6 L58.7,175.0 L61.1,173.9 L60.9,175.2 L63.9,171.0 L62.8,174.6 L62.7,182.5 L68.0,184.2 L67.1,185.0 L68.6,185.9 L71.2,186.0 L73.6,185.7 L74.1,182.5 L75.3,182.4 L78.0,182.8 L78.0,184.5 L79.0,185.1 L82.1,181.2 L83.6,185.1 L80.0,185.7 L81.3,187.3 L85.2,187.8 L85.5,186.7 L86.1,188.3 L88.1,188.6 L85.0,189.8 L87.0,191.1 L85.8,191.9 L84.1,190.7 L82.7,191.4 L82.7,192.4 L84.5,192.4 L85.1,194.6 L87.6,197.0 L89.0,195.9 L88.4,194.7 L89.5,192.5 L88.4,191.3 L91.8,186.8 L89.5,184.7 L88.5,187.9 L89.6,180.0 L87.3,178.2 L91.3,178.5 L93.0,177.2 L91.4,173.7 L92.2,172.6 L90.1,172.0 L92.1,171.2 L90.5,170.0 L90.9,169.1 L96.3,168.7 L99.0,170.5 L96.5,172.2 L98.0,173.2 L98.7,172.0 L98.9,173.2 L102.3,171.7 L100.5,171.2 L101.9,170.6 L100.3,169.2 L100.1,167.1 L98.5,166.9 L99.9,166.2 L98.3,161.8 L99.8,160.4 L101.8,159.9 L99.6,161.4 L100.9,166.3 L102.9,165.8 L105.3,167.0 L106.0,165.5 L106.9,169.5 L111.1,169.7 L113.5,167.5 L113.0,171.1 L114.7,170.1 L118.2,170.8 L119.4,170.1 L119.8,168.0 L119.9,171.0 L122.4,168.8 L122.5,170.2 L123.5,169.3 L124.7,174.0 L126.9,172.9 L126.5,170.8 L128.5,172.5 L129.3,169.8 L131.5,172.6 L133.2,173.1 L132.2,170.4 L129.6,169.2 L130.8,167.8 L135.4,168.9 L134.6,165.5 L135.9,164.4 L139.4,164.6 L142.0,162.4 L143.7,157.9 L143.3,155.4 L145.5,150.5 L146.9,151.5 L149.2,148.8 L150.9,148.4 L150.2,147.0 L151.4,142.6 L149.8,139.1 L150.9,140.1 L152.5,138.9 L152.6,137.1 L151.6,136.6 L152.8,135.9 L150.5,133.0 L153.3,135.1 L154.1,138.8 L156.7,137.5 L157.6,127.6 L155.5,127.3 L154.7,127.1 L157.2,127.3 L156.6,125.4 L162.8,106.2 L161.7,101.8 L163.9,98.8 L166.1,92.0 L164.4,88.5 L159.4,94.3 L156.1,96.0 L153.7,94.4 L155.8,93.0 L152.4,92.4 L152.6,90.4 L154.3,89.7 L155.7,86.4 L154.1,85.0 L153.6,81.1 L152.3,79.8 L152.0,74.4 L152.5,68.5 L155.9,61.2 L157.2,53.5 L154.9,48.0 L154.6,44.1 L156.2,40.3 L158.9,37.7 L159.0,32.0 L155.0,22.6 L154.5,10.5 L155.8,7.7 L152.2,3.0 L148.9,3.7 L145.5,6.1 L143.2,9.5 L144.2,11.3 L142.5,11.6 L134.7,9.2 L131.2,10.6 L123.7,8.5 L121.9,8.8 L119.5,12.0 L117.4,12.0 L112.0,9.0 L110.8,12.5 L103.4,10.8 L93.7,17.7 L89.6,22.2 L88.3,26.0 L89.5,27.5 L87.7,31.1 L81.8,32.6 L76.3,27.0 L73.9,29.0 L73.6,31.1 L68.1,29.8 L65.0,32.2 L63.5,31.4 L61.9,35.3 L63.6,38.8 L62.8,39.7 L57.0,38.1 L50.8,42.7 L50.7,44.7 L48.0,47.9 L46.1,48.5 L45.7,50.4 L49.7,51.5 L52.4,56.4 L50.8,57.4 L50.0,65.5 L50.8,69.2 L48.5,72.5 L48.5,74.7 L49.9,76.0 L52.7,75.2 L55.9,77.6 L59.8,76.6 L61.5,77.8 L62.5,81.6 L59.1,81.8 L57.6,83.2 L57.9,87.1 L55.8,92.7 L54.6,94.4 L52.6,94.3 L52.3,95.9 L55.1,101.6 L54.2,105.0 Z", full: "M54.2,105.0 L48.6,110.6 L44.9,111.3 L40.1,118.0 L35.2,134.0 L38.0,138.9 L38.3,142.9 L39.6,144.1 L39.3,146.3 L36.4,149.4 L36.0,153.4 L33.9,156.7 L35.4,158.3 L37.2,166.4 L40.4,169.1 L42.0,172.8 L46.1,177.4 L47.0,181.4 L51.8,181.8 L55.1,176.4 L56.0,178.8 L57.9,177.9 L59.1,179.3 L60.3,178.9 L60.7,176.6 L58.7,175.0 L61.1,173.9 L60.9,175.2 L63.9,171.0 L62.8,174.6 L62.7,182.5 L68.0,184.2 L67.1,185.0 L68.6,185.9 L71.2,186.0 L73.6,185.7 L74.1,182.5 L75.3,182.4 L78.0,182.8 L78.0,184.5 L79.0,185.1 L82.1,181.2 L83.6,185.1 L80.0,185.7 L81.3,187.3 L85.2,187.8 L85.5,186.7 L86.1,188.3 L88.1,188.6 L85.0,189.8 L87.0,191.1 L85.8,191.9 L84.1,190.7 L82.7,191.4 L82.7,192.4 L84.5,192.4 L85.1,194.6 L87.6,197.0 L89.0,195.9 L88.4,194.7 L89.5,192.5 L88.4,191.3 L91.8,186.8 L89.5,184.7 L88.5,187.9 L89.6,180.0 L87.3,178.2 L91.3,178.5 L93.0,177.2 L91.4,173.7 L92.2,172.6 L90.1,172.0 L92.1,171.2 L90.5,170.0 L90.9,169.1 L96.3,168.7 L99.0,170.5 L96.5,172.2 L98.0,173.2 L98.7,172.0 L98.9,173.2 L102.3,171.7 L100.5,171.2 L101.9,170.6 L100.3,169.2 L100.1,167.1 L98.5,166.9 L99.9,166.2 L98.3,161.8 L99.8,160.4 L101.8,159.9 L99.6,161.4 L100.9,166.3 L102.9,165.8 L105.3,167.0 L106.0,165.5 L106.9,169.5 L111.1,169.7 L113.5,167.5 L113.0,171.1 L114.7,170.1 L118.2,170.8 L119.4,170.1 L119.8,168.0 L119.9,171.0 L122.4,168.8 L122.5,170.2 L123.5,169.3 L124.7,174.0 L126.9,172.9 L126.5,170.8 L128.5,172.5 L129.3,169.8 L131.5,172.6 L133.2,173.1 L132.2,170.4 L129.6,169.2 L130.8,167.8 L135.4,168.9 L134.6,165.5 L135.9,164.4 L139.4,164.6 L142.0,162.4 L143.7,157.9 L143.3,155.4 L145.5,150.5 L146.9,151.5 L149.2,148.8 L150.9,148.4 L150.2,147.0 L151.4,142.6 L149.8,139.1 L150.9,140.1 L152.5,138.9 L152.6,137.1 L151.6,136.6 L152.8,135.9 L150.5,133.0 L153.3,135.1 L154.1,138.8 L156.7,137.5 L157.6,127.6 L155.5,127.3 L154.7,127.1 L157.2,127.3 L156.6,125.4 L162.8,106.2 L161.7,101.8 L163.9,98.8 L166.1,92.0 L164.4,88.5 L159.4,94.3 L156.1,96.0 L153.7,94.4 L155.8,93.0 L152.4,92.4 L152.6,90.4 L154.3,89.7 L155.7,86.4 L154.1,85.0 L153.6,81.1 L152.3,79.8 L152.0,74.4 L152.5,68.5 L155.9,61.2 L157.2,53.5 L154.9,48.0 L154.6,44.1 L156.2,40.3 L158.9,37.7 L159.0,32.0 L155.0,22.6 L154.5,10.5 L155.8,7.7 L152.2,3.0 L148.9,3.7 L145.5,6.1 L143.2,9.5 L144.2,11.3 L142.5,11.6 L134.7,9.2 L131.2,10.6 L123.7,8.5 L121.9,8.8 L119.5,12.0 L117.4,12.0 L112.0,9.0 L110.8,12.5 L103.4,10.8 L93.7,17.7 L89.6,22.2 L88.3,26.0 L89.5,27.5 L87.7,31.1 L81.8,32.6 L76.3,27.0 L73.9,29.0 L73.6,31.1 L68.1,29.8 L65.0,32.2 L63.5,31.4 L61.9,35.3 L63.6,38.8 L62.8,39.7 L57.0,38.1 L50.8,42.7 L50.7,44.7 L48.0,47.9 L46.1,48.5 L45.7,50.4 L49.7,51.5 L52.4,56.4 L50.8,57.4 L50.0,65.5 L50.8,69.2 L48.5,72.5 L48.5,74.7 L49.9,76.0 L52.7,75.2 L55.9,77.6 L59.8,76.6 L61.5,77.8 L62.5,81.6 L59.1,81.8 L57.6,83.2 L57.9,87.1 L55.8,92.7 L54.6,94.4 L52.6,94.3 L52.3,95.9 L55.1,101.6 L54.2,105.0 Z", hole: null, holeStart: null},
+    jeolla: {d: "M68.9,19.7 L54.4,21.1 L56.6,24.2 L59.2,24.6 L59.3,29.8 L61.2,30.7 L77.6,29.0 L75.3,30.2 L74.7,32.6 L69.6,32.7 L66.0,35.2 L73.0,39.4 L73.5,44.8 L70.3,40.8 L60.3,40.6 L60.1,45.6 L58.5,47.8 L46.5,56.6 L46.5,60.5 L50.3,62.9 L62.5,61.3 L64.5,62.3 L64.7,66.0 L61.3,63.6 L57.6,67.2 L50.9,67.9 L49.6,69.7 L48.3,69.0 L44.0,78.1 L48.8,79.1 L50.6,81.0 L50.6,81.3 L46.6,78.7 L42.0,80.1 L41.5,82.5 L44.7,86.1 L41.2,85.4 L39.0,92.8 L35.2,95.2 L37.0,96.0 L34.8,99.8 L33.6,97.5 L32.7,99.8 L34.2,101.6 L38.3,102.3 L37.3,104.7 L38.4,106.4 L42.9,112.4 L45.5,112.9 L45.3,117.2 L43.3,118.8 L43.1,120.9 L41.4,119.8 L41.1,116.1 L39.5,115.5 L38.5,116.9 L36.0,114.2 L35.2,112.6 L36.6,108.0 L34.8,109.8 L30.3,108.1 L27.9,111.4 L29.6,113.4 L28.1,114.6 L30.6,118.2 L33.7,117.9 L33.0,114.5 L35.0,114.6 L37.3,119.5 L39.7,119.3 L39.8,121.6 L36.6,124.3 L36.9,125.8 L34.9,127.1 L32.9,126.0 L33.6,131.5 L35.1,132.1 L38.3,131.0 L38.4,125.1 L40.4,127.5 L40.3,136.1 L42.0,140.0 L38.0,145.0 L39.5,146.6 L38.9,151.3 L44.5,150.6 L46.1,152.0 L48.4,151.0 L55.9,159.8 L60.2,162.3 L53.0,160.1 L52.0,162.8 L47.0,161.2 L43.7,158.3 L44.9,154.8 L43.4,155.6 L40.7,153.8 L39.4,159.4 L42.5,158.6 L46.0,164.4 L48.3,163.6 L45.6,167.2 L38.4,163.6 L35.5,157.9 L36.4,153.6 L32.5,148.5 L29.2,154.4 L28.8,159.2 L29.8,161.6 L31.9,162.0 L31.5,166.0 L34.3,168.6 L39.3,169.5 L41.1,171.9 L44.2,170.1 L46.3,172.2 L45.3,173.4 L47.1,174.8 L47.1,182.1 L50.5,182.0 L51.0,184.3 L47.2,190.8 L51.2,190.0 L51.3,197.0 L55.0,194.1 L57.6,194.7 L60.1,189.7 L60.1,185.4 L69.0,181.5 L70.5,179.2 L70.6,177.0 L72.5,175.8 L72.8,166.0 L73.2,163.4 L74.5,161.2 L73.6,163.5 L75.2,178.9 L82.7,183.7 L82.9,180.3 L87.8,180.6 L87.2,178.2 L90.8,177.8 L89.6,171.9 L91.6,171.2 L93.0,168.4 L91.1,167.8 L92.8,164.1 L90.1,162.5 L95.3,161.9 L102.6,155.5 L107.2,155.6 L109.3,154.3 L111.7,149.7 L113.8,149.0 L114.9,151.4 L120.6,149.7 L121.8,153.9 L119.8,158.3 L117.2,158.3 L116.7,153.7 L115.4,153.3 L113.4,154.8 L112.2,159.3 L107.9,162.1 L107.4,164.7 L102.4,170.3 L103.0,172.5 L111.1,172.2 L112.6,173.8 L114.6,173.6 L116.5,175.5 L115.7,177.5 L120.7,181.7 L120.8,178.2 L125.3,177.2 L125.3,175.7 L129.4,173.6 L129.8,170.1 L125.9,169.6 L127.6,167.3 L124.5,166.7 L133.9,167.5 L135.6,164.1 L135.0,161.9 L132.4,161.1 L134.6,160.1 L133.4,158.6 L125.8,153.0 L124.6,150.6 L126.6,148.9 L124.5,146.6 L128.4,143.7 L123.4,140.9 L130.9,140.7 L134.8,138.9 L135.3,136.8 L137.1,137.1 L138.8,141.0 L137.6,143.2 L139.6,143.4 L141.7,148.5 L144.1,150.0 L139.7,153.3 L140.0,154.7 L141.6,154.5 L140.3,155.2 L139.9,158.7 L142.4,161.4 L143.2,159.8 L147.1,162.3 L145.7,153.8 L149.5,149.1 L152.7,152.4 L156.5,151.3 L158.8,144.0 L158.5,138.1 L156.7,139.4 L155.8,138.2 L152.7,139.0 L147.7,142.5 L142.8,135.1 L144.6,135.6 L142.7,131.9 L144.9,129.5 L145.2,132.1 L148.2,134.8 L152.1,132.7 L152.9,130.9 L154.5,129.5 L153.0,131.4 L153.7,132.9 L158.4,133.6 L158.2,131.9 L159.8,134.7 L158.4,134.9 L159.9,135.1 L159.0,131.5 L155.9,130.2 L155.4,128.6 L154.6,129.3 L154.5,124.7 L155.8,128.3 L157.9,127.2 L161.4,129.9 L161.6,128.3 L160.6,123.1 L149.1,109.1 L145.2,94.6 L136.0,89.1 L133.3,89.5 L129.7,93.5 L119.0,94.2 L111.9,92.8 L107.4,94.5 L104.7,94.5 L102.3,92.8 L107.1,94.2 L111.6,92.4 L118.7,93.9 L129.4,93.2 L133.1,89.2 L135.7,88.7 L145.0,94.1 L146.9,93.2 L147.8,88.2 L152.0,81.6 L148.8,69.8 L146.5,68.6 L152.6,48.2 L158.6,39.5 L167.2,35.5 L172.1,26.4 L168.7,19.1 L165.0,19.7 L163.0,18.1 L155.9,21.1 L149.6,16.9 L148.2,16.9 L145.6,21.3 L140.9,19.6 L138.3,23.7 L133.1,24.2 L131.6,19.6 L126.9,20.4 L121.2,8.6 L119.1,10.2 L116.4,10.0 L113.8,12.4 L111.1,12.5 L109.0,10.9 L101.3,12.6 L95.7,5.4 L88.2,3.0 L83.8,5.8 L83.0,13.5 L75.6,16.8 L70.8,16.9 L71.1,18.9 L68.9,19.7 Z", full: "M68.9,19.7 L54.4,21.1 L56.6,24.2 L59.2,24.6 L59.3,29.8 L61.2,30.7 L77.6,29.0 L75.3,30.2 L74.7,32.6 L69.6,32.7 L66.0,35.2 L73.0,39.4 L73.5,44.8 L70.3,40.8 L60.3,40.6 L60.1,45.6 L58.5,47.8 L46.5,56.6 L46.5,60.5 L50.3,62.9 L62.5,61.3 L64.5,62.3 L64.7,66.0 L61.3,63.6 L57.6,67.2 L50.9,67.9 L49.6,69.7 L48.3,69.0 L44.0,78.1 L48.8,79.1 L50.6,81.0 L50.6,81.3 L46.6,78.7 L42.0,80.1 L41.5,82.5 L44.7,86.1 L41.2,85.4 L39.0,92.8 L35.2,95.2 L37.0,96.0 L34.8,99.8 L33.6,97.5 L32.7,99.8 L34.2,101.6 L38.3,102.3 L37.3,104.7 L38.4,106.4 L42.9,112.4 L45.5,112.9 L45.3,117.2 L43.3,118.8 L43.1,120.9 L41.4,119.8 L41.1,116.1 L39.5,115.5 L38.5,116.9 L36.0,114.2 L35.2,112.6 L36.6,108.0 L34.8,109.8 L30.3,108.1 L27.9,111.4 L29.6,113.4 L28.1,114.6 L30.6,118.2 L33.7,117.9 L33.0,114.5 L35.0,114.6 L37.3,119.5 L39.7,119.3 L39.8,121.6 L36.6,124.3 L36.9,125.8 L34.9,127.1 L32.9,126.0 L33.6,131.5 L35.1,132.1 L38.3,131.0 L38.4,125.1 L40.4,127.5 L40.3,136.1 L42.0,140.0 L38.0,145.0 L39.5,146.6 L38.9,151.3 L44.5,150.6 L46.1,152.0 L48.4,151.0 L55.9,159.8 L60.2,162.3 L53.0,160.1 L52.0,162.8 L47.0,161.2 L43.7,158.3 L44.9,154.8 L43.4,155.6 L40.7,153.8 L39.4,159.4 L42.5,158.6 L46.0,164.4 L48.3,163.6 L45.6,167.2 L38.4,163.6 L35.5,157.9 L36.4,153.6 L32.5,148.5 L29.2,154.4 L28.8,159.2 L29.8,161.6 L31.9,162.0 L31.5,166.0 L34.3,168.6 L39.3,169.5 L41.1,171.9 L44.2,170.1 L46.3,172.2 L45.3,173.4 L47.1,174.8 L47.1,182.1 L50.5,182.0 L51.0,184.3 L47.2,190.8 L51.2,190.0 L51.3,197.0 L55.0,194.1 L57.6,194.7 L60.1,189.7 L60.1,185.4 L69.0,181.5 L70.5,179.2 L70.6,177.0 L72.5,175.8 L72.8,166.0 L73.2,163.4 L74.5,161.2 L73.6,163.5 L75.2,178.9 L82.7,183.7 L82.9,180.3 L87.8,180.6 L87.2,178.2 L90.8,177.8 L89.6,171.9 L91.6,171.2 L93.0,168.4 L91.1,167.8 L92.8,164.1 L90.1,162.5 L95.3,161.9 L102.6,155.5 L107.2,155.6 L109.3,154.3 L111.7,149.7 L113.8,149.0 L114.9,151.4 L120.6,149.7 L121.8,153.9 L119.8,158.3 L117.2,158.3 L116.7,153.7 L115.4,153.3 L113.4,154.8 L112.2,159.3 L107.9,162.1 L107.4,164.7 L102.4,170.3 L103.0,172.5 L111.1,172.2 L112.6,173.8 L114.6,173.6 L116.5,175.5 L115.7,177.5 L120.7,181.7 L120.8,178.2 L125.3,177.2 L125.3,175.7 L129.4,173.6 L129.8,170.1 L125.9,169.6 L127.6,167.3 L124.5,166.7 L133.9,167.5 L135.6,164.1 L135.0,161.9 L132.4,161.1 L134.6,160.1 L133.4,158.6 L125.8,153.0 L124.6,150.6 L126.6,148.9 L124.5,146.6 L128.4,143.7 L123.4,140.9 L130.9,140.7 L134.8,138.9 L135.3,136.8 L137.1,137.1 L138.8,141.0 L137.6,143.2 L139.6,143.4 L141.7,148.5 L144.1,150.0 L139.7,153.3 L140.0,154.7 L141.6,154.5 L140.3,155.2 L139.9,158.7 L142.4,161.4 L143.2,159.8 L147.1,162.3 L145.7,153.8 L149.5,149.1 L152.7,152.4 L156.5,151.3 L158.8,144.0 L158.5,138.1 L156.7,139.4 L155.8,138.2 L152.7,139.0 L147.7,142.5 L142.8,135.1 L144.6,135.6 L142.7,131.9 L144.9,129.5 L145.2,132.1 L148.2,134.8 L152.1,132.7 L152.9,130.9 L154.5,129.5 L153.0,131.4 L153.7,132.9 L158.4,133.6 L158.2,131.9 L159.8,134.7 L158.4,134.9 L159.9,135.1 L159.0,131.5 L155.9,130.2 L155.4,128.6 L154.6,129.3 L154.5,124.7 L155.8,128.3 L157.9,127.2 L161.4,129.9 L161.6,128.3 L160.6,123.1 L149.1,109.1 L145.2,94.6 L136.0,89.1 L133.3,89.5 L129.7,93.5 L119.0,94.2 L111.9,92.8 L107.4,94.5 L104.7,94.5 L102.3,92.8 L107.1,94.2 L111.6,92.4 L118.7,93.9 L129.4,93.2 L133.1,89.2 L135.7,88.7 L145.0,94.1 L146.9,93.2 L147.8,88.2 L152.0,81.6 L148.8,69.8 L146.5,68.6 L152.6,48.2 L158.6,39.5 L167.2,35.5 L172.1,26.4 L168.7,19.1 L165.0,19.7 L163.0,18.1 L155.9,21.1 L149.6,16.9 L148.2,16.9 L145.6,21.3 L140.9,19.6 L138.3,23.7 L133.1,24.2 L131.6,19.6 L126.9,20.4 L121.2,8.6 L119.1,10.2 L116.4,10.0 L113.8,12.4 L111.1,12.5 L109.0,10.9 L101.3,12.6 L95.7,5.4 L88.2,3.0 L83.8,5.8 L83.0,13.5 L75.6,16.8 L70.8,16.9 L71.1,18.9 L68.9,19.7 Z", hole: null, holeStart: null},
+    jeju: {d: "M179.4,123.4 L209.0,73.1 L198.9,64.4 L197.2,52.5 L162.0,39.5 L131.4,46.2 L124.7,43.8 L31.7,71.8 L19.5,81.6 L11.8,96.9 L-1.8,106.2 L-9.0,128.7 L-0.3,143.3 L24.8,160.5 L31.9,150.6 L39.7,147.8 L72.9,147.3 L79.1,152.1 L118.1,146.9 L123.6,140.6 L148.8,135.0 L162.7,125.1 L179.4,123.4 Z", full: "M179.4,123.4 L209.0,73.1 L198.9,64.4 L197.2,52.5 L162.0,39.5 L131.4,46.2 L124.7,43.8 L31.7,71.8 L19.5,81.6 L11.8,96.9 L-1.8,106.2 L-9.0,128.7 L-0.3,143.3 L24.8,160.5 L31.9,150.6 L39.7,147.8 L72.9,147.3 L79.1,152.1 L118.1,146.9 L123.6,140.6 L148.8,135.0 L162.7,125.1 L179.4,123.4 Z", hole: null, holeStart: null}
+  };
+  function setBi(el,ko,en){var k=el.querySelector('[data-lang="ko"]'),e=el.querySelector('[data-lang="en"]');if(k)k.textContent=ko;if(e)e.textContent=en;}
+  var REGION = {
+    seoul:      {name:'서울', name_en:"Seoul", tag:'도심의 문화와 이동이 만나는 여행의 시작점', tag_en:"Where city culture meets effortless travel", desc:'호텔·공연장·쇼핑·미식까지, 도심 속 서울 여행.', desc_en:"Hotels, venues, shopping, and dining across the city.", ctitle:'서울 대표 장소', ctitle_en:"Featured places in Seoul", ctheme:'도심 문화·쇼핑·미식이 모이는 서울', ctheme_en:"Seoul, where culture, shopping, and dining converge"},
+    gyeonggi:   {name:'경기·인천', name_en:"Gyeonggi·Incheon", tag:'공항과 서울 근교 목적지를 잇는 하루 여행', tag_en:"Day trips linking the airport and Seoul's outskirts", desc:'테마파크·아울렛·공항까지, 가볍게 떠나는 근교 여행.', desc_en:"Theme parks, outlets, and the airport — easy trips near the city.", ctitle:'경기·인천 대표 장소', ctitle_en:"Featured places in Gyeonggi·Incheon", ctheme:'테마파크·아울렛·공항이 가까운 근교', ctheme_en:"Theme parks, outlets, and the airport close by"},
+    gangwon:    {name:'강원', name_en:"Gangwon", tag:'설산과 리조트, 동해 바다를 따라 떠나는 여행', tag_en:"Snowy peaks, resorts, and the East Sea coast", desc:'스키 리조트·해안 도시·로컬 투어, 사계절 강원 여행.', desc_en:"Ski resorts, coastal towns, and local tours all year round.", ctitle:'강원 대표 장소', ctitle_en:"Featured places in Gangwon", ctheme:'스키 리조트·해안 도시·자연 명소의 강원', ctheme_en:"Gangwon, home to ski resorts, coastal towns, and nature"},
+    gyeongsang: {name:'경상', name_en:"Gyeongsang", tag:'역사 도시와 남쪽 바다를 함께 만나는 여행', tag_en:"Historic cities and the southern sea together", desc:'부산의 해안과 경주의 역사, 남부 도시 여행.', desc_en:"Busan's coast and Gyeongju's history across the south.", ctitle:'경상 대표 장소', ctitle_en:"Featured places in Gyeongsang", ctheme:'부산의 해안과 경주의 역사가 있는 남부', ctheme_en:"The south, with Busan's coast and Gyeongju's history"},
+    jeolla:     {name:'전라', name_en:"Jeolla", tag:'한옥, 정원, 미식으로 이어지는 남도 여행', tag_en:"Hanok, gardens, and cuisine across the Namdo region", desc:'한옥·정원·미식으로 이어지는, 느린 남도 여행.', desc_en:"A slow journey through hanok, gardens, and fine food.", ctitle:'전라 대표 장소', ctitle_en:"Featured places in Jeolla", ctheme:'한옥·정원·남도 미식이 있는 전라', ctheme_en:"Jeolla, with hanok, gardens, and Namdo cuisine"},
+    jeju:       {name:'제주', name_en:"Jeju", tag:'섬의 풍경을 따라 자유롭게 이동하는 여행', tag_en:"Travel freely along the island's scenery", desc:'해안도로·오름·바다까지, 제주를 누비는 프라이빗 여행.', desc_en:"Coastal roads, oreum, and the sea — private travel across Jeju.", ctitle:'제주 대표 장소', ctitle_en:"Featured places in Jeju", ctheme:'해안도로·오름·바다가 펼쳐지는 제주', ctheme_en:"Jeju, with coastal roads, oreum, and open sea"}
+  };
+
+  var clipShape=document.getElementById('clipShape');
+  var mapimgs=[].slice.call(document.querySelectorAll('.mapimg'));
+  var regcards=[].slice.call(document.querySelectorAll('.regcard'));
+  var tchips=[].slice.call(document.querySelectorAll('.tchip'));
+  var cards=[].slice.call(document.querySelectorAll('#grid .pcard'));
+  var heroName=document.getElementById('heroName'),heroTag=document.getElementById('heroTag'),heroDesc=document.getElementById('heroDesc');
+  var collTitle=document.getElementById('collTitle'),collTheme=document.getElementById('collTheme'),collCount=document.getElementById('collCount');
+  var coll=document.getElementById('collection');
+  var aRegion='gangwon', aType='all';
+  var morphRAF=null;
+  var reduce=matchMedia('(prefers-reduced-motion:reduce)').matches;
+
+  function smooth(k){return k*k*(3-2*k);}
+  function openHole(S){
+    // 구멍(서울)을 작은 점 → 실제 모양으로 스르륵 열기
+    var hi=flubber.interpolate(S.holeStart,S.hole,{maxSegmentLength:3});
+    var start=null,dur=440;
+    function frame(t){if(start===null)start=t;var k=Math.min(1,(t-start)/dur);
+      clipShape.setAttribute('d', S.d+' '+hi(smooth(k)));
+      if(k<1)morphRAF=requestAnimationFrame(frame); else clipShape.setAttribute('d',S.full);}
+    morphRAF=requestAnimationFrame(frame);
+  }
+  function morphShape(prevR,r){
+    var S=SHAPE[r], fromD=SHAPE[prevR].d, toD=S.d;
+    if(reduce||typeof flubber==='undefined'){clipShape.setAttribute('d',S.full);return;}
+    var interp=flubber.interpolate(fromD,toD,{maxSegmentLength:3});
+    var start=null,dur=720;
+    if(morphRAF)cancelAnimationFrame(morphRAF);
+    function frame(t){if(start===null)start=t;var k=Math.min(1,(t-start)/dur);
+      if(k<1){clipShape.setAttribute('d',interp(smooth(k)));morphRAF=requestAnimationFrame(frame);}
+      else if(S.hole){openHole(S);}
+      else{clipShape.setAttribute('d',toD);}}
+    morphRAF=requestAnimationFrame(frame);
+  }
+
+  function staggerIn(shown){
+    if(reduce){shown.forEach(function(c){c.classList.add('is-in');});return;}
+    requestAnimationFrame(function(){requestAnimationFrame(function(){
+      shown.forEach(function(c,i){c.style.transitionDelay=(0.08+i*0.05)+'s';c.classList.add('is-in');});
+    });});
+  }
+  function applyFilter(animate){
+    var n=0,shown=[];
+    cards.forEach(function(c){
+      var rOk=(c.getAttribute('data-region')===aRegion);
+      var tOk=(aType==='all')||(c.getAttribute('data-type')===aType);
+      var show=rOk&&tOk;
+      c.style.display=show?'':'none';
+      c.classList.remove('is-in');c.style.transitionDelay='';
+      if(show){shown.push(c);n++;}
+    });
+    collCount.textContent=n>0?(n+'곳'):'';
+    coll.classList.toggle('is-empty',n===0);
+    if(animate)staggerIn(shown);
+  }
+  function setRegion(r){
+    if(r===aRegion){return;}
+    var prev=aRegion; aRegion=r;
+    regcards.forEach(function(c){c.classList.toggle('on',c.getAttribute('data-region')===r);});
+    mapimgs.forEach(function(im){im.classList.toggle('on',im.getAttribute('data-region')===r);});
+    morphShape(prev,r);
+    var d=REGION[r];
+    setBi(heroName,d.name,d.name_en);setBi(heroTag,d.tag,d.tag_en);setBi(heroDesc,d.desc,d.desc_en);
+    setBi(collTitle,d.ctitle,d.ctitle_en);setBi(collTheme,d.ctheme,d.ctheme_en);
+    aType='all';
+    tchips.forEach(function(c){c.classList.toggle('on',c.getAttribute('data-type')==='all');});
+    applyFilter(true);
+  }
+  function setType(t){
+    aType=t;
+    tchips.forEach(function(c){c.classList.toggle('on',c.getAttribute('data-type')===t);});
+    applyFilter(true);
+  }
+  // 초기화
+  clipShape.setAttribute('d',SHAPE.gangwon.full);
+  document.querySelector('.mapimg[data-region="gangwon"]').classList.add('on');
+  regcards.forEach(function(c){c.addEventListener('click',function(){setRegion(c.getAttribute('data-region'));});});
+  tchips.forEach(function(c){c.addEventListener('click',function(){setType(c.getAttribute('data-type'));});});
+  applyFilter(false);
+  // 카드 첫 등장: 그리드가 화면에 들어올 때 stagger fade-up
+  var __grid=document.getElementById('grid');
+  if(__grid&&'IntersectionObserver' in window){
+    var __gio=new IntersectionObserver(function(es){
+      if(es[0].isIntersecting){staggerIn(cards.filter(function(c){return c.style.display!=='none';}));__gio.disconnect();}
+    },{threshold:.12});
+    __gio.observe(__grid);
+  } else {
+    staggerIn(cards.filter(function(c){return c.style.display!=='none';}));
+  }
+
+  /* S3 — 길 진행 마커 + 정거장 슬라이드인 */
+  var jtrack=document.getElementById('journey');
+  var jmarker=document.getElementById('journeyMarker');
+  var roadEl=document.querySelector('.journey__road');
+  var basePath=document.querySelector('.road-base');
+  var progPath=document.querySelector('.road-prog');
+  if(jtrack&&basePath&&!reduce){
+    var plen;
+    function setRoadShape(){
+      var d=(window.innerWidth<=780)?'M60,0 L60,1000':'M60,0 C88,150 88,185 60,330 C32,475 32,510 60,660 C88,810 88,845 60,1000';
+      basePath.setAttribute('d',d);progPath.setAttribute('d',d);
+      var dash=document.querySelector('.road-dash');if(dash)dash.setAttribute('d',d);
+      plen=basePath.getTotalLength();progPath.style.strokeDasharray=plen;
+    }
+    setRoadShape();
+    progPath.style.strokeDashoffset=plen;
+    var jstops=[].slice.call(document.querySelectorAll('.stop'));
+    function placeNodes(){
+      if(window.innerWidth<=780){jstops.forEach(function(st){var n=st.querySelector('.stop__node');if(n)n.style.left='';});return;}
+      var roadRect=roadEl.getBoundingClientRect(),rh=roadEl.clientHeight||1;
+      jstops.forEach(function(st){
+        var node=st.querySelector('.stop__node');if(!node)return;
+        var cy=st.offsetTop+st.offsetHeight*0.5;
+        var pct=Math.max(0,Math.min(1,cy/rh));
+        var pt=basePath.getPointAtLength(plen*pct);
+        var roadX=roadRect.left+(pt.x/120)*roadRect.width;
+        node.style.left=(roadX-st.getBoundingClientRect().left)+'px';
+      });
+    }
+    var ticking=false;
+    function updateJourney(){
+      ticking=false;
+      var rc=jtrack.getBoundingClientRect();
+      var p=(window.innerHeight*0.52 - rc.top)/rc.height;
+      p=Math.max(0,Math.min(1,p));
+      progPath.style.strokeDashoffset=plen*(1-p);
+      var pt=basePath.getPointAtLength(plen*p);
+      var my=(pt.y/1000)*roadEl.clientHeight;
+      if(window.innerWidth>780){
+        var roadRect=roadEl.getBoundingClientRect(),mp=jmarker.offsetParent.getBoundingClientRect();
+        jmarker.style.left=((roadRect.left+(pt.x/120)*roadRect.width)-mp.left)+'px';
+        jmarker.style.top=((roadRect.top+(pt.y/1000)*roadRect.height)-mp.top-25)+'px';
+      }else{jmarker.style.left='';jmarker.style.top=my+'px';}
+      jstops.forEach(function(st){
+        var shouldShow=my>=st.offsetTop+st.offsetHeight*0.5;
+        st.classList.toggle('in',shouldShow);
+      });
+    }
+    function onJScroll(){if(!ticking){ticking=true;requestAnimationFrame(updateJourney);}}
+    addEventListener('scroll',onJScroll,{passive:true});
+    addEventListener('resize',function(){setRoadShape();onJScroll();placeNodes();},{passive:true});
+    updateJourney();placeNodes();
+  }
+
+  /* nav 토글·언어 → js/includes.js 공통 처리 */
+
+  /* reveal */
+  if('IntersectionObserver' in window){
+    var io=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target);}});},{threshold:.18,rootMargin:'0px 0px -8% 0px'});
+    document.querySelectorAll('.rv').forEach(function(el){io.observe(el);});
+  } else {document.querySelectorAll('.rv,.stop').forEach(function(el){el.classList.add('in');});}
+})();
+</script>
+  <script src="../js/includes.js"></script>
+</body>
+</html>

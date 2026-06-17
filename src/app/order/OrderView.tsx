@@ -704,7 +704,7 @@ function SubHeader({ title }: { title: string }) {
           {title}
         </h1>
         <Link
-          href="/"
+          href="/city"
           aria-label={t("home")}
           className="h-10 w-10 grid place-items-center text-ink -mr-1"
         >

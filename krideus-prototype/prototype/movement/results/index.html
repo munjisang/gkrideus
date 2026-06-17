@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>공항 픽업 차량 검색 결과 — Rideus</title>
+<meta name="description" content="인천공항에서 도심까지, 프라이빗 기사 차량 검색 결과. 도어투도어·항공편 실시간 추적·영어 가능 기사. 차량을 선택하고 바로 예약하세요.">
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+/* ============================================================
+   Rideus 공항 픽업 차량 검색 결과 — movement/results
+   shopping-paju/results 틀 계승 · 공통 GNB(navbar)·푸터(footer) 인클루드
+   네비는 히어로가 없어 항상 solid (data-nav-mode 미사용)
+   ============================================================ */
+:root{
+  --bg:#FAF8F5;--surface:#FFFEFC;--card:#FFFFFF;
+  --ink:#1B2027;--ink-soft:#5C6675;--ink-faint:#97A0AC;
+  --accent:#2C51DB;--accent-soft:#E4E9FB;
+  --private:#5B45B8;--private-soft:#ECE6F7;
+  --hair:#ECE7DF;--hair-soft:#F3EFE8;
+  --shadow:18 24 33;--maxw:1280px;--text-inset:8px;
+  --fd:'Outfit','Pretendard',sans-serif;--fb:'Pretendard',-apple-system,BlinkMacSystemFont,sans-serif;
+  --e-out:cubic-bezier(.16,1,.3,1);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:var(--fb);background:var(--bg);color:var(--ink);line-height:1.45;letter-spacing:-.005em;-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;overflow-x:clip;word-break:keep-all;overflow-wrap:break-word}
+img{max-width:100%;display:block}
+a,button{color:inherit;text-decoration:none;font:inherit}
+button{background:none;border:none;cursor:pointer}
+ul,li{list-style:none}
+.wrap{max-width:var(--maxw);margin:0 auto;padding:0 clamp(24px,4vw,56px)}
+
+/* ---------- Nav (공통 navbar 인클루드 — 검색결과는 히어로 없어 항상 solid) ---------- */
+.nav{position:fixed;top:0;left:0;right:0;z-index:60;background:color-mix(in srgb, var(--bg) 92%, transparent);backdrop-filter:saturate(140%) blur(12px);-webkit-backdrop-filter:saturate(140%) blur(12px);
+  --nav-ink:var(--ink);--nav-soft:var(--ink-soft);--nav-faint:var(--ink-faint);--nav-chip:var(--hair-soft);--nav-hover:var(--hair-soft)}
+.nav__in{max-width:var(--maxw);margin:0 auto;padding:20px clamp(24px,4vw,56px);display:flex;align-items:center;gap:44px}
+.brand{display:inline-flex;align-items:center}.brand img{height:28px;width:auto;display:block}
+.nav__menu{display:flex;gap:32px;font-size:.95rem;font-weight:500}
+.nav__menu a{color:var(--nav-soft);padding:8px 0;transition:color .25s var(--e-out);cursor:pointer}
+.nav__menu a:hover{color:var(--nav-ink)}
+.nav__menu a[aria-current]{color:var(--nav-ink);font-weight:600}
+.nav__right{margin-left:auto;display:flex;align-items:center;gap:8px;color:var(--nav-soft)}
+.nav__lang{display:flex;align-items:center;gap:2px;background:var(--nav-chip);border-radius:999px;padding:4px;font-size:.78rem;font-weight:600}
+.nav__lang button{padding:4px 12px;border-radius:999px;color:var(--nav-faint)}
+.nav__lang button.on{background:#fff;color:var(--accent)}
+.nav__ic{width:40px;height:40px;display:grid;place-items:center;border-radius:50%;transition:background .25s var(--e-out)}
+.nav__ic:hover{background:var(--nav-hover)}
+.nav__burger{display:none;width:42px;height:42px;flex-direction:column;align-items:center;justify-content:center;gap:5px;border:none;background:none;cursor:pointer}
+.nav__burger span{display:block;width:22px;height:2px;background:var(--nav-ink);border-radius:2px;transition:transform .3s var(--e-out),opacity .2s}
+.nav.is-open .nav__burger span:nth-child(1){transform:translateY(7px) rotate(45deg)}
+.nav.is-open .nav__burger span:nth-child(2){opacity:0}
+.nav.is-open .nav__burger span:nth-child(3){transform:translateY(-7px) rotate(-45deg)}
+.nav__drawer{display:none;flex-direction:column;max-width:1280px;margin:0 auto;padding:4px clamp(24px,4vw,56px) 18px}
+.nav__drawer a{padding:14px 4px;font-size:1.05rem;font-weight:600;color:#1B2027;border-bottom:1px solid #F3EFE8}
+.nav__drawer a.is-disabled{color:#97A0AC}
+.nav__drawer a[aria-current]{color:#2C51DB}
+.nav__drawer-lang{display:inline-flex;align-self:flex-start;margin-top:14px;align-items:center;gap:2px;background:#F3EFE8;border-radius:999px;padding:4px;font-size:.78rem;font-weight:600}
+.nav__drawer-lang button{padding:4px 12px;border-radius:999px;color:#97A0AC}
+.nav__drawer-lang button.on{background:#fff;color:#2C51DB}
+@media (max-width:768px){
+  .nav__menu,.nav__ic,.nav__lang{display:none}
+  .nav__burger{display:flex}
+  .nav.is-open .nav__drawer{display:flex;animation:navDrop .3s var(--e-out)}
+}
+@keyframes navDrop{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:none}}
+
+/* ---------- Buttons ---------- */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;height:48px;padding:0 24px;border-radius:999px;font-weight:600;font-size:.95rem;letter-spacing:-.01em;white-space:nowrap;transition:transform .25s var(--e-out),background .25s var(--e-out),color .25s var(--e-out)}
+.btn svg{width:16px;height:16px}
+.btn--primary{background:var(--accent);color:#fff}
+.btn--primary:hover{transform:translateY(-2px);background:#1f43c4}
+.btn--ghost{background:var(--card);color:var(--ink);box-shadow:inset 0 0 0 1px var(--hair)}
+.btn--ghost:hover{box-shadow:inset 0 0 0 1px var(--accent);color:var(--accent)}
+
+/* ---------- 검색 요약 바 ---------- */
+.page-top{padding-top:69px}
+.srch{position:sticky;top:69px;z-index:50;background:color-mix(in srgb, var(--bg) 90%, transparent);backdrop-filter:saturate(140%) blur(10px);-webkit-backdrop-filter:saturate(140%) blur(10px);border-bottom:1px solid var(--hair)}
+.srch__in{max-width:var(--maxw);margin:0 auto;padding:14px clamp(24px,4vw,56px);display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.srch__sum{display:flex;align-items:center;gap:8px 14px;flex-wrap:wrap;font-size:.88rem;color:var(--ink-soft);flex:1;min-width:0}
+.srch__sum b{color:var(--ink);font-weight:700}
+.srch__sum .dot{width:3px;height:3px;border-radius:50%;background:var(--ink-faint)}
+.srch__count{font-weight:700;color:var(--accent)}
+.srch__edit{height:38px;padding:0 16px;font-size:.84rem}
+
+/* ---------- 결과 헤더 ---------- */
+.results{padding:clamp(24px,3vw,40px) 0 clamp(40px,5vw,64px)}
+.results-head{margin-bottom:clamp(16px,2vw,24px);padding-left:var(--text-inset)}
+.results-head h1{font-weight:700;letter-spacing:-.03em;line-height:1.15;font-size:clamp(1.4rem,2.6vw,1.9rem)}
+.results-head p{margin-top:8px;font-size:.92rem;color:var(--ink-soft)}
+
+/* ---------- 차량 결과 카드 ---------- */
+.rlist{display:flex;flex-direction:column;gap:clamp(14px,1.6vw,18px)}
+.rcard{display:flex;align-items:center;gap:clamp(16px,2vw,28px);background:var(--card);border-radius:18px;padding:clamp(16px,1.6vw,20px);transition:box-shadow .28s var(--e-out)}
+.rcard:hover{box-shadow:0 1px 1px rgb(var(--shadow)/.04),0 18px 36px -24px rgb(var(--shadow)/.3)}
+.rcard__img{flex-shrink:0;width:clamp(160px,20vw,232px);aspect-ratio:16/10;border-radius:12px;overflow:hidden;background:#fff}
+.rcard__img img{width:100%;height:100%;object-fit:contain}
+.rcard__body{flex:1;min-width:0}
+.rcard__class{font-family:var(--fd);font-size:.7rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-faint)}
+.rcard__name{font-family:var(--fd);font-size:clamp(1.15rem,1.8vw,1.4rem);font-weight:700;letter-spacing:-.01em;margin-top:2px}
+.rcard__name small{font-size:.62em;font-weight:600;color:var(--ink-soft);margin-left:6px}
+.rcard__meta{display:flex;align-items:baseline;gap:8px 12px;flex-wrap:wrap;margin-top:8px}
+.rcard__time{font-size:.88rem;color:var(--ink-soft);font-weight:500}
+.rcard__price{font-family:var(--fb);font-size:1.25rem;font-weight:700;letter-spacing:-.01em;font-variant-numeric:tabular-nums}
+.rcard__price .won{font-style:normal;font-size:.72em;font-weight:600;color:var(--ink-faint);margin-right:1px}
+.rcard__price em{font-style:normal;font-size:.66rem;font-weight:600;color:var(--ink-faint);margin-left:4px;letter-spacing:.02em}
+.rcard__feats{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px}
+.rfeat{display:inline-flex;align-items:center;height:26px;padding:0 10px;border-radius:999px;font-size:.74rem;font-weight:600;color:var(--ink-soft);background:var(--hair-soft)}
+.rfeat--pop{background:var(--accent-soft);color:var(--accent)}
+.rcard__act{flex-shrink:0;display:flex;flex-direction:column;align-items:flex-end;gap:8px}
+
+/* ---------- 모드 탭 (프라이빗 / 리무진 / 철도) ---------- */
+.mv-tabs{display:flex;gap:8px;margin-bottom:clamp(18px,2.4vw,26px)}
+.mv-tab{flex:1;display:inline-flex;align-items:center;justify-content:center;gap:8px;height:52px;border-radius:14px;font-size:.95rem;font-weight:600;color:var(--ink-soft);background:var(--hair-soft);cursor:pointer;transition:background .2s var(--e-out),color .2s var(--e-out)}
+.mv-tab svg{width:18px;height:18px;flex-shrink:0}
+.mv-tab:hover{color:var(--ink)}
+.mv-tab.is-on{background:var(--accent);color:#fff}
+.rlist[hidden]{display:none}
+@media (max-width:768px){.mv-tab{font-size:.82rem;height:48px;padding:0 6px;gap:5px}.mv-tab svg{width:16px;height:16px}}
+
+/* ---------- 추가 상품 ---------- */
+.addons{padding:0 0 clamp(56px,7vw,88px)}
+.addons-head{margin-bottom:clamp(16px,2vw,22px);padding-left:var(--text-inset)}
+.addons-head h2{font-size:1.2rem;font-weight:700;letter-spacing:-.02em}
+.addons-head p{margin-top:6px;font-size:.86rem;color:var(--ink-faint)}
+.addon-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:clamp(12px,1.4vw,16px)}
+.addon{display:flex;align-items:flex-start;gap:12px;background:var(--card);border-radius:14px;padding:16px 18px;box-shadow:inset 0 0 0 1px var(--hair);cursor:pointer;transition:box-shadow .2s var(--e-out)}
+.addon:hover{box-shadow:inset 0 0 0 1.5px var(--accent)}
+.addon input{margin-top:3px;width:18px;height:18px;accent-color:var(--accent);flex-shrink:0;cursor:pointer}
+.addon__txt b{display:block;font-size:.92rem;font-weight:700;letter-spacing:-.01em}
+.addon__txt span{display:block;margin-top:3px;font-size:.8rem;color:var(--ink-soft);line-height:1.5}
+.addon__txt i{font-style:normal;display:inline-block;margin-top:6px;font-size:.78rem;font-weight:700;color:var(--accent)}
+.addons-soon{margin-top:14px;font-size:.8rem;color:var(--ink-faint);padding-left:var(--text-inset)}
+
+/* ---------- Footer (공통 footer 인클루드) ---------- */
+.foot{background:var(--ink);color:rgba(255,255,255,.66);padding:clamp(44px,5vw,64px) 0 28px}
+.foot__in{max-width:var(--maxw);margin:0 auto;padding:0 clamp(24px,4vw,56px);display:flex;flex-wrap:wrap;justify-content:space-between;gap:24px}
+.foot__brand .logo{font-family:var(--fd);font-weight:700;font-size:1.3rem;color:#fff;margin-bottom:12px}
+.foot__brand p{font-size:.84rem;line-height:1.7;color:rgba(255,255,255,.5);max-width:34ch}
+.foot__bottom{max-width:var(--maxw);margin:clamp(28px,4vw,40px) auto 0;padding:22px clamp(24px,4vw,56px) 0;border-top:1px solid rgba(255,255,255,.12);font-size:.74rem;color:rgba(255,255,255,.4)}
+
+/* ---------- reveal ---------- */
+.rv{opacity:0;transform:translateY(18px)}
+.rv.in{opacity:1;transform:none;transition:opacity .6s var(--e-out),transform .7s var(--e-out)}
+@media (prefers-reduced-motion:reduce){.rv{opacity:1!important;transform:none!important}html{scroll-behavior:auto}}
+
+/* ---------- 반응형 ---------- */
+@media (max-width:768px){
+  .addon-grid{grid-template-columns:1fr}
+  .rcard{flex-wrap:wrap}
+  .rcard__img{width:100%;aspect-ratio:16/9}
+  .rcard__act{width:100%;flex-direction:row;justify-content:flex-end}
+  .rcard__act .btn{flex:1}
+}
+</style>
+</head>
+<body data-base="../../">
+
+<div data-include="navbar"></div>
+
+<main class="page-top">
+
+  <!-- ============ 검색 요약 바 ============ -->
+  <div class="srch">
+    <div class="srch__in">
+      <div class="srch__sum">
+        <b><span data-lang="ko">프라이빗 기사</span><span data-lang="en" hidden>Private chauffeur</span></b>
+        <span class="dot"></span>
+        <span id="sumRoute"><span data-lang="ko">인천공항 (ICN) → 도심</span><span data-lang="en" hidden>Incheon Airport (ICN) → City</span></span>
+        <span class="dot"></span>
+        <span id="sumWhen"><span data-lang="ko">날짜·시간 미정</span><span data-lang="en" hidden>Date·time TBD</span></span>
+        <span class="dot"></span>
+        <span id="sumPax"><span data-lang="ko">탑승 2</span><span data-lang="en" hidden>2 pax</span></span>
+        <span class="dot"></span>
+        <span class="srch__count" id="sumCount"><span data-lang="ko">3개 차량</span><span data-lang="en" hidden>3 vehicles</span></span>
+      </div>
+      <a href="../" class="btn btn--ghost srch__edit"><span data-lang="ko">검색 수정</span><span data-lang="en" hidden>Edit search</span></a>
+    </div>
+  </div>
+
+  <!-- ============ 결과 ============ -->
+  <section class="results">
+    <div class="wrap">
+      <div class="mv-tabs rv">
+        <button type="button" class="mv-tab is-on" data-tab="private">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M19 17h2v-6l-3-5H6L3 11v6h2"/><circle cx="7.5" cy="17.5" r="1.5"/><circle cx="16.5" cy="17.5" r="1.5"/></svg>
+          <span data-lang="ko">프라이빗 기사</span><span data-lang="en" hidden>Private chauffeur</span>
+        </button>
+        <button type="button" class="mv-tab" data-tab="limo">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="12" rx="2"/><path d="M3 11h18M7 16v3M17 16v3"/></svg>
+          <span data-lang="ko">공항 리무진</span><span data-lang="en" hidden>Airport limousine</span>
+        </button>
+        <button type="button" class="mv-tab" data-tab="train">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="3" width="14" height="13" rx="3"/><path d="M5 11h14M8 20l-2 2M16 20l2 2"/></svg>
+          <span data-lang="ko">공항 철도</span><span data-lang="en" hidden>Airport train</span>
+        </button>
+      </div>
+      <div class="results-head rv">
+        <h1><span data-lang="ko">공항에서 도심까지, 이동을 선택하세요</span><span data-lang="en" hidden>From airport to city — choose your ride</span></h1>
+        <p><span data-lang="ko">프라이빗 기사 · 공항 리무진 · 공항 철도 — 목적에 맞게 선택하세요.</span><span data-lang="en" hidden>Private chauffeur · airport limousine · airport train — pick what fits.</span></p>
+      </div>
+
+      <div class="rlist" data-panel="private">
+
+        <!-- Genesis G90 -->
+        <article class="rcard rv">
+          <div class="rcard__img"><img src="../../../assets/fleet_g90.webp" alt="Genesis G90" loading="lazy"></div>
+          <div class="rcard__body">
+            <div class="rcard__class">First Class Sedan</div>
+            <div class="rcard__name">Genesis G90 <small><span data-lang="ko">1–3인 · 캐리어 3개</span><span data-lang="en" hidden>1–3 pax · 3 suitcases</span></small></div>
+            <div class="rcard__meta">
+              <span class="rcard__time"><span data-lang="ko">인천공항 → 도심 약 60분</span><span data-lang="en" hidden>ICN → City approx. 60 min</span></span>
+              <span class="rcard__price"><i class="won">₩</i>140,000 <em><span data-lang="ko">편도</span><span data-lang="en" hidden>One-way</span></em></span>
+            </div>
+            <div class="rcard__feats">
+              <span class="rfeat rfeat--pop"><span data-lang="ko">가장 인기</span><span data-lang="en" hidden>Most popular</span></span>
+              <span class="rfeat"><span data-lang="ko">도어투도어</span><span data-lang="en" hidden>Door-to-door</span></span>
+              <span class="rfeat"><span data-lang="ko">영어 가능 기사</span><span data-lang="en" hidden>English driver</span></span>
+              <span class="rfeat"><span data-lang="ko">항공편 실시간 추적</span><span data-lang="en" hidden>Flight tracking</span></span>
+            </div>
+          </div>
+          <div class="rcard__act">
+            <button class="btn btn--primary" data-book="Genesis G90"><span data-lang="ko">예약하기</span><span data-lang="en" hidden>Book now</span>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
+            </button>
+          </div>
+        </article>
+
+        <!-- Staria HiLimo -->
+        <article class="rcard rv">
+          <div class="rcard__img"><img src="../../../assets/fleet_staria.webp" alt="Staria HiLimo" loading="lazy"></div>
+          <div class="rcard__body">
+            <div class="rcard__class">Premium Van</div>
+            <div class="rcard__name">Staria HiLimo <small><span data-lang="ko">1–7인 · 캐리어 6개</span><span data-lang="en" hidden>1–7 pax · 6 suitcases</span></small></div>
+            <div class="rcard__meta">
+              <span class="rcard__time"><span data-lang="ko">인천공항 → 도심 약 60분</span><span data-lang="en" hidden>ICN → City approx. 60 min</span></span>
+              <span class="rcard__price"><i class="won">₩</i>190,000 <em><span data-lang="ko">편도</span><span data-lang="en" hidden>One-way</span></em></span>
+            </div>
+            <div class="rcard__feats">
+              <span class="rfeat"><span data-lang="ko">그룹 추천</span><span data-lang="en" hidden>Group friendly</span></span>
+              <span class="rfeat"><span data-lang="ko">도어투도어</span><span data-lang="en" hidden>Door-to-door</span></span>
+              <span class="rfeat"><span data-lang="ko">영어 가능 기사</span><span data-lang="en" hidden>English driver</span></span>
+              <span class="rfeat"><span data-lang="ko">항공편 실시간 추적</span><span data-lang="en" hidden>Flight tracking</span></span>
+            </div>
+          </div>
+          <div class="rcard__act">
+            <button class="btn btn--primary" data-book="Staria HiLimo"><span data-lang="ko">예약하기</span><span data-lang="en" hidden>Book now</span>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
+            </button>
+          </div>
+        </article>
+
+        <!-- Hyundai Solati -->
+        <article class="rcard rv">
+          <div class="rcard__img"><img src="../../../assets/fleet_solati.webp" alt="Hyundai Solati" loading="lazy"></div>
+          <div class="rcard__body">
+            <div class="rcard__class">Group Coach</div>
+            <div class="rcard__name">Hyundai Solati <small><span data-lang="ko">8–13인 · 캐리어 자유</span><span data-lang="en" hidden>8–13 pax · luggage as needed</span></small></div>
+            <div class="rcard__meta">
+              <span class="rcard__time"><span data-lang="ko">인천공항 → 도심 약 60분</span><span data-lang="en" hidden>ICN → City approx. 60 min</span></span>
+              <span class="rcard__price"><i class="won">₩</i>280,000 <em><span data-lang="ko">편도</span><span data-lang="en" hidden>One-way</span></em></span>
+            </div>
+            <div class="rcard__feats">
+              <span class="rfeat"><span data-lang="ko">대형 그룹</span><span data-lang="en" hidden>Large group</span></span>
+              <span class="rfeat"><span data-lang="ko">도어투도어</span><span data-lang="en" hidden>Door-to-door</span></span>
+              <span class="rfeat"><span data-lang="ko">영어 가능 기사</span><span data-lang="en" hidden>English driver</span></span>
+              <span class="rfeat"><span data-lang="ko">항공편 실시간 추적</span><span data-lang="en" hidden>Flight tracking</span></span>
+            </div>
+          </div>
+          <div class="rcard__act">
+            <button class="btn btn--primary" data-book="Hyundai Solati"><span data-lang="ko">예약하기</span><span data-lang="en" hidden>Book now</span>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
+            </button>
+          </div>
+        </article>
+
+      </div>
+
+      <!-- 공항 리무진 패널 -->
+      <div class="rlist" data-panel="limo" hidden>
+        <article class="rcard">
+          <div class="rcard__img"><img src="/assets/airport_limo.webp" alt="공항 리무진" loading="lazy"></div>
+          <div class="rcard__body">
+            <div class="rcard__class">Premium Limousine</div>
+            <div class="rcard__name"><span data-lang="ko">KAL 프리미엄 리무진</span><span data-lang="en" hidden>KAL Premium Limousine</span> <small><span data-lang="ko">도심 주요 호텔</span><span data-lang="en" hidden>Major city hotels</span></small></div>
+            <div class="rcard__meta">
+              <span class="rcard__time"><span data-lang="ko">인천공항 → 도심 약 70분</span><span data-lang="en" hidden>ICN → City approx. 70 min</span></span>
+              <span class="rcard__price"><i class="won">₩</i>18,000 <em><span data-lang="ko">1인</span><span data-lang="en" hidden>per person</span></em></span>
+            </div>
+            <div class="rcard__feats">
+              <span class="rfeat rfeat--pop"><span data-lang="ko">추천</span><span data-lang="en" hidden>Recommended</span></span>
+              <span class="rfeat"><span data-lang="ko">큰 짐칸</span><span data-lang="en" hidden>Large luggage bay</span></span>
+              <span class="rfeat"><span data-lang="ko">지정 정류장</span><span data-lang="en" hidden>Fixed stops</span></span>
+              <span class="rfeat"><span data-lang="ko">합리적 요금</span><span data-lang="en" hidden>Affordable</span></span>
+            </div>
+          </div>
+          <div class="rcard__act">
+            <button class="btn btn--primary" data-book="KAL 프리미엄 리무진"><span data-lang="ko">예약하기</span><span data-lang="en" hidden>Book now</span>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
+            </button>
+          </div>
+        </article>
+        <article class="rcard">
+          <div class="rcard__img"><img src="/assets/airport_limo.webp" alt="공항버스" loading="lazy"></div>
+          <div class="rcard__body">
+            <div class="rcard__class">Standard Bus</div>
+            <div class="rcard__name"><span data-lang="ko">표준 공항버스</span><span data-lang="en" hidden>Standard Airport Bus</span> <small><span data-lang="ko">시내 주요 권역</span><span data-lang="en" hidden>Major city zones</span></small></div>
+            <div class="rcard__meta">
+              <span class="rcard__time"><span data-lang="ko">인천공항 → 도심 약 80분</span><span data-lang="en" hidden>ICN → City approx. 80 min</span></span>
+              <span class="rcard__price"><i class="won">₩</i>16,000 <em><span data-lang="ko">1인</span><span data-lang="en" hidden>per person</span></em></span>
+            </div>
+            <div class="rcard__feats">
+              <span class="rfeat"><span data-lang="ko">수시 운행</span><span data-lang="en" hidden>Frequent service</span></span>
+              <span class="rfeat"><span data-lang="ko">주요 정류장</span><span data-lang="en" hidden>Major stops</span></span>
+              <span class="rfeat"><span data-lang="ko">짐칸 완비</span><span data-lang="en" hidden>Luggage bay</span></span>
+            </div>
+          </div>
+          <div class="rcard__act">
+            <button class="btn btn--primary" data-book="표준 공항버스"><span data-lang="ko">예약하기</span><span data-lang="en" hidden>Book now</span>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
+            </button>
+          </div>
+        </article>
+      </div>
+
+      <!-- 공항 철도 패널 -->
+      <div class="rlist" data-panel="train" hidden>
+        <article class="rcard">
+          <div class="rcard__img"><img src="/assets/airport_train.webp" alt="공항철도 직통열차" loading="lazy"></div>
+          <div class="rcard__body">
+            <div class="rcard__class">AREX Express</div>
+            <div class="rcard__name"><span data-lang="ko">직통열차</span><span data-lang="en" hidden>Express Train</span> <small><span data-lang="ko">서울역 직통</span><span data-lang="en" hidden>Nonstop to Seoul Stn</span></small></div>
+            <div class="rcard__meta">
+              <span class="rcard__time"><span data-lang="ko">인천공항 → 서울역 43분</span><span data-lang="en" hidden>ICN → Seoul Stn 43 min</span></span>
+              <span class="rcard__price"><i class="won">₩</i>11,000 <em><span data-lang="ko">1인</span><span data-lang="en" hidden>per person</span></em></span>
+            </div>
+            <div class="rcard__feats">
+              <span class="rfeat rfeat--pop"><span data-lang="ko">가장 빠름</span><span data-lang="en" hidden>Fastest</span></span>
+              <span class="rfeat"><span data-lang="ko">지정 좌석</span><span data-lang="en" hidden>Reserved seat</span></span>
+              <span class="rfeat"><span data-lang="ko">논스톱</span><span data-lang="en" hidden>Nonstop</span></span>
+              <span class="rfeat"><span data-lang="ko">정시 운행</span><span data-lang="en" hidden>On time</span></span>
+            </div>
+          </div>
+          <div class="rcard__act">
+            <button class="btn btn--primary" data-book="공항철도 직통열차"><span data-lang="ko">예약하기</span><span data-lang="en" hidden>Book now</span>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
+            </button>
+          </div>
+        </article>
+        <article class="rcard">
+          <div class="rcard__img"><img src="/assets/airport_train.webp" alt="공항철도 일반열차" loading="lazy"></div>
+          <div class="rcard__body">
+            <div class="rcard__class">AREX All-Stop</div>
+            <div class="rcard__name"><span data-lang="ko">일반열차</span><span data-lang="en" hidden>All-Stop Train</span> <small><span data-lang="ko">각 역 정차</span><span data-lang="en" hidden>All stations</span></small></div>
+            <div class="rcard__meta">
+              <span class="rcard__time"><span data-lang="ko">인천공항 → 서울역 66분</span><span data-lang="en" hidden>ICN → Seoul Stn 66 min</span></span>
+              <span class="rcard__price"><i class="won">₩</i>4,750 <em><span data-lang="ko">1인</span><span data-lang="en" hidden>per person</span></em></span>
+            </div>
+            <div class="rcard__feats">
+              <span class="rfeat"><span data-lang="ko">가장 저렴</span><span data-lang="en" hidden>Cheapest</span></span>
+              <span class="rfeat"><span data-lang="ko">수시 운행</span><span data-lang="en" hidden>Frequent</span></span>
+              <span class="rfeat"><span data-lang="ko">교통체증 없음</span><span data-lang="en" hidden>No traffic</span></span>
+            </div>
+          </div>
+          <div class="rcard__act">
+            <button class="btn btn--primary" data-book="공항철도 일반열차"><span data-lang="ko">예약하기</span><span data-lang="en" hidden>Book now</span>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
+            </button>
+          </div>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 추가 상품 (확장 영역) ============ -->
+  <section class="addons">
+    <div class="wrap">
+      <div class="addons-head rv">
+        <h2><span data-lang="ko">추가 상품 선택</span><span data-lang="en" hidden>Add-on options</span></h2>
+        <p><span data-lang="ko">선택 사항 — 공항 픽업에 편의를 더하세요.</span><span data-lang="en" hidden>Optional — add comfort to your airport pickup.</span></p>
+      </div>
+      <div class="addon-grid rv">
+        <label class="addon">
+          <input type="checkbox">
+          <span class="addon__txt"><b><span data-lang="ko">입국장 미팅 (네임보드)</span><span data-lang="en" hidden>Arrivals meet & greet</span></b><span><span data-lang="ko">도착 게이트에서 네임보드로 맞이</span><span data-lang="en" hidden>Greeted with a name board at the arrival gate</span></span><i><span data-lang="ko">무료</span><span data-lang="en" hidden>Free</span></i></span>
+        </label>
+        <label class="addon">
+          <input type="checkbox">
+          <span class="addon__txt"><b><span data-lang="ko">차량 내 음료·간식</span><span data-lang="en" hidden>In-car drinks·snacks</span></b><span><span data-lang="ko">생수·커피·간단한 스낵 준비</span><span data-lang="en" hidden>Water, coffee, and light snacks provided</span></span><i>+₩20,000</i></span>
+        </label>
+        <label class="addon">
+          <input type="checkbox">
+          <span class="addon__txt"><b><span data-lang="ko">카시트·유아용품</span><span data-lang="en" hidden>Child seat</span></b><span><span data-lang="ko">유아 카시트·부스터 사전 준비</span><span data-lang="en" hidden>Infant car seat / booster prepared in advance</span></span><i>+₩15,000</i></span>
+        </label>
+      </div>
+      <p class="addons-soon"><span data-lang="ko">※ 추가 상품 구성은 운영 정책에 따라 확장될 예정입니다.</span><span data-lang="en" hidden>※ Add-on options will expand per operational policy.</span></p>
+    </div>
+  </section>
+
+</main>
+
+<div data-include="footer"></div>
+
+<script>
+(function(){
+  /* ---- 검색 요약 바: 검색바에서 넘어온 쿼리(from·to·date·time·pax) 반영 ---- */
+  function applySummary(){
+    var en=document.documentElement.lang==='en';
+    var q=new URLSearchParams(location.search);
+    var from=q.get('from'),to=q.get('to'),date=q.get('date'),time=q.get('time'),pax=q.get('pax');
+    var fromTxt=from||(en?'Incheon Airport (ICN)':'인천공항 (ICN)');
+    var toTxt=to||(en?'City':'도심');
+    document.getElementById('sumRoute').textContent=fromTxt+' → '+toTxt;
+    if(date||time){
+      document.getElementById('sumWhen').textContent=(date||'')+(date&&time?' · ':'')+(time||'');
+    }
+    if(pax){
+      document.getElementById('sumPax').textContent=en?(pax+' pax'):('탑승 '+pax);
+    }
+  }
+  try{applySummary();}catch(e){}
+  window.addEventListener('langchange',function(){try{applySummary();}catch(e){}});
+
+  /* ---- 예약하기 (데모) ---- */
+  document.querySelectorAll('[data-book]').forEach(function(btn){
+    btn.addEventListener('click',function(){
+      var name=btn.getAttribute('data-book');
+      var picks=document.querySelectorAll('.addon input:checked').length;
+      var en=document.documentElement.lang==='en';
+      alert(en
+        ?(name+' booking in progress.'+(picks?(' ('+picks+' add-on(s) selected)'):'')+'\n\n※ Concept demo — real booking/payment to be integrated later')
+        :(name+' 예약을 진행합니다.'+(picks?(' (추가 상품 '+picks+'개 선택)'):'')+'\n\n※ 컨셉 데모 — 실제 예약/결제는 추후 연동'));
+    });
+  });
+
+  /* ---- reveal ---- */
+  if('IntersectionObserver' in window){
+    var io=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target);}});},{threshold:.14,rootMargin:'0px 0px -8% 0px'});
+    document.querySelectorAll('.rv').forEach(function(el){io.observe(el);});
+  } else {document.querySelectorAll('.rv').forEach(function(el){el.classList.add('in');});}
+
+  /* ---- 모드 탭 전환 (프라이빗 / 리무진 / 철도) ---- */
+  var tabs=[].slice.call(document.querySelectorAll('.mv-tab'));
+  var panels=[].slice.call(document.querySelectorAll('.rlist[data-panel]'));
+  var addons=document.querySelector('.addons');
+  tabs.forEach(function(t){
+    t.addEventListener('click',function(){
+      tabs.forEach(function(x){x.classList.remove('is-on');});
+      t.classList.add('is-on');
+      var key=t.getAttribute('data-tab');
+      panels.forEach(function(p){
+        var show=p.getAttribute('data-panel')===key;
+        p.hidden=!show;
+        if(show)p.querySelectorAll('.rv').forEach(function(el){el.classList.add('in');});
+      });
+      /* 부가상품은 프라이빗 기사에서만 노출 */
+      if(addons)addons.hidden=(key!=='private');
+    });
+  });
+})();
+</script>
+<script src="../../js/includes.js"></script>
+</body>
+</html>

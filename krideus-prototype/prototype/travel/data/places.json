@@ -1,0 +1,101 @@
+[
+  {
+    "slug": "alpensia",
+    "card": "알펜시아 리조트",
+    "kto_title": "알펜시아리조트 스키장",
+    "contentid": "898016",
+    "contenttypeid": "28",
+    "image": "http://tong.visitkorea.or.kr/cms/resource/62/3586962_image2_1.jpg",
+    "mapx": "128.6743702048",
+    "mapy": "37.6575030436",
+    "addr1": "강원특별자치도 평창군 대관령면 솔봉로 325"
+  },
+  {
+    "slug": "vivaldi",
+    "card": "비발디파크",
+    "kto_title": "비발디파크 스키장",
+    "contentid": "131301",
+    "contenttypeid": "28",
+    "image": "http://tong.visitkorea.or.kr/cms/resource/70/2779470_image2_1.jpg",
+    "mapx": "127.6873540732",
+    "mapy": "37.6523905338",
+    "addr1": "강원특별자치도 홍천군 서면 한치골길 262"
+  },
+  {
+    "slug": "seoraksan",
+    "card": "설악산 국립공원",
+    "kto_title": "설악산 국립공원(외설악)",
+    "contentid": "127586",
+    "contenttypeid": "12",
+    "image": "https://tong.visitkorea.or.kr/cms/resource/58/2733158_image2_1.jpg",
+    "mapx": "128.51680026450757",
+    "mapy": "38.16752409827611",
+    "addr1": "강원특별자치도 속초시 설악산로 833 (설악동)"
+  },
+  {
+    "slug": "konjiam",
+    "card": "곤지암 리조트",
+    "kto_title": "곤지암리조트",
+    "contentid": "649970",
+    "contenttypeid": "12",
+    "image": "http://tong.visitkorea.or.kr/cms/resource/03/3361903_image2_1.jpg",
+    "mapx": "127.3031619183",
+    "mapy": "37.3366645398",
+    "addr1": "경기도 광주시 도척면 도척윗로 278"
+  },
+  {
+    "slug": "seongsan",
+    "card": "성산일출봉",
+    "kto_title": "성산일출봉 [유네스코 세계자연유산]",
+    "contentid": "126435",
+    "contenttypeid": "12",
+    "image": "http://tong.visitkorea.or.kr/cms/resource/82/2944282_image2_1.bmp",
+    "mapx": "126.9415156012",
+    "mapy": "33.4581111174",
+    "addr1": "제주특별자치도 서귀포시 성산읍 일출로 284-12"
+  },
+  {
+    "slug": "muju",
+    "card": "무주덕유산리조트",
+    "kto_title": "무주덕유산리조트",
+    "contentid": "126718",
+    "contenttypeid": "12",
+    "image": "http://tong.visitkorea.or.kr/cms/resource/66/2003266_image2_1.JPG",
+    "mapx": "117.9925662504",
+    "mapy": "19.6944274800",
+    "addr1": "전북특별자치도 무주군 설천면 만선로 185"
+  },
+  {
+    "slug": "suncheonman",
+    "card": "순천만습지",
+    "kto_title": "순천만습지",
+    "contentid": "126730",
+    "contenttypeid": "12",
+    "image": "https://tong.visitkorea.or.kr/cms/resource/96/3573796_image2_1.jpg",
+    "mapx": "127.50913602700146",
+    "mapy": "34.88537532192124",
+    "addr1": "전라남도 순천시 순천만길 513-25 (대대동)"
+  },
+  {
+    "slug": "namsan",
+    "card": "남산서울타워",
+    "kto_title": "남산서울타워",
+    "contentid": "126535",
+    "contenttypeid": "12",
+    "image": "https://tong.visitkorea.or.kr/cms/resource/70/3089670_image2_1.jpg",
+    "mapx": "126.987882083295",
+    "mapy": "37.5510545366352",
+    "addr1": "서울특별시 용산구 남산공원길 105"
+  },
+  {
+    "slug": "tongyeong",
+    "card": "통영케이블카",
+    "kto_title": "통영케이블카",
+    "contentid": "533874",
+    "contenttypeid": "12",
+    "image": "http://tong.visitkorea.or.kr/cms/resource/83/3079083_image2_1.png",
+    "mapx": "128.4250363662",
+    "mapy": "34.8266120596",
+    "addr1": "경상남도 통영시 발개로 205"
+  }
+]

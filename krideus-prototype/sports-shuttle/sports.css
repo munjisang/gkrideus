@@ -1,0 +1,1059 @@
+/* ============================================================
+   SPORTS PAGE — Concept Draft v0.3
+   Ticket-card schedule · Light content · Mono sport type · Status color
+   ============================================================ */
+
+/* ============================================================
+   DESIGN TOKENS (concept-scoped)
+   이 페이지에서 새로 도입한 스타일 — 추후 글로벌 디자인 시스템 반영 검토
+   ============================================================ */
+:root {
+  /* — Sports-concept typography — */
+  --sp-display-xl: clamp(1.75rem, 3vw, 2.5rem);   /* view tabs */
+  --sp-display-weight: 800;
+  --sp-display-tracking: 0.12em;                   /* uppercase letter-spacing */
+  --sp-display-tracking-sm: 0.08em;                /* mobile */
+
+  /* — Sport category colors (variation-combined inspired) — */
+  --sp-cat-baseball: var(--color-success);
+  --sp-cat-baseball-bg: rgba(5, 150, 105, 0.08);
+  --sp-cat-football: #2563EB;
+  --sp-cat-football-bg: rgba(37, 99, 235, 0.08);
+  --sp-cat-basketball: #EA580C;
+  --sp-cat-basketball-bg: rgba(234, 88, 12, 0.08);
+  --sp-cat-volleyball: #DC2626;
+  --sp-cat-volleyball-bg: rgba(220, 38, 38, 0.08);
+  --sp-cat-golf: #16A34A;
+  --sp-cat-golf-bg: rgba(22, 163, 74, 0.08);
+  --sp-cat-marathon: #F59E0B;
+  --sp-cat-marathon-bg: rgba(245, 158, 11, 0.08);
+  --sp-cat-esports: var(--sp-esports);
+  --sp-cat-esports-bg: rgba(124, 58, 237, 0.08);
+
+  /* — Light tone surfaces (unified with global tokens) — */
+  --sp-bg-light: var(--color-bg-light);        /* schedule section */
+  --sp-bg-light-alt: var(--color-surface-chip); /* overview strip + view-tabs bar */
+  --sp-bg-light-card: var(--color-bg-light);    /* ticket-date strip bg */
+  --sp-bg-esports: var(--color-bg-light);       /* esports schedule bg (unified) */
+
+  /* — Text on light (global token references) — */
+  --sp-text-primary: var(--color-text-dark);
+  --sp-text-secondary: var(--color-text-secondary-cool);
+  --sp-text-muted: var(--color-text-dim);
+  --sp-text-subtle: var(--color-text-muted);
+  --sp-text-disabled: rgba(15, 17, 21, 0.35);
+
+  /* — Borders — */
+  --sp-border: var(--color-border-light);
+  --sp-border-soft: var(--color-surface-chip);
+
+  /* — Status colors (예정/진행중/종료) — */
+  --sp-status-upcoming: var(--color-success);
+  --sp-status-upcoming-bg: rgba(5, 150, 105, 0.1);
+  --sp-status-upcoming-border: rgba(5, 150, 105, 0.25);
+  --sp-status-ongoing: var(--color-accent);
+  --sp-status-ongoing-bg: rgba(46, 92, 255, 0.1);
+  --sp-status-ongoing-border: rgba(46, 92, 255, 0.25);
+  --sp-status-ended-bg: rgba(100, 116, 139, 0.1);
+  --sp-status-ended-border: rgba(100, 116, 139, 0.2);
+
+  /* — Esports accent (solid) — */
+  --sp-esports: #7C3AED;
+  --sp-esports-light: #B794F4;
+
+  /* — GTWS Golden Trail World Series brand color — */
+  --sp-gtws-gold: #F9AE00;
+
+  /* — Shadow — */
+  --sp-shadow-hover: 0 10px 30px rgba(46, 92, 255, 0.08);
+  --sp-shadow-card: 0 16px 40px rgba(15, 17, 21, 0.08);
+}
+
+/* ── Page background override — light tone, match content area ── */
+body.view-sports,
+body.view-esports {
+  background: var(--color-bg-light);
+}
+
+/* ── Hero overrides — fade to light page background for seamless transition ── */
+.sp-hero .sub-hero-bg::after {
+  background: linear-gradient(
+    180deg,
+    rgba(15, 17, 21, 0.45) 0%,
+    rgba(15, 17, 21, 0.30) 30%,
+    rgba(15, 17, 21, 0.55) 60%,
+    rgba(15, 17, 21, 0.70) 80%,
+    rgba(248, 249, 250, 0.80) 94%,
+    var(--color-bg-light) 100%
+  );
+}
+/* Esports hero mood — purple tone fades to light bg */
+body.view-esports .sp-hero .sub-hero-bg::after {
+  background: linear-gradient(
+    180deg,
+    rgba(12, 0, 45, 0.55) 0%,
+    rgba(12, 0, 45, 0.40) 30%,
+    rgba(12, 0, 45, 0.60) 60%,
+    rgba(12, 0, 45, 0.72) 80%,
+    rgba(248, 249, 250, 0.78) 94%,
+    var(--color-bg-light) 100%
+  );
+}
+/* Hero bottom — negative margin so light content sits on top, overlapping.
+   height: calc(55vh + 6rem) → 55vh effective visible (matches standard .sub-hero) + 6rem tab-overlap.
+   min-height: 400px effective + 96px overlap + ~50px tab bar = 546px → use 500px (generous floor). */
+.sp-hero {
+  height: calc(55vh + 6rem);
+  min-height: 500px;
+  margin-bottom: -6rem;
+}
+/* Match standard .sub-hero center-anchor (top: 62% + translateY(-50%)), but
+   measured against the *visible* area (total height minus 6rem tab-bar overlap).
+   Formula: top = 62% × (100% − 6rem) / 100% = 62% − 3.72rem.
+   Keeps title/breadcrumb/subtitle at the same vertical position as other hub
+   pages (/airport, /leisure, /event, etc.). */
+.sp-hero .sub-hero-content {
+  top: calc(62% - 3.72rem);
+}
+@media (min-width: 1024px) {
+  .sp-hero .sub-hero-content {
+    top: calc(58% - 3.48rem);
+  }
+}
+
+/* Hero slideshow: show only images matching current view */
+body.view-sports .sub-hero-bg--slideshow img[data-view="esports"],
+body.view-esports .sub-hero-bg--slideshow img[data-view="sports"] {
+  display: none;
+}
+
+/* Esports view: title accent color shifts to purple */
+body.view-esports .sub-hero-title em {
+  color: var(--sp-esports-light);
+}
+
+/* ── Overview strip override — light gray bg + dark text, overlaps hero ── */
+.sub-overview-strip {
+  background: var(--sp-bg-light) !important;
+  border-bottom: 0 !important;
+  /* max-width stays as inherited container-max from subpage.css */
+  position: relative;
+  z-index: 3;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+}
+.sub-overview-strip .sub-overview-item {
+  border-right: 0 !important;
+}
+.sub-overview-strip .sub-overview-label {
+  color: var(--sp-text-muted) !important;
+}
+.sub-overview-strip .sub-overview-value,
+.sub-overview-strip .sub-overview-value span {
+  color: var(--sp-text-primary) !important;
+}
+.sub-overview-strip .sub-overview-value a {
+  color: var(--color-accent) !important;
+}
+
+
+/* ============================================================
+   VIEW TABS — Sports / Esports top-level switcher (light + prominent)
+   Width matches other pages (container-max)
+   ============================================================ */
+.sp-view-tabs-bar {
+  max-width: var(--container-max);
+  margin: 0 auto;
+  background: var(--color-bg-light);
+  border-radius: 1rem 1rem 0 0;
+  position: relative;
+  z-index: 3;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+  overflow: hidden;
+}
+.sp-view-tabs-bar .container {
+  padding-left: 0;
+  padding-right: 0;
+  max-width: none;
+}
+.sp-view-tabs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+}
+.sp-view-tab {
+  background: transparent;
+  border: 0;
+  color: var(--sp-text-muted);
+  font-family: var(--font-display);
+  font-size: var(--sp-display-xl);
+  font-weight: var(--sp-display-weight);
+  letter-spacing: var(--sp-display-tracking);
+  text-transform: uppercase;
+  padding: 1.75rem 2rem;
+  cursor: pointer;
+  position: relative;
+  transition: color 0.3s, background 0.3s;
+  line-height: 1;
+  text-align: center;
+}
+.sp-view-tab:hover {
+  color: var(--sp-text-primary);
+}
+.sp-view-tab.active {
+  color: #FFFFFF;
+  background: var(--color-accent);
+}
+body.view-esports .sp-view-tab.active {
+  background: var(--sp-esports);
+}
+
+@media (max-width: 767px) {
+  .sp-view-tab {
+    padding: 1.25rem 0.75rem;
+    font-size: 1.35rem;
+    letter-spacing: var(--sp-display-tracking-sm);
+  }
+}
+
+/* View visibility */
+body.view-sports [data-view="esports"],
+body.view-esports [data-view="sports"] {
+  display: none !important;
+}
+
+/* Esports schedule — darker bg accent */
+body.view-esports .sp-schedule {
+  background: var(--sp-bg-esports);
+}
+
+/* .sp-hero-title removed 2026-04-14 — sports hub now uses the common .sub-hero-title tone
+   to match other hub pages. Esports color override applies to .sub-hero-title em above. */
+
+
+/* ============================================================
+   SCHEDULE SECTION — Light bg + Ticket cards
+   Width matches other pages (container-max)
+   ============================================================ */
+.sp-schedule {
+  background: var(--sp-bg-light);
+  padding: 5rem 0;
+  border-bottom: 0;
+  position: relative;
+  z-index: 3;
+}
+
+.sp-schedule .breadcrumb {
+  color: var(--sp-text-muted);
+}
+.sp-schedule .breadcrumb a {
+  color: var(--sp-text-muted);
+}
+.sp-schedule .breadcrumb-current {
+  color: var(--sp-text-primary);
+  font-weight: 600;
+}
+
+.sp-section-header {
+  margin-bottom: 2.5rem;
+}
+.sp-section-header--center {
+  text-align: center;
+}
+.sp-section-header .section-overline {
+  display: inline-block;
+  font-family: var(--font-display);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--color-accent);
+  margin-bottom: 0.75rem;
+}
+.sp-schedule .ap-routes-title {
+  color: var(--sp-text-primary);
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: clamp(1.75rem, 3.5vw, 2.5rem);
+  letter-spacing: -0.02em;
+}
+.sp-schedule-desc {
+  margin-top: 1rem;
+  color: var(--sp-text-muted);
+  font-size: 1rem;
+  max-width: 640px;
+  line-height: 1.6;
+}
+
+/* ============================================================
+   FILTER BAR — Sport type tabs only (month navigator removed)
+   ============================================================ */
+.sp-filter-bar {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 2.5rem;
+}
+
+/* Sport type tabs */
+.sp-type-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  justify-content: center;
+}
+.sp-type-tab {
+  font-family: var(--font-body);
+  font-size: 0.85rem;
+  font-weight: 600;
+  padding: 0.5rem 1rem;
+  border-radius: var(--radius-full);
+  background: #FFFFFF;
+  border: 1px solid var(--sp-border);
+  color: var(--sp-text-muted);
+  cursor: pointer;
+  transition: all 0.3s;
+  white-space: nowrap;
+}
+.sp-type-tab:hover {
+  border-color: var(--sp-text-subtle);
+  color: var(--sp-text-primary);
+}
+.sp-type-tab.active {
+  background: var(--color-bg);
+  border-color: var(--sp-text-primary);
+  color: #FFFFFF;
+}
+
+/* Empty state */
+.sp-empty-state {
+  grid-column: 1 / -1;
+  text-align: center;
+  padding: 3rem 1rem;
+  color: var(--sp-text-subtle);
+  font-size: 0.9rem;
+  display: none;
+}
+.sp-empty-state.visible { display: block; }
+
+/* E-Sports schedule notice */
+.sp-esports-notice {
+  display: none;
+  text-align: center;
+  padding: 3.5rem 1.5rem;
+  background: rgba(46, 92, 255, 0.06);
+  border: 1px solid rgba(46, 92, 255, 0.2);
+  border-radius: var(--radius-md);
+  margin-top: 1.5rem;
+}
+body.view-esports .sp-esports-notice { display: block; }
+.sp-esports-notice-icon {
+  font-size: 2.5rem;
+  margin-bottom: 1rem;
+}
+.sp-esports-notice p {
+  color: var(--sp-text-subtle);
+  font-size: 0.95rem;
+  line-height: 1.75;
+  margin: 0;
+}
+
+
+/* Ticket grid — 2 columns (variation-combined style) */
+.sp-ticket-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1rem;
+}
+.sp-ticket.is-hidden { display: none; }
+@media (min-width: 768px) {
+  .sp-ticket-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 1.25rem;
+  }
+}
+
+/* Ticket card */
+.sp-ticket {
+  display: flex;
+  background: #FFFFFF;
+  border: 1px solid var(--sp-border);
+  border-radius: 0.75rem;
+  overflow: hidden;
+  text-decoration: none;
+  color: inherit;
+  transition: border-color .3s, box-shadow .3s;
+  position: relative;
+  min-height: 128px;
+}
+.sp-ticket:hover {
+  border-color: var(--color-accent);
+  box-shadow: var(--sp-shadow-hover);
+}
+.sp-ticket.ended {
+  opacity: 0.65;
+}
+.sp-ticket.ended:hover {
+  opacity: 0.85;
+}
+
+/* Left date strip (variation-combined style: colored left border + bg tint) */
+.sp-ticket-date {
+  flex-shrink: 0;
+  width: 86px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 1.25rem 0.5rem;
+  position: relative;
+  background: var(--sp-bg-light-card);
+}
+/* Dashed vertical divider between date and info */
+.sp-ticket-date::after {
+  content: '';
+  position: absolute;
+  top: 12px;
+  bottom: 12px;
+  right: 0;
+  width: 1px;
+  border-right: 2px dashed var(--sp-border);
+}
+/* Top-right notch circle */
+.sp-ticket-date::before {
+  content: '';
+  position: absolute;
+  top: -7px;
+  right: -7px;
+  width: 14px;
+  height: 14px;
+  background: var(--sp-bg-light);
+  border-radius: 50%;
+  z-index: 2;
+}
+/* Bottom-right notch circle (separate element since we used ::after for divider) */
+.sp-ticket-notch-bottom {
+  position: absolute;
+  bottom: -7px;
+  right: -7px;
+  width: 14px;
+  height: 14px;
+  background: var(--sp-bg-light);
+  border-radius: 50%;
+  z-index: 2;
+}
+
+/* Sport category coloring via data-type attribute */
+.sp-ticket[data-type="baseball"]   .sp-ticket-date { background: var(--sp-cat-baseball-bg); }
+.sp-ticket[data-type="football"]   .sp-ticket-date { background: var(--sp-cat-football-bg); }
+.sp-ticket[data-type="basketball"] .sp-ticket-date { background: var(--sp-cat-basketball-bg); }
+.sp-ticket[data-type="volleyball"] .sp-ticket-date { background: var(--sp-cat-volleyball-bg); }
+.sp-ticket[data-type="golf"]       .sp-ticket-date { background: var(--sp-cat-golf-bg); }
+.sp-ticket[data-type="marathon"]   .sp-ticket-date { background: var(--sp-cat-marathon-bg); }
+.sp-ticket[data-type="esports"]    .sp-ticket-date { background: var(--sp-cat-esports-bg); }
+
+/* Day number colored by sport category */
+.sp-ticket[data-type="baseball"]   .sp-ticket-day { color: var(--sp-cat-baseball); }
+.sp-ticket[data-type="football"]   .sp-ticket-day { color: var(--sp-cat-football); }
+.sp-ticket[data-type="basketball"] .sp-ticket-day { color: var(--sp-cat-basketball); }
+.sp-ticket[data-type="volleyball"] .sp-ticket-day { color: var(--sp-cat-volleyball); }
+.sp-ticket[data-type="golf"]       .sp-ticket-day { color: var(--sp-cat-golf); }
+.sp-ticket[data-type="marathon"]   .sp-ticket-day { color: var(--sp-cat-marathon); }
+.sp-ticket[data-type="esports"]    .sp-ticket-day { color: var(--sp-cat-esports); }
+
+.sp-ticket-month {
+  font-family: var(--font-display);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--sp-text-muted);
+}
+.sp-ticket-day {
+  font-family: var(--font-display);
+  font-size: 1.9rem;
+  font-weight: 800;
+  line-height: 1;
+  margin: 0.15rem 0;
+  color: var(--sp-text-primary);
+}
+.sp-ticket-range {
+  font-family: var(--font-display);
+  font-size: 0.65rem;
+  font-weight: 500;
+  color: var(--sp-text-subtle);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+/* Info block — full width since image area removed */
+.sp-ticket-info {
+  flex: 1;
+  padding: 1.35rem 1.75rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 0.55rem;
+  min-width: 0;
+  position: relative;
+  z-index: 2;
+}
+
+/* Image area removed — typography-first design */
+.sp-ticket-image {
+  display: none;
+}
+.sp-ticket-header {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+  margin-bottom: 0.15rem;
+}
+
+/* Sport type — MONO (neutral) */
+.sp-ticket-type {
+  font-family: var(--font-display);
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 0.25rem 0.6rem;
+  border-radius: 3px;
+  background: var(--sp-border-soft);
+  color: var(--sp-text-secondary);
+  border: 1px solid var(--color-border-light);
+}
+
+/* Status badges — COLORED */
+.sp-ticket-status {
+  font-family: var(--font-display);
+  font-size: 0.65rem;
+  font-weight: 800;
+  letter-spacing: var(--sp-display-tracking-sm);
+  text-transform: uppercase;
+  padding: 0.25rem 0.55rem;
+  border-radius: 3px;
+}
+.sp-ticket-status--upcoming {
+  background: var(--sp-status-upcoming-bg);
+  color: var(--sp-status-upcoming);
+  border: 1px solid var(--sp-status-upcoming-border);
+}
+.sp-ticket-status--ongoing {
+  background: var(--sp-status-ongoing-bg);
+  color: var(--sp-status-ongoing);
+  border: 1px solid var(--sp-status-ongoing-border);
+}
+.sp-ticket-status--ended {
+  background: var(--sp-status-ended-bg);
+  color: var(--sp-text-muted);
+  border: 1px solid var(--sp-status-ended-border);
+}
+
+.sp-ticket-name {
+  font-family: var(--font-body);
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: var(--sp-text-primary);
+  line-height: 1.35;
+  letter-spacing: -0.01em;
+  margin: 0;
+}
+.sp-ticket-venue {
+  font-size: 0.875rem;
+  color: var(--sp-text-muted);
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin: 0;
+}
+.sp-ticket-venue svg {
+  flex-shrink: 0;
+  width: 13px;
+  height: 13px;
+  color: var(--sp-text-subtle);
+}
+
+
+/* ============================================================
+   VENUES SECTION — Light bg
+   Width matches other pages (container-max)
+   ============================================================ */
+.sp-venues {
+  background: #FFFFFF;
+  padding: 5rem 0 6rem;
+  border-bottom: 0;
+  position: relative;
+  z-index: 3;
+}
+.sp-venues .ap-routes-title {
+  color: var(--sp-text-primary);
+}
+.sp-venues .ap-route-card {
+  background: #FFFFFF;
+  border: 1px solid var(--sp-border);
+  transition: border-color 0.3s, box-shadow 0.3s;
+}
+.sp-venues .ap-route-card:hover {
+  border-color: var(--color-accent);
+  box-shadow: var(--sp-shadow-card);
+}
+.sp-venues .ap-route-img {
+  position: relative;
+  overflow: hidden;
+}
+.sp-venues .ap-route-img img {
+  transition: filter 0.6s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.sp-venues .ap-route-card:hover .ap-route-img img {
+  filter: brightness(1.08);
+}
+.sp-venues .ap-route-name {
+  color: var(--sp-text-primary);
+}
+.sp-venues .ap-route-desc {
+  color: var(--sp-text-muted);
+}
+.sp-venues .ap-route-meta {
+  color: var(--sp-text-subtle);
+}
+.sp-venues .ap-route-price {
+  color: var(--color-accent);
+}
+
+/* Venue card badges */
+.sp-badge {
+  font-family: var(--font-display) !important;
+  font-weight: 800 !important;
+  letter-spacing: 0.08em !important;
+  color: #fff !important;
+  border: none !important;
+  background: var(--color-bg) !important;
+}
+.sp-badge--esports {
+  background: var(--sp-esports) !important;
+}
+.sp-badge--multi {
+  background: var(--color-text-dim) !important;
+}
+
+
+/* ============================================================
+   REVEAL fallback — ensure content is visible even if observer fails
+   ============================================================ */
+.sports-page-loaded .reveal {
+  opacity: 1 !important;
+  transform: none !important;
+}
+
+
+/* ── Responsive ── */
+@media (max-width: 767px) {
+  /* .sp-hero-title mobile override removed — .sub-hero-title handles responsive sizing */
+  .sp-ticket-date {
+    width: 72px;
+    padding: 1rem 0.4rem;
+  }
+  .sp-ticket-day {
+    font-size: 1.6rem;
+  }
+  .sp-ticket-info {
+    padding: 0.9rem 1rem;
+  }
+}
+
+/* ============================================================
+   SPOTLIGHT BANNER — GTWS Muju 2026 (extracted from inline)
+   ============================================================ */
+.sp-spotlight-banner {
+  background: var(--sp-bg-light);
+  padding: 3rem 0 2.5rem;
+  position: relative;
+  z-index: 3;
+}
+.sp-spotlight-card {
+  position: relative;
+  min-height: 460px;
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  padding: 3.5rem 0;
+}
+.sp-spotlight-media {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+}
+.sp-spotlight-media img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.sp-spotlight-media::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: rgba(15, 17, 21, 0.15);
+  pointer-events: none;
+}
+.sp-spotlight-body {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  max-width: min(720px, 65%);
+  margin: 0 auto;
+  padding: 3rem;
+  min-height: 460px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  background: rgba(15, 17, 21, 0.32);
+  backdrop-filter: blur(28px) saturate(150%);
+  -webkit-backdrop-filter: blur(28px) saturate(150%);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: var(--radius-md);
+}
+@media (max-width: 767px) {
+  .sp-spotlight-body {
+    max-width: none;
+    margin: 0;
+    border-radius: 0;
+    border: none;
+    padding: 2rem 1.5rem;
+  }
+  .sp-overseas-body {
+    padding: 2rem 1.5rem;
+  }
+}
+.sp-spotlight-meta {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin-bottom: 0.95rem;
+  flex-wrap: wrap;
+}
+.sp-spotlight-tag {
+  background: rgba(249, 174, 0, 0.12);
+  color: var(--sp-gtws-gold);
+  font-family: var(--font-display);
+  font-size: 0.65rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  padding: 0.35rem 0.75rem;
+  border-radius: 3px;
+  border: 1px solid rgba(249, 174, 0, 0.35);
+}
+.sp-spotlight-date {
+  color: rgba(255, 255, 255, 0.85);
+  font-size: 0.78rem;
+  font-family: var(--font-display);
+  font-weight: 600;
+  letter-spacing: 0.08em;
+}
+.sp-spotlight-title {
+  font-family: var(--font-display);
+  font-size: clamp(1.5rem, 3vw, 2.125rem);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: #fff;
+  margin: 0 0 0.4rem;
+  line-height: 1.2;
+}
+.sp-spotlight-subtitle {
+  color: var(--sp-gtws-gold);
+  font-size: 0.92rem;
+  font-weight: 600;
+  margin: 0 0 0.5rem;
+  letter-spacing: 0.01em;
+}
+.sp-spotlight-desc {
+  color: rgba(255, 255, 255, 0.7);
+  line-height: 1.7;
+  font-size: 0.9375rem;
+  margin: 0 0 1.75rem;
+}
+.sp-spotlight-cta {
+  background: var(--sp-gtws-gold);
+  color: var(--color-text-dark);
+  padding: 1rem 2.25rem;
+  border-radius: var(--radius-sm);
+  font-weight: 700;
+  font-size: 0.9375rem;
+  text-decoration: none;
+  white-space: nowrap;
+  box-shadow: 0 8px 24px rgba(249, 174, 0, 0.35);
+  align-self: center;
+}
+.sp-spotlight-cta:hover {
+  filter: brightness(1.1);
+}
+
+/* ============================================================
+   SPOTLIGHT CAROUSEL
+   glass-wing은 단일 카드에 유지 — 이미지·텍스트 레이어만 crossfade
+   ============================================================ */
+.sp-carousel {
+  position: relative;
+}
+
+/* 이미지 slide — JS가 transform 완전 제어 */
+.sp-carousel-img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+/* 텍스트 slide — body overflow:hidden으로 클리핑 */
+.sp-carousel-body {
+  position: relative;
+  padding: 0 !important;
+  overflow: hidden;
+}
+.sp-carousel-content {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  padding: 4.5rem 6rem;
+  pointer-events: none;
+}
+.sp-carousel-content.active {
+  pointer-events: auto;
+}
+@media (max-width: 767px) {
+  .sp-carousel-content { padding: 2rem 1.75rem; }
+}
+
+/* Dot navigation — 밝은 섹션 배경 위에 있으므로 dark 톤 사용 */
+.sp-carousel-nav {
+  display: flex;
+  justify-content: center;
+  gap: 0.5rem;
+  margin-top: 1.5rem;
+  padding-bottom: 0.5rem;
+}
+.sp-carousel-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: rgba(15, 17, 21, 0.2);
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  transition: background 0.3s, width 0.3s, border-radius 0.3s;
+}
+.sp-carousel-dot.active {
+  background: var(--color-accent);
+  width: 24px;
+  border-radius: 4px;
+}
+
+/* 화살표 버튼 컨테이너 — 글래스 패널 하단, CTA 아래 */
+.sp-carousel-btns {
+  position: absolute;
+  bottom: 1.25rem;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 0.5rem;
+  z-index: 15;
+}
+.sp-carousel-btn {
+  background: rgba(255, 255, 255, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  color: #fff;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  transition: background 0.25s;
+}
+.sp-carousel-btn:hover { background: rgba(255, 255, 255, 0.3); }
+@media (max-width: 767px) {
+  .sp-carousel-btns { bottom: 1rem; left: 50%; transform: translateX(-50%); }
+}
+
+/* NC Dinos (baseball) tag — solid bg + white text for readability on glass */
+.sp-spotlight-tag--baseball {
+  background: var(--sp-cat-baseball);
+  color: #fff;
+  border-color: transparent;
+}
+.sp-spotlight-subtitle--baseball {
+  color: var(--sp-cat-baseball);
+}
+.sp-spotlight-cta--baseball {
+  background: var(--sp-cat-baseball);
+  color: #fff;
+  box-shadow: 0 8px 24px rgba(5, 150, 105, 0.35);
+}
+.sp-spotlight-cta--baseball:hover {
+  filter: brightness(1.1);
+}
+
+
+/* ============================================================
+   SERVICE CARDS — 스포츠 이동 3-up (extracted)
+   ============================================================ */
+.sp-services {
+  background: var(--color-surface-chip);
+  padding: 5rem 0;
+  border-bottom: 0;
+  position: relative;
+  z-index: 3;
+}
+.sp-services-title {
+  color: var(--sp-text-primary);
+}
+.sp-service-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 1.25rem;
+  margin-top: 2.5rem;
+}
+.sp-service-card {
+  background: #fff;
+  border: 1px solid var(--sp-border);
+  border-radius: var(--radius-md);
+  padding: 2rem 1.75rem;
+}
+.sp-service-card-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 1.25rem;
+}
+.sp-service-card-icon--football   { background: var(--sp-cat-football-bg); }
+.sp-service-card-icon--baseball   { background: var(--sp-cat-baseball-bg); }
+.sp-service-card-icon--volleyball { background: var(--sp-cat-volleyball-bg); }
+
+.sp-service-card-title {
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: var(--sp-text-primary);
+  margin: 0 0 1rem;
+}
+.sp-service-card-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+.sp-service-card-list li {
+  font-size: 0.9rem;
+  color: var(--sp-text-muted);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.sp-service-card-bullet--football   { color: var(--sp-cat-football); }
+.sp-service-card-bullet--baseball   { color: var(--sp-cat-baseball); }
+.sp-service-card-bullet--volleyball { color: var(--sp-cat-volleyball); }
+
+/* ============================================================
+   OVERSEAS BANNER — 해외 원정 응원 (extracted)
+   ============================================================ */
+.sp-overseas-banner {
+  background: linear-gradient(135deg, var(--color-bg) 0%, var(--color-bg-elevated) 100%);
+  padding: 4.5rem 0;
+}
+.sp-overseas-card {
+  display: flex;
+  flex-wrap: wrap;
+  background: #12141a;
+  border: 1px solid rgba(46, 92, 255, 0.25);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+}
+.sp-overseas-media {
+  flex: 1 1 320px;
+  min-height: 320px;
+  position: relative;
+}
+.sp-overseas-media img {
+  width: 100%;
+  height: 100%;
+  min-height: 320px;
+  object-fit: cover;
+  display: block;
+}
+.sp-overseas-media::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, rgba(18, 20, 26, 0) 50%, rgba(18, 20, 26, 0.6) 85%, rgba(18, 20, 26, 0.95) 100%);
+  pointer-events: none;
+}
+.sp-overseas-body {
+  flex: 1 1 340px;
+  padding: 2.75rem 3rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+.sp-overseas-overline {
+  display: inline-block;
+  color: var(--color-accent);
+  font-family: var(--font-display);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  margin-bottom: 0.75rem;
+}
+.sp-overseas-title {
+  font-family: var(--font-display);
+  font-size: clamp(1.5rem, 3vw, 2rem);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: #fff;
+  margin: 0 0 0.85rem;
+  line-height: 1.25;
+}
+.sp-overseas-desc {
+  color: var(--color-text-muted);
+  line-height: 1.65;
+  font-size: 0.9375rem;
+  margin: 0 0 1.75rem;
+}
+.sp-overseas-cta {
+  background: var(--color-accent);
+  color: #fff;
+  padding: 1rem 2.25rem;
+  border-radius: var(--radius-sm);
+  font-weight: 700;
+  font-size: 0.9375rem;
+  text-decoration: none;
+  white-space: nowrap;
+  box-shadow: 0 8px 24px rgba(46, 92, 255, 0.3);
+  align-self: flex-start;
+}
+.sp-overseas-cta:hover {
+  filter: brightness(1.1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+  }
+}

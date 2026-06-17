@@ -142,7 +142,7 @@ export default function BusSearchView() {
       <div className="sticky top-0 z-10 bg-white/90 backdrop-blur-xl backdrop-saturate-150 border-b border-hairline">
         <div className="mx-auto max-w-[1280px] px-4 sm:px-8 lg:px-12 flex items-center py-3">
           <Link
-            href="/"
+            href="/city"
             className="h-10 w-10 grid place-items-center text-ink -ml-1 active:scale-95 transition"
             aria-label={t("back")}
           >

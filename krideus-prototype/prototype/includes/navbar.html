@@ -1,0 +1,35 @@
+<!-- 공통 GNB — {BASE}=페이지→rebuild-v2.1 루트 상대경로 (홈="" / 허브="../" / 상세="../../"). includes.js가 치환·active·언어·drawer 처리.
+     nav 레이아웃/색상 CSS는 각 페이지가 책임(정상 rebuild 페이지=인라인 보유 / src 상세 클론=css/nav-detail.css link).
+     여기 <style>은 어느 페이지에도 안전한 lang chip 보조 스타일만(중복 무해). -->
+<style>
+.nav__menu a.is-disabled,.nav__drawer a.is-disabled{opacity:.5;cursor:default;pointer-events:none}
+.nav__lang{display:flex;align-items:center;gap:2px;background:#F2F3F4;border-radius:999px;padding:4px;font-size:.78rem;font-weight:600}
+.nav__lang span{padding:4px 12px;border-radius:999px;color:#97A0AC;cursor:pointer}
+.nav__lang span.on{background:#fff;color:#2C51DB}
+.nav__drawer-lang{display:inline-flex;align-self:flex-start;margin-top:14px;align-items:center;gap:2px;background:#F3EFE8;border-radius:999px;padding:4px;font-size:.78rem;font-weight:600}
+.nav__drawer-lang span{padding:4px 12px;border-radius:999px;color:#97A0AC;cursor:pointer}
+.nav__drawer-lang span.on{background:#fff;color:#2C51DB}
+</style>
+<nav class="nav" id="nav">
+  <div class="nav__in">
+    <a href="{BASE}index.html" class="brand" aria-label="K.Rideus 홈"><img src="/assets/rideusLogo.webp" alt="K.Rideus" width="300" height="72"></a>
+    <div class="nav__menu">
+      <a href="{BASE}movement/index.html" data-nav="movement"><span data-lang="ko">공항</span><span data-lang="en" hidden>Airport</span></a>
+      <a href="/city" data-nav="city2city"><span data-lang="ko">시외 이동</span><span data-lang="en" hidden>City to City</span></a>
+      <a href="{BASE}travel/index.html" data-nav="travel"><span data-lang="ko">여행</span><span data-lang="en" hidden>Travel</span></a>
+      <a href="{BASE}event/index.html" data-nav="event"><span data-lang="ko">이벤트</span><span data-lang="en" hidden>Events</span></a>
+    </div>
+    <div class="nav__right">
+      <span class="nav__lang" id="navLang" role="group" aria-label="언어"><span class="on" data-setlang="KR">KR</span><span data-setlang="EN">EN</span></span>
+      <button class="nav__ic" aria-label="검색"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.6-3.6"/></svg></button>
+      <button class="nav__burger" id="navBurger" aria-label="메뉴 열기" aria-expanded="false"><span></span><span></span><span></span></button>
+    </div>
+  </div>
+  <div class="nav__drawer" id="navDrawer">
+    <a href="{BASE}movement/index.html" data-nav="movement"><span data-lang="ko">공항</span><span data-lang="en" hidden>Airport</span></a>
+    <a href="/city" data-nav="city2city"><span data-lang="ko">시외 이동</span><span data-lang="en" hidden>City to City</span></a>
+    <a href="{BASE}travel/index.html" data-nav="travel"><span data-lang="ko">여행</span><span data-lang="en" hidden>Travel</span></a>
+    <a href="{BASE}event/index.html" data-nav="event"><span data-lang="ko">이벤트</span><span data-lang="en" hidden>Events</span></a>
+    <span class="nav__drawer-lang" role="group" aria-label="언어"><span class="on" data-setlang="KR">KR</span><span data-setlang="EN">EN</span></span>
+  </div>
+</nav>

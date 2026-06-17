@@ -1,0 +1,56 @@
+<a class="skip-link" href="#main"><span data-lang="ko">본문 바로가기</span><span data-lang="en" hidden>Skip to main content</span></a>
+<nav class="navbar" id="navbar">
+  <div class="container">
+    <div class="navbar-inner">
+      <a href="{BASE}/" class="navbar-brand">
+        <img width="300" height="72" src="{BASE}/assets/rideusLogo.webp" alt="Rideus" class="navbar-logo" loading="eager" decoding="sync">
+      </a>
+      <div class="nav-links">
+        <a href="{BASE}/airport/" class="nav-link" data-page="airport"><span data-lang="ko">공항·항만</span><span data-lang="en" hidden>Airport &amp; Port</span></a>
+        <a href="{BASE}/leisure/" class="nav-link" data-page="leisure"><span data-lang="ko">레저</span><span data-lang="en" hidden>Leisure</span></a>
+        <a href="{BASE}/shopping/" class="nav-link" data-page="shopping"><span data-lang="ko">테마파크·쇼핑</span><span data-lang="en" hidden>Theme Parks &amp; Shopping</span></a>
+        <a href="{BASE}/event/" class="nav-link" data-page="event"><span data-lang="ko">공연·이벤트</span><span data-lang="en" hidden>Events</span></a>
+        <a href="{BASE}/sports-shuttle/" class="nav-link" data-page="sports-shuttle"><span data-lang="ko">스포츠</span><span data-lang="en" hidden>Sports</span></a>
+      </div>
+      <div class="nav-actions">
+        <a href="{BASE}/support/" class="nav-support"><span data-lang="ko">고객센터</span><span data-lang="en" hidden>Support</span></a>
+        <div class="lang-selector" id="langSelector">
+          <button type="button" class="lang-btn" id="langBtn" aria-expanded="false">
+            KR
+            <svg aria-hidden="true" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+            </svg>
+          </button>
+          <div class="lang-dropdown" id="langDropdown">
+            <button type="button" class="lang-option active" data-lang="KR">KR</button>
+            <button type="button" class="lang-option" data-lang="EN">EN</button>
+          </div>
+        </div>
+        <button type="button" class="menu-toggle" id="menuToggle" aria-label="메뉴 열기">
+          <svg aria-hidden="true" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 6h16M4 12h16M4 18h16"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<div class="mobile-menu" id="mobileMenu">
+  <button type="button" class="mobile-menu-close" id="mobileMenuClose" aria-label="메뉴 닫기">
+    <svg aria-hidden="true" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M6 18L18 6M6 6l12 12"/>
+    </svg>
+  </button>
+  <div style="padding: 1.5rem 1.5rem 2rem;">
+    <a href="{BASE}/" class="mobile-nav-link" data-close><span data-lang="ko">홈</span><span data-lang="en" hidden>Home</span></a>
+    <a href="{BASE}/airport/" class="mobile-nav-link" data-close data-page="airport"><span data-lang="ko">공항·항만</span><span data-lang="en" hidden>Airport &amp; Port</span></a>
+    <a href="{BASE}/leisure/" class="mobile-nav-link" data-close data-page="leisure"><span data-lang="ko">레저</span><span data-lang="en" hidden>Leisure</span></a>
+    <a href="{BASE}/shopping/" class="mobile-nav-link" data-close data-page="shopping"><span data-lang="ko">테마파크·쇼핑</span><span data-lang="en" hidden>Theme Parks &amp; Shopping</span></a>
+    <a href="{BASE}/event/" class="mobile-nav-link" data-close data-page="event"><span data-lang="ko">공연·이벤트</span><span data-lang="en" hidden>Events</span></a>
+    <a href="{BASE}/sports-shuttle/" class="mobile-nav-link" data-close data-page="sports-shuttle"><span data-lang="ko">스포츠</span><span data-lang="en" hidden>Sports</span></a>
+    <div style="padding-top:2rem; margin-top:2rem; border-top:1px solid rgba(255,255,255,0.08);">
+      <a href="{BASE}/support/" class="mobile-nav-link" style="font-size:1.125rem; color:var(--color-text-muted);" data-close><span data-lang="ko">고객센터</span><span data-lang="en" hidden>Support</span></a>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,969 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<!-- TODO: 김포 실데이터(요금·거리·좌표·예약URL) 추후 업데이트 -->
+<title>현대 프리미엄 아울렛 김포 — K.Rideus</title>
+<meta name="description" content="현대 프리미엄 아울렛 김포점, 쇼퍼와 함께. 픽업부터 귀환까지 도어투도어 프라이빗 이동. K.Rideus 여행.">
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+/* ============================================================
+   K.Rideus 여행×쇼핑 상세 — 현대 프리미엄 아울렛 김포 (컨셉 시안)
+   구조: 상단 2컬럼(목적지 / sticky 쇼퍼 예약폼) → 이동 특장점 → 동종 추천
+   톤: place-map 계승 (Warm Cream·Cobalt·Outfit+Pretendard)
+   레퍼런스: La Vallée Village (bookingparistransfer) — 구성만
+   ============================================================ */
+:root{
+  --bg:#FAF8F5;--surface:#FFFEFC;--card:#FFFFFF;
+  --ink:#1B2027;--ink-soft:#5C6675;--ink-faint:#97A0AC;
+  --accent:#2C51DB;--accent-soft:#E4E9FB;
+  --shuttle:#E8632F;--shuttle-soft:#F6E8DC;
+  --private:#5B45B8;--private-soft:#ECE6F7;
+  --hair:#ECE7DF;--hair-soft:#F3EFE8;
+  --shadow:18 24 33;--maxw:1280px;--text-inset:8px;
+  --fd:'Outfit','Pretendard',sans-serif;--fb:'Pretendard',-apple-system,BlinkMacSystemFont,sans-serif;
+  --e-out:cubic-bezier(.16,1,.3,1);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:var(--fb);background:var(--bg);color:var(--ink);line-height:1.45;letter-spacing:-.005em;-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;overflow-x:clip;word-break:keep-all;overflow-wrap:break-word}
+img{max-width:100%;display:block}
+a,button{color:inherit;text-decoration:none;font:inherit}
+button{background:none;border:none;cursor:pointer}
+ul,li{list-style:none}
+.wrap{max-width:var(--maxw);margin:0 auto;padding:0 clamp(24px,4vw,56px)}
+
+/* ---------- Nav — 이미지 히어로 일체화 (최상단 투명+흰 텍스트 / 스크롤 시 글래스+원래 색) ---------- */
+.nav{position:fixed;top:0;left:0;right:0;z-index:60;background:transparent;transition:background .35s var(--e-out);
+  --nav-ink:#fff;--nav-soft:rgba(255,255,255,.82);--nav-faint:rgba(255,255,255,.55);--nav-chip:rgba(255,255,255,.16);--nav-hover:rgba(255,255,255,.14)}
+.nav.is-solid,.nav.is-open{background:color-mix(in srgb, var(--bg) 92%, transparent);backdrop-filter:saturate(140%) blur(12px);-webkit-backdrop-filter:saturate(140%) blur(12px);
+  --nav-ink:var(--ink);--nav-soft:var(--ink-soft);--nav-faint:var(--ink-faint);--nav-chip:var(--hair-soft);--nav-hover:var(--hair-soft)}
+.nav__in{max-width:var(--maxw);margin:0 auto;padding:20px clamp(24px,4vw,56px);display:flex;align-items:center;gap:44px}
+.brand{display:inline-flex;align-items:center}.brand img{height:28px;width:auto;display:block;transition:filter .35s var(--e-out)}
+.nav:not(.is-solid):not(.is-open) .brand img{filter:brightness(0) invert(1)}
+.nav__menu{display:flex;gap:32px;font-size:.95rem;font-weight:500}
+.nav__menu a{color:var(--nav-soft);padding:8px 0;transition:color .25s var(--e-out)}
+.nav__menu a:hover{color:var(--nav-ink)}
+.nav__menu a[aria-current]{color:var(--nav-ink);font-weight:600}
+.nav__right{margin-left:auto;display:flex;align-items:center;gap:8px;color:var(--nav-soft)}
+.nav__lang{display:flex;align-items:center;gap:2px;background:var(--nav-chip);border-radius:999px;padding:4px;font-size:.78rem;font-weight:600}
+.nav__lang span{padding:4px 12px;border-radius:999px;color:var(--nav-faint)}
+.nav__lang span.on{background:#fff;color:var(--accent)}
+.nav__ic{width:40px;height:40px;display:grid;place-items:center;border-radius:50%;transition:background .25s var(--e-out)}
+.nav__ic:hover{background:var(--nav-hover)}
+/* 모바일 nav (햄버거 + 드로어) — 4페이지 공통 */
+.nav__burger{display:none;width:42px;height:42px;flex-direction:column;align-items:center;justify-content:center;gap:5px;border:none;background:none;cursor:pointer}
+.nav__burger span{display:block;width:22px;height:2px;background:var(--nav-ink);border-radius:2px;transition:transform .3s cubic-bezier(.16,1,.3,1),opacity .2s,background .35s}
+.nav.is-open .nav__burger span:nth-child(1){transform:translateY(7px) rotate(45deg)}
+.nav.is-open .nav__burger span:nth-child(2){opacity:0}
+.nav.is-open .nav__burger span:nth-child(3){transform:translateY(-7px) rotate(-45deg)}
+.nav__drawer{display:none;flex-direction:column;max-width:1280px;margin:0 auto;padding:4px clamp(24px,4vw,56px) 18px}
+.nav__drawer a{padding:14px 4px;font-size:1.05rem;font-weight:600;color:#1B2027;border-bottom:1px solid #F3EFE8;text-decoration:none}
+.nav__drawer a.is-disabled{color:#97A0AC}
+.nav__drawer a[aria-current]{color:#2C51DB}
+.nav__drawer-lang{display:inline-flex;align-self:flex-start;margin-top:14px;align-items:center;gap:2px;background:#F3EFE8;border-radius:999px;padding:4px;font-size:.78rem;font-weight:600}
+.nav__drawer-lang span{padding:4px 12px;border-radius:999px;color:#97A0AC}
+.nav__drawer-lang span.on{background:#fff;color:#2C51DB}
+@media (max-width:768px){
+  .nav__menu,.nav__ic,.nav__lang{display:none}
+  .nav__burger{display:flex}
+  .nav.is-open .nav__drawer{display:flex;animation:navDrop .3s cubic-bezier(.16,1,.3,1)}
+}
+@keyframes navDrop{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:none}}
+
+/* ---------- Buttons ---------- */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;height:52px;padding:0 28px;border-radius:999px;font-weight:600;font-size:1rem;letter-spacing:-.01em;white-space:nowrap;transition:transform .25s var(--e-out),background .25s var(--e-out),box-shadow .25s var(--e-out),color .25s var(--e-out)}
+.btn svg{width:17px;height:17px}
+.btn--primary{background:var(--accent);color:#fff}
+.btn--primary:hover{transform:translateY(-2px);background:#1f43c4}
+.btn--block{width:100%}
+
+/* ---------- 이미지 히어로 (폭 1280 · 뷰포트 ~25% · 타이틀+설명 오버레이) ---------- */
+.phero{position:relative;height:clamp(260px,28vh,340px);overflow:hidden;max-width:1280px;margin:0 auto;border-radius:0 0 32px 32px;display:flex;align-items:flex-end}
+.phero img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.phero__scrim{position:absolute;inset:0;background:linear-gradient(180deg,rgba(10,14,20,.45) 0%,rgba(10,14,20,.08) 42%,rgba(10,14,20,.58) 100%)}
+.phero__txt{position:relative;z-index:1;width:100%;max-width:var(--maxw);margin:0 auto;padding:0 clamp(24px,4vw,56px) clamp(24px,2.6vw,36px);color:#fff}
+.phero__txt h1{font-weight:800;letter-spacing:-.03em;line-height:1.1;font-size:clamp(1.7rem,3.2vw,2.5rem)}
+.phero__txt p{margin-top:10px;font-size:clamp(.94rem,1.1vw,1.05rem);font-weight:500;line-height:1.55;color:rgba(255,255,255,.86);max-width:56ch}
+
+/* ---------- Breadcrumb ---------- */
+.crumb{padding:18px 0 0;font-size:.82rem;color:var(--ink-faint);display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.crumb a{color:var(--ink-soft);transition:color .2s var(--e-out)}
+.crumb a:hover{color:var(--ink)}
+.crumb span{color:var(--ink-faint)}
+.crumb b{color:var(--ink-soft);font-weight:600}
+
+/* ============================================================
+   상단 2컬럼 — 좌 목적지 / 우 sticky 예약폼
+   ============================================================ */
+.pd{padding:clamp(20px,2.4vw,32px) 0 clamp(48px,6vw,80px)}
+.pd-grid{display:grid;grid-template-columns:1fr clamp(360px,32vw,420px);gap:clamp(28px,3.4vw,52px);align-items:start}
+
+/* 좌 — 목적지 */
+
+/* 방문 트렌드 — 해시태그 (박스 없이 텍스트만) */
+.pd-trend{margin-top:clamp(6px,1vw,12px)}
+.pd-trend__label{font-family:var(--fd);font-size:.7rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-faint);margin-bottom:8px}
+.pd-trend__list{display:flex;flex-wrap:wrap;gap:4px 16px}
+.pd-tag{font-size:14px;font-weight:400;color:var(--shuttle);line-height:1.7}
+.pd-tag::before{content:'#';opacity:.55;margin-right:1px}
+
+/* 본문 소개 */
+.pd-about{margin-top:clamp(32px,3.6vw,48px)}
+.pd-about h2{font-size:1.3rem;font-weight:700;letter-spacing:-.02em;margin-bottom:14px}
+.pd-about p{font-size:.98rem;color:var(--ink-soft);line-height:1.75;margin-bottom:16px;max-width:60ch}
+
+/* 우 — 예약폼 (sticky) */
+.bk{position:sticky;top:88px;scroll-margin-top:96px;background:var(--card);border-radius:clamp(16px,1.4vw,22px);padding:clamp(20px,1.8vw,26px)}
+.bk__head{display:flex;align-items:baseline;justify-content:space-between;gap:8px;margin-bottom:16px;padding:0 4px}
+.bk__head h3{font-size:1.12rem;font-weight:700;letter-spacing:-.02em}
+.bk__mode{display:inline-flex;align-items:center;height:24px;padding:0 9px;border-radius:999px;font-size:.7rem;font-weight:700;background:var(--private-soft);color:var(--private)}
+.bk__seg{display:flex;gap:4px;background:var(--hair-soft);border-radius:12px;padding:4px;margin-bottom:16px}
+.bk__seg button{flex:1;height:36px;border-radius:9px;font-size:.84rem;font-weight:600;color:var(--ink-soft);transition:background .2s var(--e-out),color .2s var(--e-out)}
+.bk__seg button.on{background:#fff;color:var(--ink);box-shadow:0 1px 2px rgb(var(--shadow)/.08)}
+.bk__field{margin-bottom:12px}
+.bk__field label{display:block;font-size:.74rem;font-weight:600;color:var(--ink-faint);margin-bottom:6px;letter-spacing:.01em;padding-left:4px}
+.bk__input{width:100%;height:46px;padding:0 14px;border:none;appearance:none;-webkit-appearance:none;border-radius:11px;background:var(--bg);font-size:.92rem;color:var(--ink);font-family:inherit;transition:box-shadow .2s var(--e-out)}
+.bk__input::placeholder{color:var(--ink-faint)}
+.bk__input:focus{outline:none;box-shadow:inset 0 0 0 1.5px var(--accent)}
+.bk__fixed{display:flex;align-items:center;gap:8px;height:46px;padding:0 14px;border-radius:11px;background:var(--bg);color:var(--ink);font-size:.9rem;font-weight:600}
+.bk__fixed svg{color:var(--accent)}
+.bk__row{display:flex;gap:10px}
+.bk__row .bk__field{flex:1}
+/* 카운터 */
+.bk__counters{display:flex;gap:10px;margin-bottom:14px}
+.bk__counter{flex:1;background:var(--bg);border-radius:11px;padding:10px 12px}
+.bk__counter span{display:block;font-size:.72rem;color:var(--ink-faint);font-weight:600;margin-bottom:6px}
+.bk__counter-ctrl{display:flex;align-items:center;justify-content:space-between}
+.bk__counter-ctrl button{width:26px;height:26px;border-radius:50%;background:var(--card);font-size:1.1rem;line-height:1;color:var(--ink-soft);display:grid;place-items:center;transition:background .15s,color .15s}
+.bk__counter-ctrl button:hover{background:var(--accent);color:#fff}
+.bk__counter-ctrl b{font-size:1rem;font-weight:700;min-width:18px;text-align:center}
+/* 선택 차량 표시 (선택은 Fleet 섹션 카드에서) */
+.bk__veh-line{display:flex;align-items:center;gap:10px;min-height:52px;padding:8px 14px;border-radius:11px;background:var(--bg);color:var(--ink-soft)}
+.bk__veh-line>svg{color:var(--accent)}
+.bk__veh-name{flex:1;min-width:0;display:flex;flex-direction:column;gap:1px}
+.bk__veh-name b{font-size:.92rem;font-weight:700;color:var(--ink)}
+.bk__veh-name small{font-size:.72rem;color:var(--ink-soft);font-weight:500}
+.bk__veh-change{font-size:.76rem;font-weight:700;color:var(--accent);white-space:nowrap;text-decoration:underline;text-underline-offset:3px}
+.bk__cap-warn{margin-top:8px;font-size:.76rem;line-height:1.5;color:#a8431c}
+.bk__cap-warn a{font-weight:700;text-decoration:underline;text-underline-offset:2px}
+/* 예상가 */
+.bk__total{display:flex;align-items:baseline;justify-content:space-between;gap:16px;padding:16px 4px;margin-bottom:14px;border-top:1px dashed var(--hair)}
+.bk__total span{font-size:.86rem;color:var(--ink-soft);font-weight:600}
+.bk__total b{font-family:var(--fb);font-size:1.4rem;font-weight:700;letter-spacing:-.01em;font-variant-numeric:tabular-nums}
+.bk__total b small{font-size:.86rem;color:var(--ink-faint);font-weight:500}
+.bk__total-note{margin:-8px 4px 14px;font-size:.74rem;color:var(--ink-faint);line-height:1.5}
+.bk__trust{display:flex;flex-wrap:wrap;gap:6px 14px;margin-top:14px;padding-left:4px}
+.bk__trust li{font-size:.76rem;color:var(--ink-soft);display:flex;align-items:center;gap:5px}
+.bk__trust li::before{content:'';width:14px;height:14px;flex-shrink:0;background:var(--accent);-webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M9 16.2 4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4z'/%3E%3C/svg%3E") center/contain no-repeat;mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M9 16.2 4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4z'/%3E%3C/svg%3E") center/contain no-repeat}
+.bk__done{display:none;margin-top:12px;padding:12px 14px;border-radius:11px;background:var(--shuttle-soft);color:#a8431c;font-size:.84rem;font-weight:600;line-height:1.5}
+.bk.is-done .bk__done{display:block}
+
+/* ============================================================
+   이동 안내 — 쇼퍼 특장점
+   ============================================================ */
+.svc{background:var(--hair-soft);padding:clamp(52px,6vw,84px) 0}
+.sec-head{margin-bottom:clamp(24px,3vw,36px);padding-left:var(--text-inset)}
+.sec-title{font-weight:700;letter-spacing:-.03em;line-height:1.12;font-size:clamp(1.6rem,3vw,2.2rem)}
+.sec-lead{margin-top:12px;font-size:clamp(.98rem,1.2vw,1.1rem);color:var(--ink-soft);font-weight:500;max-width:52ch;line-height:1.55}
+.svc-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:clamp(12px,1.4vw,18px)}
+.svc-card{background:rgba(255,255,255,.55);border-radius:18px;padding:clamp(20px,2vw,26px)}
+.svc-card--big{grid-column:span 2;padding:clamp(24px,2.4vw,32px)}
+.svc-card__no{display:block;font-family:var(--fd);font-size:.78rem;font-weight:700;letter-spacing:.08em;color:var(--ink-faint);margin-bottom:10px}
+.svc-card h3{font-size:.98rem;font-weight:700;letter-spacing:-.01em;margin-bottom:7px}
+.svc-card p{font-size:.84rem;color:var(--ink-soft);line-height:1.6}
+.svc-card--big h3{font-size:1.3rem}
+.svc-card--big p{font-size:.95rem;max-width:46ch}
+.svc-inc{margin-top:clamp(24px,2.6vw,32px);display:flex;flex-wrap:wrap;gap:8px 10px;align-items:center}
+.svc-inc__label{font-size:.8rem;font-weight:700;color:var(--ink);margin-right:4px}
+.svc-inc__item{display:inline-flex;align-items:center;gap:6px;font-size:.84rem;color:var(--ink-soft);background:var(--card);box-shadow:inset 0 0 0 1px var(--hair);height:32px;padding:0 12px;border-radius:999px}
+
+/* ============================================================
+   동종 추천
+   ============================================================ */
+.others{padding:clamp(52px,6vw,84px) 0}
+.ogrid{display:grid;grid-template-columns:repeat(3,1fr);gap:clamp(16px,1.7vw,24px)}
+.ocard{display:flex;flex-direction:column}
+.ocard__link{display:flex;flex-direction:column;background:var(--card);border-radius:clamp(14px,1.2vw,18px);overflow:clip;height:100%;transition:transform .28s var(--e-out),box-shadow .28s var(--e-out)}
+.ocard__link:hover{transform:translateY(-4px);box-shadow:0 1px 1px rgb(var(--shadow)/.04),0 20px 38px -22px rgb(var(--shadow)/.32)}
+.ocard__media{position:relative;aspect-ratio:16/10;overflow:hidden;background:linear-gradient(135deg,#F4ECE6,#ECDFD4)}
+.ocard__media img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;transition:transform .5s var(--e-out)}
+.ocard__link:hover .ocard__media img{transform:scale(1.04)}
+.ocard__body{padding:16px 18px 20px}
+.ocard__partner{font-family:var(--fd);font-size:.7rem;font-weight:600;letter-spacing:.06em;color:var(--ink-faint);margin-bottom:6px}
+.ocard__name{font-size:1.08rem;font-weight:700;letter-spacing:-.015em;line-height:1.25}
+.ocard__desc{margin-top:8px;font-size:.86rem;color:var(--ink-soft);line-height:1.5}
+.ocard__meta{display:flex;gap:7px;margin-top:12px}
+.tag{display:inline-flex;align-items:center;height:23px;padding:0 9px;border-radius:999px;font-size:.71rem;font-weight:700;letter-spacing:-.01em;white-space:nowrap}
+.tag--type{background:var(--hair-soft);color:var(--ink-soft)}
+.tag--private{padding-left:8px;background:var(--private-soft);color:var(--private)}
+.tag--private::before{content:'';width:5px;height:5px;border-radius:50%;margin-right:5px;background:var(--private)}
+
+/* ============================================================
+   Closing CTA — 다크 클로징 (푸터와 한 면으로 이어짐)
+   ============================================================ */
+.cta{background:var(--ink);color:#fff;padding:clamp(56px,7vw,96px) 0 clamp(48px,6vw,80px)}
+.cta-in{display:flex;flex-direction:column;align-items:center;text-align:center}
+.cta-title{font-weight:700;letter-spacing:-.03em;line-height:1.15;font-size:clamp(1.6rem,3vw,2.2rem)}
+.cta-sub{margin-top:12px;font-size:clamp(.95rem,1.1vw,1.05rem);color:rgba(255,255,255,.62);font-weight:500;line-height:1.6;max-width:44ch}
+.cta-btn{margin-top:clamp(24px,3vw,32px);padding:0 40px}
+.cta-channels{margin-top:clamp(28px,3.4vw,40px);display:flex;flex-wrap:wrap;justify-content:center;gap:10px}
+.cta-ch{display:inline-flex;align-items:center;gap:8px;height:40px;padding:0 16px;border-radius:999px;background:rgba(255,255,255,.08);font-size:.82rem}
+.cta-ch b{font-weight:700;color:rgba(255,255,255,.9)}
+.cta-ch i{font-style:normal;color:rgba(255,255,255,.5)}
+
+/* ---------- Footer ---------- */
+.foot{background:var(--ink);color:rgba(255,255,255,.66);padding:clamp(44px,5vw,64px) 0 28px}
+.foot__in{max-width:var(--maxw);margin:0 auto;padding:0 clamp(24px,4vw,56px);display:flex;flex-wrap:wrap;justify-content:space-between;gap:24px}
+.foot__brand .logo{font-family:var(--fd);font-weight:700;font-size:1.3rem;color:#fff;margin-bottom:12px}
+.foot__brand .logo b{color:#8AA0FF}
+.foot__brand p{font-size:.84rem;line-height:1.7;color:rgba(255,255,255,.5);max-width:34ch}
+.foot__bottom{max-width:var(--maxw);margin:clamp(28px,4vw,40px) auto 0;padding:22px clamp(24px,4vw,56px) 0;border-top:1px solid rgba(255,255,255,.12);font-size:.74rem;color:rgba(255,255,255,.4)}
+
+/* ============================================================
+   예약폼 보강 — 풀데이 힌트·인기 배지
+   ============================================================ */
+.bk__seg-hint{margin:-6px 4px 14px;font-size:.76rem;color:var(--ink-faint);line-height:1.5}
+.veh__pop{display:inline-block;padding:2px 7px;margin-left:6px;border-radius:999px;background:var(--accent-soft);color:var(--accent);font-size:.66rem;font-weight:700;font-style:normal;vertical-align:1px}
+
+/* ============================================================
+   At a Glance — 좌컬럼 하단 2열, 은은한 라인 그리드 (내부 십자선만)
+   ============================================================ */
+.pd-glance{margin:clamp(32px,3.6vw,48px) 0 0;display:grid;grid-template-columns:repeat(2,1fr);gap:1px;background:var(--hair)}
+.glance-item{margin:0;background:var(--bg);padding:22px 24px 22px 0}
+.glance-item:nth-child(even){padding-left:24px}
+.glance-item:nth-child(-n+2){padding-top:2px}
+.glance-item:nth-last-child(-n+2){padding-bottom:2px}
+.glance-item dt{font-family:var(--fd);font-size:.7rem;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-faint);margin-bottom:7px}
+.glance-item dd{font-family:var(--fd);font-size:1.02rem;font-weight:700;letter-spacing:-.01em;color:var(--ink);line-height:1.4;margin:0}
+.glance-item dd small{display:block;font-family:var(--fb);font-weight:500;color:var(--ink-soft);font-size:.82rem;margin-top:3px;letter-spacing:-.005em}
+
+/* ============================================================
+   Fleet — 차량과 요금 (여주 §5 구성 차용 · 차량 1대 고정 요금)
+   ============================================================ */
+.fleet{padding:0 0 clamp(52px,6vw,84px);scroll-margin-top:88px}
+.fleet-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:clamp(14px,1.6vw,22px);align-items:stretch}
+.fleet-card{--fc-pad:clamp(20px,1.8vw,24px);display:flex;flex-direction:column;background:var(--card);border-radius:20px;padding:var(--fc-pad)}
+.fleet-card.is-sel{box-shadow:inset 0 0 0 2px var(--accent)}
+.fleet-card.is-sel .fleet-card__cta{background:var(--accent);color:#fff;pointer-events:none}
+.fleet-card__tag{display:inline-flex;align-self:flex-start;align-items:center;height:24px;padding:0 10px;border-radius:999px;font-size:.7rem;font-weight:700;margin-bottom:12px}
+.fleet-card__tag--sig{background:var(--private-soft);color:var(--private)}
+.fleet-card__tag--pop{background:var(--accent);color:#fff}
+.fleet-card__tag.is-ghost{visibility:hidden}
+.fleet-card__img{margin:0 calc(12px - var(--fc-pad)) 16px;border-radius:12px;aspect-ratio:16/10;overflow:hidden;background:#fff}
+.fleet-card__img img{width:100%;height:100%;object-fit:contain}
+.fleet-card__class{font-family:var(--fd);font-size:.72rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-faint)}
+.fleet-card__name{font-family:var(--fd);font-size:1.35rem;font-weight:700;letter-spacing:-.01em;margin-top:3px}
+.fleet-card__cap{font-size:.84rem;color:var(--ink-soft);margin-top:4px}
+.fleet-card__fares{margin-top:12px;margin-bottom:16px;flex:1}
+.won{font-style:normal;font-size:.78em;font-weight:600;color:var(--ink-faint);margin-right:2px}
+.fleet-card__fares li{display:flex;justify-content:space-between;align-items:baseline;gap:16px;padding:11px 0}
+.fleet-card__fares li + li{border-top:1px solid var(--hair-soft)}
+.fleet-card__fares span{font-size:.86rem;color:var(--ink-soft);font-weight:600}
+.fleet-card__fares span i{font-style:normal;display:block;font-size:.7rem;color:var(--ink-faint);font-weight:500;margin-top:1px}
+.fleet-card__fares b{font-family:var(--fb);font-size:1rem;font-weight:700;letter-spacing:-.01em;white-space:nowrap;font-variant-numeric:tabular-nums}
+.fleet-card__fares li.is-best b{color:var(--accent);font-size:1.1rem}
+.fleet-card__cta{margin-top:auto;height:46px;font-size:.92rem;background:var(--hair-soft);color:var(--ink)}
+.fleet-card__cta:hover{background:var(--accent);color:#fff;transform:translateY(-2px)}
+.fleet-card.is-over{opacity:.45}
+.fleet-card.is-over .fleet-card__cta{pointer-events:none}
+.fleet-note{margin-top:clamp(16px,1.8vw,22px);font-size:.82rem;color:var(--ink-faint);line-height:1.6}
+
+/* ============================================================
+   Route — 노선 지도 + 출발지 + 사이드 스톱
+   ============================================================ */
+.route{padding:clamp(52px,6vw,84px) 0}
+.route-grid{display:grid;grid-template-columns:1.05fr .95fr;gap:clamp(28px,3.4vw,56px);align-items:stretch}
+.route-map{background:var(--card);border-radius:20px;overflow:hidden;min-height:420px}
+.route-side{display:flex;flex-direction:column;justify-content:space-between;gap:24px}
+/* 네이버 지도 Ctrl+스크롤 안내 오버레이 (naver-map.js) */
+.map-scroll-overlay{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.45);opacity:0;pointer-events:none;transition:opacity .3s;z-index:10;border-radius:inherit}
+.map-scroll-overlay.active{opacity:1}
+.map-scroll-msg{padding:10px 20px;background:rgba(0,0,0,.75);color:#fff;font-size:.875rem;border-radius:2rem;backdrop-filter:blur(4px);letter-spacing:.02em}
+.route-list{display:flex;flex-direction:column}
+.route-item{display:flex;align-items:center;gap:16px;padding:20px 4px}
+.route-item:first-child{padding-top:4px}
+.route-item + .route-item{border-top:1px solid var(--hair-soft)}
+.route-item__code{font-family:var(--fd);font-weight:700;font-size:.84rem;width:44px;height:44px;border-radius:12px;display:grid;place-items:center;background:var(--private-soft);color:var(--private);flex-shrink:0}
+.route-item__txt{flex:1;min-width:0}
+.route-item__from{font-size:.98rem;font-weight:700}
+.route-item__meta{font-size:.8rem;color:var(--ink-soft);margin-top:3px}
+.route-item__time{text-align:right;white-space:nowrap}
+.route-item__time b{font-family:var(--fd);font-weight:700;font-size:1.3rem;letter-spacing:-.01em}
+.route-item__time small{display:block;font-size:.72rem;color:var(--ink-faint);font-weight:500;margin-top:2px}
+.route-stops{margin-top:0;padding-top:20px;border-top:1px solid var(--hair-soft)}
+.route-stops__head{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;margin-bottom:14px}
+.route-stops__label{font-size:.95rem;font-weight:700}
+.route-stops__note{font-size:.78rem;color:var(--ink-faint)}
+.stop-chips{display:flex;flex-wrap:wrap;gap:10px}
+.stopchip{display:inline-flex;align-items:center;gap:9px;height:42px;padding:0 18px;border-radius:999px;background:var(--card);box-shadow:inset 0 0 0 1px var(--hair);font-size:.88rem}
+.stopchip b{font-weight:700}
+.stopchip i{font-style:normal;font-size:.76rem;color:var(--ink-faint)}
+
+/* ============================================================
+   Sample Day — 사진 + 타임라인 2열
+   ============================================================ */
+.day{padding:clamp(52px,6vw,84px) 0}
+.day-grid{display:grid;grid-template-columns:clamp(300px,33vw,430px) 1fr;gap:clamp(28px,4.4vw,72px);align-items:start}
+.day-photo{position:sticky;top:104px;border-radius:20px;overflow:hidden;aspect-ratio:4/5;background:linear-gradient(135deg,#F4ECE6,#ECDFD4)}
+.day-photo img{width:100%;height:100%;object-fit:cover;display:block}
+.day-tl{max-width:760px;padding-top:6px}
+.day-step{display:grid;grid-template-columns:76px 24px 1fr;gap:0 18px;position:relative;padding-bottom:26px}
+.day-step:last-child{padding-bottom:0}
+.day-step__time{font-family:var(--fd);font-weight:700;font-size:.92rem;color:var(--ink);text-align:right;padding-top:3px}
+.day-step__node{position:relative;display:flex;justify-content:center}
+.day-step__node::before{content:'';position:absolute;top:20px;bottom:-32px;width:2px;background:var(--hair)}
+.day-step:last-child .day-step__node::before{display:none}
+.day-step__dot{position:relative;width:12px;height:12px;border-radius:50%;background:var(--private);margin-top:6px;box-shadow:0 0 0 4px var(--private-soft)}
+.day-step__body h3{font-size:1.02rem;font-weight:700;letter-spacing:-.01em}
+.day-step__body h3 em{font-style:normal;font-size:.74rem;font-weight:600;color:var(--ink-faint);margin-left:8px}
+.day-step__body p{margin-top:5px;font-size:.88rem;color:var(--ink-soft);line-height:1.6;max-width:52ch}
+
+/* ============================================================
+   FAQ — 구분선 아코디언 (카드 없음)
+   ============================================================ */
+.faq{padding:clamp(52px,6vw,84px) 0}
+.faq-list{max-width:820px;padding-left:var(--text-inset)}
+.faq-item{border-bottom:1px solid var(--hair-soft)}
+.faq-item summary{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:20px 4px;font-size:.98rem;font-weight:600;cursor:pointer;list-style:none;transition:color .2s var(--e-out)}
+.faq-item summary:hover{color:var(--accent)}
+.faq-item summary::-webkit-details-marker{display:none}
+.faq-item summary::after{content:'+';font-family:var(--fd);font-size:1.3rem;font-weight:500;color:var(--ink-faint);flex-shrink:0;transition:transform .25s var(--e-out)}
+.faq-item[open] summary::after{transform:rotate(45deg)}
+.faq-item p{padding:0 4px 20px;font-size:.89rem;color:var(--ink-soft);line-height:1.7;max-width:64ch}
+
+/* ---------- reveal ---------- */
+.rv{opacity:0;transform:translateY(22px)}
+.rv.in{opacity:1;transform:none;transition:opacity .7s var(--e-out),transform .8s var(--e-out)}
+@media (prefers-reduced-motion:reduce){.rv{opacity:1!important;transform:none!important}html{scroll-behavior:auto}}
+
+/* ---------- 반응형 ---------- */
+@media (max-width:980px){
+  .pd-grid{grid-template-columns:1fr}
+  .bk{position:static;margin-top:8px}
+  .svc-grid{grid-template-columns:repeat(2,1fr)}
+  .ogrid{grid-template-columns:repeat(2,1fr)}
+  .fleet-grid{grid-template-columns:1fr;max-width:480px}
+  .route-grid{grid-template-columns:1fr}
+  .route-map{min-height:340px;height:clamp(300px,48vw,400px)}
+  .day-grid{grid-template-columns:1fr}
+  .day-photo{position:static;aspect-ratio:16/10;max-width:560px}
+}
+@media (max-width:680px){
+  .nav__menu{gap:18px;font-size:.9rem}.nav__lang{display:none}
+  .ogrid{grid-template-columns:1fr}
+  .day-step{grid-template-columns:60px 20px 1fr;gap:0 12px}
+}
+@media (max-width:480px){
+  .svc-grid{grid-template-columns:1fr}
+  .svc-card--big{grid-column:span 1}
+  .bk__counters{flex-direction:column}
+  .pd-glance{grid-template-columns:1fr}
+  .glance-item:nth-child(even){padding-left:0}
+  .glance-item{padding:14px 0}
+}
+</style>
+</head>
+<body data-base="../../" data-nav-mode="scroll">
+
+<div data-include="navbar"></div>
+
+<main>
+  <!-- 이미지 히어로 — 풀폭, 뷰포트 25% -->
+  <div class="phero">
+    <img src="/assets/shopping_gimpo_hero.webp" alt="" fetchpriority="high" decoding="async">
+    <div class="phero__scrim" aria-hidden="true"></div>
+    <div class="phero__txt">
+      <h1><span data-lang="ko">현대 프리미엄 아울렛 김포점</span><span data-lang="en" hidden>Hyundai Premium Outlet Gimpo</span></h1>
+      <p><span data-lang="ko">김포공항과 가까운 수도권 서부 대형 아울렛. 다양한 프리미엄 브랜드, 아라뱃길·라베니체로 이어지는 하루를 쇼퍼와 함께.</span><span data-lang="en" hidden>A large outlet in the western metro area near Gimpo Airport. Various premium brands and a day connecting to Arabaetgil and La Venezia — with your chauffeur.</span></p>
+    </div>
+  </div>
+
+  <div class="wrap">
+    <nav class="crumb" aria-label="breadcrumb">
+      <a href="../../"><span data-lang="ko">홈</span><span data-lang="en" hidden>Home</span></a><span>/</span><a href="../../travel/"><span data-lang="ko">여행</span><span data-lang="en" hidden>Travel</span></a><span>/</span><a href="../../travel/"><span data-lang="ko">쇼핑</span><span data-lang="en" hidden>Shopping</span></a><span>/</span><b><span data-lang="ko">현대 프리미엄 아울렛 김포</span><span data-lang="en" hidden>Hyundai Premium Outlet Gimpo</span></b>
+    </nav>
+  </div>
+
+  <!-- ============ 상단 2컬럼 ============ -->
+  <section class="pd">
+    <div class="wrap">
+      <div class="pd-grid">
+
+        <!-- 좌: 목적지 -->
+        <div class="pd-info">
+          <!-- 방문 트렌드 -->
+          <div class="pd-trend">
+            <div class="pd-trend__label"><span data-lang="ko">언제 가면 좋을까</span><span data-lang="en" hidden>Good to know</span></div>
+            <div class="pd-trend__list">
+              <span class="pd-tag"><span data-lang="ko">사계절 상시 세일</span><span data-lang="en" hidden>Year-round sales</span></span>
+              <span class="pd-tag"><span data-lang="ko">김포공항 인접</span><span data-lang="en" hidden>Near Gimpo Airport</span></span>
+              <span class="pd-tag"><span data-lang="ko">출국 전 마지막 쇼핑</span><span data-lang="en" hidden>Last-minute shopping before departure</span></span>
+              <span class="pd-tag"><span data-lang="ko">아라뱃길·라베니체 연계 코스</span><span data-lang="en" hidden>Linked with Arabaetgil·La Venezia</span></span>
+              <span class="pd-tag"><span data-lang="ko">주말 가족 나들이</span><span data-lang="en" hidden>Weekend family outing</span></span>
+            </div>
+          </div>
+
+          <!-- 소개 -->
+          <div class="pd-about rv">
+            <h2><span data-lang="ko">목적지 안내</span><span data-lang="en" hidden>About the destination</span></h2>
+            <p><span data-lang="ko">현대 프리미엄 아울렛 김포점은 현대백화점이 운영하는 수도권 서부 대형 아울렛으로, 패션·잡화·스포츠·라이프스타일·키즈까지 다양한 프리미엄 브랜드가 입점해 있습니다. 식음 공간과 편의시설이 함께 마련되어 가족·커플·비즈니스 방문객 모두에게 적합합니다.</span><span data-lang="en" hidden>Hyundai Premium Outlet Gimpo is a large outlet in the western metro area operated by Hyundai Department Store, with a wide range of premium brands across fashion, accessories, sports, lifestyle, and kids. With dining and amenities on site, it suits families, couples, and business visitors alike.</span></p>
+            <p><span data-lang="ko">김포 고촌에 위치해 서울 서부권과 김포공항·인천공항에서 접근성이 뛰어납니다. 아라뱃길과 라베니체 수변 상가가 가까워 쇼핑과 산책을 함께 즐기기 좋으며, 출국 전이나 귀국 후 쇼핑 일정으로도 활용하기 좋은 수도권 대표 아울렛입니다.</span><span data-lang="en" hidden>Located in Gochon, Gimpo, it offers excellent access from western Seoul and Gimpo·Incheon airports. Arabaetgil and the La Venezia waterfront are nearby for shopping and a stroll, making it a top metro-area outlet for shopping before departure or after arrival.</span></p>
+          </div>
+
+          <!-- 핵심 정보 (At a Glance — 좌컬럼 하단, 폼 높이와 균형) -->
+          <dl class="pd-glance rv">
+            <div class="glance-item">
+              <dt>Pickup</dt>
+              <dd><span data-lang="ko">서울 전역 호텔·숙소</span><span data-lang="en" hidden>Hotels·lodgings across Seoul</span><small><span data-lang="ko">인천공항(ICN) · 김포공항(GMP)</span><span data-lang="en" hidden>Incheon (ICN) · Gimpo (GMP)</span></small></dd>
+            </div>
+            <div class="glance-item">
+              <dt>Travel Time</dt>
+              <dd><span data-lang="ko">서울에서 50–70분</span><span data-lang="en" hidden>50–70 min from Seoul</span><small><span data-lang="ko">약 45km · 올림픽대로 경유</span><span data-lang="en" hidden>About 45 km · via Olympic-daero</span></small></dd>
+            </div>
+            <div class="glance-item">
+              <dt>Vehicles</dt>
+              <dd><span data-lang="ko">세단 · 밴 · 그룹 코치</span><span data-lang="en" hidden>Sedan · van · group coach</span><small><span data-lang="ko">1인부터 13인까지</span><span data-lang="en" hidden>From 1 to 13 passengers</span></small></dd>
+            </div>
+            <div class="glance-item">
+              <dt>Chauffeur</dt>
+              <dd><span data-lang="ko">영어 가능 기사 기본</span><span data-lang="en" hidden>English-speaking driver standard</span><small><span data-lang="ko">중국어·일본어 요청 가능</span><span data-lang="en" hidden>Chinese·Japanese available on request</span></small></dd>
+            </div>
+            <div class="glance-item">
+              <dt>Included</dt>
+              <dd><span data-lang="ko">통행료 · 주차 · 생수</span><span data-lang="en" hidden>Tolls · parking · water</span><small><span data-lang="ko">예약 시 확정 요금, 추가 비용 없음</span><span data-lang="en" hidden>Fare confirmed at booking, no extra charges</span></small></dd>
+            </div>
+            <div class="glance-item">
+              <dt>Service Hours</dt>
+              <dd><span data-lang="ko">매일 06:00–22:00</span><span data-lang="en" hidden>Daily 06:00–22:00</span><small><span data-lang="ko">24시간 전 예약 권장</span><span data-lang="en" hidden>Book 24 hours ahead recommended</span></small></dd>
+            </div>
+          </dl>
+        </div>
+
+        <!-- 우: 쇼퍼 예약폼 -->
+        <aside class="bk" id="bk" aria-label="쇼퍼 예약">
+          <div class="bk__head">
+            <h3><span data-lang="ko">쇼퍼 예약</span><span data-lang="en" hidden>Book a chauffeur</span></h3>
+            <span class="bk__mode"><span data-lang="ko">프라이빗 기사</span><span data-lang="en" hidden>Private chauffeur</span></span>
+          </div>
+
+          <div class="bk__seg" id="seg" role="tablist" aria-label="서비스 유형">
+            <button data-mode="oneway" role="tab"><span data-lang="ko">편도</span><span data-lang="en" hidden>One-way</span></button>
+            <button data-mode="round" role="tab"><span data-lang="ko">왕복</span><span data-lang="en" hidden>Round trip</span></button>
+            <button class="on" data-mode="fullday" role="tab"><span data-lang="ko">풀데이</span><span data-lang="en" hidden>Full day</span></button>
+          </div>
+          <p class="bk__seg-hint" id="segHint"><span data-lang="ko">기사가 쇼핑 내내 대기 — 최대 8시간, 귀환 시간은 자유</span><span data-lang="en" hidden>Driver waits all day while you shop — up to 8 hours, return anytime</span></p>
+
+          <div class="bk__field">
+            <label for="pickup"><span data-lang="ko">픽업 위치</span><span data-lang="en" hidden>Pickup location</span></label>
+            <input class="bk__input" id="pickup" type="text" placeholder="예) 서울 명동 호텔, 인천공항 T1" value="서울 시내" data-val-ko="서울 시내" data-val-en="Central Seoul" data-ph-ko="예) 서울 명동 호텔, 인천공항 T1" data-ph-en="e.g. Seoul Myeongdong hotel, Incheon Airport T1">
+          </div>
+          <div class="bk__field" id="dropField">
+            <label><span data-lang="ko">도착</span><span data-lang="en" hidden>Drop-off</span></label>
+            <div class="bk__fixed">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C8.1 2 5 5.1 5 9c0 5.2 7 13 7 13s7-7.8 7-13c0-3.9-3.1-7-7-7zm0 9.5a2.5 2.5 0 110-5 2.5 2.5 0 010 5z"/></svg>
+              <span data-lang="ko">현대 프리미엄 아울렛 김포</span><span data-lang="en" hidden>Hyundai Premium Outlet Gimpo</span>
+            </div>
+          </div>
+          <div class="bk__row">
+            <div class="bk__field"><label for="date"><span data-lang="ko">날짜</span><span data-lang="en" hidden>Date</span></label><input class="bk__input" id="date" type="date"></div>
+            <div class="bk__field"><label for="time"><span data-lang="ko">시간</span><span data-lang="en" hidden>Time</span></label><input class="bk__input" id="time" type="time" value="10:00"></div>
+          </div>
+
+          <div class="bk__counters">
+            <div class="bk__counter">
+              <span><span data-lang="ko">탑승 인원</span><span data-lang="en" hidden>Passengers</span></span>
+              <div class="bk__counter-ctrl"><button type="button" data-c="pax" data-d="-1" aria-label="인원 감소">−</button><b id="pax">2</b><button type="button" data-c="pax" data-d="1" aria-label="인원 증가">+</button></div>
+            </div>
+            <div class="bk__counter">
+              <span><span data-lang="ko">수하물</span><span data-lang="en" hidden>Luggage</span></span>
+              <div class="bk__counter-ctrl"><button type="button" data-c="bag" data-d="-1" aria-label="수하물 감소">−</button><b id="bag">2</b><button type="button" data-c="bag" data-d="1" aria-label="수하물 증가">+</button></div>
+            </div>
+          </div>
+
+          <div class="bk__field">
+            <label><span data-lang="ko">선택한 차량</span><span data-lang="en" hidden>Selected vehicle</span></label>
+            <div class="bk__veh-line">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M19 17h2v-6l-3-5H6L3 11v6h2"/><circle cx="7.5" cy="17.5" r="2"/><circle cx="16.5" cy="17.5" r="2"/></svg>
+              <span class="bk__veh-name"><b id="vehName">Staria HiLimo</b><small id="vehMeta"><span data-lang="ko">프리미엄 밴 · 1–7인</span><span data-lang="en" hidden>Premium van · 1–7 pax</span></small></span>
+              <a href="#fleet" class="bk__veh-change"><span data-lang="ko">차량 비교</span><span data-lang="en" hidden>Compare vehicles</span></a>
+            </div>
+            <p class="bk__cap-warn" id="capWarn" hidden><span data-lang="ko">탑승 인원이 차량 정원을 초과했어요 — <a href="#fleet"><span data-lang="ko">차량 비교</span><span data-lang="en" hidden>Compare vehicles</span></a>에서 더 큰 차량을 선택하세요</span><span data-lang="en" hidden>Passengers exceed the vehicle capacity — <a href="#fleet">compare vehicles</a> and pick a larger one</span></p>
+          </div>
+
+          <div class="bk__total">
+            <span id="totalLabel">예상 요금 · 풀데이</span>
+            <b><i class="won">₩</i><span id="total">310,000</span> <small><span data-lang="ko">부터</span><span data-lang="en" hidden>from</span></small></b>
+          </div>
+          <p class="bk__total-note"><span data-lang="ko">차량 1대 기준 고정 요금 — 인원수와 무관합니다</span><span data-lang="en" hidden>Fixed fare per vehicle — regardless of passenger count</span></p>
+
+          <button class="btn btn--primary btn--block" id="bkSubmit" type="button">
+            <span data-lang="ko">예약하기</span><span data-lang="en" hidden>Book now</span>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
+          </button>
+
+          <ul class="bk__trust">
+            <li><span data-lang="ko">고정 요금</span><span data-lang="en" hidden>Fixed fare</span></li><li><span data-lang="ko">도어투도어</span><span data-lang="en" hidden>Door-to-door</span></li><li><span data-lang="ko">영어 가능 기사</span><span data-lang="en" hidden>English-speaking driver</span></li>
+          </ul>
+
+          <div class="bk__done" id="bkDone"><span data-lang="ko">예약이 접수되었습니다. 곧 확정 안내를 드릴게요. (컨셉 데모 — 실제 예약은 추후 연동)</span><span data-lang="en" hidden>Your booking has been received. We'll send confirmation shortly. (Concept demo — real booking to be integrated later)</span></div>
+        </aside>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ Fleet — 차량과 요금 ============ -->
+  <section class="fleet" id="fleet">
+    <div class="wrap">
+      <div class="sec-head rv">
+        <h2 class="sec-title"><span data-lang="ko">세 가지 차량, 모두 고정 요금</span><span data-lang="en" hidden>Three vehicles, all fixed fare</span></h2>
+        <p class="sec-lead"><span data-lang="ko">편도 · 왕복 · 풀데이 — 예약 시 확정된 금액 그대로.</span><span data-lang="en" hidden>One-way · round trip · full day — the fare confirmed at booking, as is.</span></p>
+      </div>
+
+      <div class="fleet-grid">
+        <article class="fleet-card rv" data-veh="g90" data-cap="3">
+          <span class="fleet-card__tag fleet-card__tag--sig"><span data-lang="ko">시그니처</span><span data-lang="en" hidden>Signature</span></span>
+          <div class="fleet-card__img"><img src="../../../assets/fleet_g90.webp" alt="Genesis G90" loading="lazy"></div>
+          <div class="fleet-card__class">First Class Sedan</div>
+          <h3 class="fleet-card__name">Genesis G90</h3>
+          <div class="fleet-card__cap"><span data-lang="ko">1–3인 · 캐리어 3개</span><span data-lang="en" hidden>1–3 pax · 3 suitcases</span></div>
+          <ul class="fleet-card__fares">
+            <li><span><span data-lang="ko">편도</span><span data-lang="en" hidden>One-way</span></span><b><i class="won">₩</i>150,000</b></li>
+            <li><span><span data-lang="ko">왕복</span><span data-lang="en" hidden>Round trip</span></span><b><i class="won">₩</i>255,000</b></li>
+            <li class="is-best"><span><span data-lang="ko">풀데이</span><span data-lang="en" hidden>Full day</span> <i><span data-lang="ko">기사 8시간 대기</span><span data-lang="en" hidden>8-hour driver wait</span></i></span><b><i class="won">₩</i>330,000</b></li>
+          </ul>
+          <button class="btn fleet-card__cta" data-veh-cta="g90" data-label="G90으로 예약" data-label-en="Book with G90"><span data-lang="ko">G90으로 예약</span><span data-lang="en" hidden>Book with G90</span></button>
+        </article>
+
+        <article class="fleet-card is-pop rv" data-veh="hilimo" data-cap="7">
+          <span class="fleet-card__tag fleet-card__tag--pop"><span data-lang="ko">가장 인기</span><span data-lang="en" hidden>Most popular</span></span>
+          <div class="fleet-card__img"><img src="../../../assets/fleet_staria.webp" alt="Staria HiLimo" loading="lazy"></div>
+          <div class="fleet-card__class">Premium Van</div>
+          <h3 class="fleet-card__name">Staria HiLimo</h3>
+          <div class="fleet-card__cap"><span data-lang="ko">1–7인 · 캐리어 6개</span><span data-lang="en" hidden>1–7 pax · 6 suitcases</span></div>
+          <ul class="fleet-card__fares">
+            <li><span><span data-lang="ko">편도</span><span data-lang="en" hidden>One-way</span></span><b><i class="won">₩</i>140,000</b></li>
+            <li><span><span data-lang="ko">왕복</span><span data-lang="en" hidden>Round trip</span></span><b><i class="won">₩</i>240,000</b></li>
+            <li class="is-best"><span><span data-lang="ko">풀데이</span><span data-lang="en" hidden>Full day</span> <i><span data-lang="ko">기사 8시간 대기</span><span data-lang="en" hidden>8-hour driver wait</span></i></span><b><i class="won">₩</i>310,000</b></li>
+          </ul>
+          <button class="btn fleet-card__cta" data-veh-cta="hilimo" data-label="HiLimo로 예약" data-label-en="Book with HiLimo"><span data-lang="ko">HiLimo로 예약</span><span data-lang="en" hidden>Book with HiLimo</span></button>
+        </article>
+
+        <article class="fleet-card rv" data-veh="solati" data-cap="13">
+          <span class="fleet-card__tag is-ghost" aria-hidden="true"></span>
+          <div class="fleet-card__img"><img src="../../../assets/fleet_solati.webp" alt="Hyundai Solati" loading="lazy"></div>
+          <div class="fleet-card__class">Group Coach</div>
+          <h3 class="fleet-card__name">Hyundai Solati</h3>
+          <div class="fleet-card__cap"><span data-lang="ko">8–13인 · 캐리어 자유</span><span data-lang="en" hidden>8–13 pax · luggage as needed</span></div>
+          <ul class="fleet-card__fares">
+            <li><span><span data-lang="ko">편도</span><span data-lang="en" hidden>One-way</span></span><b><i class="won">₩</i>260,000</b></li>
+            <li><span><span data-lang="ko">왕복</span><span data-lang="en" hidden>Round trip</span></span><b><i class="won">₩</i>440,000</b></li>
+            <li class="is-best"><span><span data-lang="ko">풀데이</span><span data-lang="en" hidden>Full day</span> <i><span data-lang="ko">기사 8시간 대기</span><span data-lang="en" hidden>8-hour driver wait</span></i></span><b><i class="won">₩</i>570,000</b></li>
+          </ul>
+          <button class="btn fleet-card__cta" data-veh-cta="solati" data-label="Solati로 예약" data-label-en="Book with Solati"><span data-lang="ko">Solati로 예약</span><span data-lang="en" hidden>Book with Solati</span></button>
+        </article>
+      </div>
+
+      <p class="fleet-note rv"><span data-lang="ko">서울 시내 출발 기준 · 인천공항 +₩60,000 · 김포공항 +₩40,000 · 풀데이는 경로 30km 이내 경유 무료</span><span data-lang="en" hidden>From central Seoul · Incheon Airport +₩60,000 · Gimpo Airport +₩40,000 · free stops within 30 km on full day</span></p>
+    </div>
+  </section>
+
+  <!-- ============ Route — 노선 지도 ============ -->
+  <section class="route">
+    <div class="wrap">
+      <div class="sec-head rv">
+        <h2 class="sec-title"><span data-lang="ko">서울에서 김포까지, 공항 바로 곁</span><span data-lang="en" hidden>From Seoul to Gimpo, right by the airport</span></h2>
+        <p class="sec-lead"><span data-lang="ko">세 곳의 출발지, 하나의 목적지. 어디서든 도어투도어.</span><span data-lang="en" hidden>Three pickups, one destination. Door-to-door from anywhere.</span></p>
+      </div>
+
+      <div class="route-grid">
+        <!-- 지도 (네이버 지도 — 5173 도메인에서만 로드됨) -->
+        <div class="route-map rv" id="naverMap" data-lat="37.769353" data-lng="126.696575" role="img" aria-label="현대 프리미엄 아울렛 김포 위치 지도"></div>
+
+        <!-- 우: 출발지 + 사이드 스톱 (지도 높이와 균형) -->
+        <div class="route-side">
+          <div class="route-list">
+            <div class="route-item rv">
+              <span class="route-item__code">SEL</span>
+              <div class="route-item__txt">
+                <div class="route-item__from"><span data-lang="ko">서울 시내 출발</span><span data-lang="en" hidden>From central Seoul</span></div>
+                <div class="route-item__meta"><span data-lang="ko">호텔·숙소 로비 픽업 · 올림픽대로 경유</span><span data-lang="en" hidden>Hotel·lodging lobby pickup · via Olympic-daero</span></div>
+              </div>
+              <div class="route-item__time"><b><span data-lang="ko">50–70분</span><span data-lang="en" hidden>50–70 min</span></b><small><span data-lang="ko">약 45km</span><span data-lang="en" hidden>~45 km</span></small></div>
+            </div>
+            <div class="route-item rv">
+              <span class="route-item__code">ICN</span>
+              <div class="route-item__txt">
+                <div class="route-item__from"><span data-lang="ko">인천공항 출발</span><span data-lang="en" hidden>From Incheon Airport</span></div>
+                <div class="route-item__meta"><span data-lang="ko">T1·T2 입국장 네임보드 픽업</span><span data-lang="en" hidden>T1·T2 arrivals name-board pickup</span></div>
+              </div>
+              <div class="route-item__time"><b><span data-lang="ko">60–80분</span><span data-lang="en" hidden>60–80 min</span></b><small><span data-lang="ko">약 55km</span><span data-lang="en" hidden>~55 km</span></small></div>
+            </div>
+            <div class="route-item rv">
+              <span class="route-item__code">GMP</span>
+              <div class="route-item__txt">
+                <div class="route-item__from"><span data-lang="ko">김포공항 출발</span><span data-lang="en" hidden>From Gimpo Airport</span></div>
+                <div class="route-item__meta"><span data-lang="ko">출국 전 마지막 쇼핑에 최적</span><span data-lang="en" hidden>Ideal for last-minute shopping before departure</span></div>
+              </div>
+              <div class="route-item__time"><b><span data-lang="ko">40–60분</span><span data-lang="en" hidden>40–60 min</span></b><small><span data-lang="ko">약 35km</span><span data-lang="en" hidden>~35 km</span></small></div>
+            </div>
+          </div>
+
+          <!-- 사이드 스톱 -->
+          <div class="route-stops rv">
+            <div class="route-stops__head">
+              <span class="route-stops__label"><span data-lang="ko">함께 들르기 좋은 곳</span><span data-lang="en" hidden>Great stops along the way</span></span>
+              <span class="route-stops__note"><span data-lang="ko">풀데이 기준, 경로 30km 이내 경유 무료</span><span data-lang="en" hidden>Free stops within 30 km on full day</span></span>
+            </div>
+            <div class="stop-chips">
+              <span class="stopchip"><b><span data-lang="ko">라베니체</span><span data-lang="en" hidden>La Venezia</span></b><i><span data-lang="ko">차 5분</span><span data-lang="en" hidden>5 min by car</span></i></span>
+              <span class="stopchip"><b><span data-lang="ko">아라뱃길</span><span data-lang="en" hidden>Arabaetgil</span></b><i><span data-lang="ko">차 10분</span><span data-lang="en" hidden>10 min by car</span></i></span>
+              <span class="stopchip"><b><span data-lang="ko">김포공항</span><span data-lang="en" hidden>Gimpo Airport</span></b><i><span data-lang="ko">차 15분</span><span data-lang="en" hidden>15 min by car</span></i></span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 이동 안내 (쇼퍼 특장점) ============ -->
+  <section class="svc">
+    <div class="wrap">
+      <div class="sec-head rv">
+        <h2 class="sec-title"><span data-lang="ko">택시도, 셔틀도 아닌 이유</span><span data-lang="en" hidden>Why not a taxi or shuttle</span></h2>
+      </div>
+
+      <div class="svc-grid">
+        <div class="svc-card svc-card--big rv">
+          <span class="svc-card__no">01</span>
+          <h3><span data-lang="ko">기사가 종일 대기</span><span data-lang="en" hidden>Driver waits all day</span></h3>
+          <p><span data-lang="ko">풀데이는 최대 8시간 대기 포함. 정해진 귀환 시간 없이, 쇼핑이 끝나면 출발합니다.</span><span data-lang="en" hidden>Full day includes up to 8 hours of waiting. No fixed return time — you leave when shopping is done.</span></p>
+        </div>
+        <div class="svc-card svc-card--big rv">
+          <span class="svc-card__no">02</span>
+          <h3><span data-lang="ko">고정 요금</span><span data-lang="en" hidden>Fixed fare</span></h3>
+          <p><span data-lang="ko">예약 시 확정된 금액 그대로. 미터기도, 대기 추가비도, 숨은 비용도 없습니다.</span><span data-lang="en" hidden>The fare confirmed at booking, as is. No meter, no waiting surcharge, no hidden costs.</span></p>
+        </div>
+        <div class="svc-card rv">
+          <span class="svc-card__no">03</span>
+          <h3><span data-lang="ko">짐 걱정 0</span><span data-lang="en" hidden>Zero luggage worries</span></h3>
+          <p><span data-lang="ko">무거운 쇼핑백은 메시지 한 통이면 차로. 두 손 가볍게 다음 매장으로 이동하세요.</span><span data-lang="en" hidden>Heavy shopping bags go to the car with one message. Move to the next store hands-free.</span></p>
+        </div>
+        <div class="svc-card rv">
+          <span class="svc-card__no">04</span>
+          <h3><span data-lang="ko">도어투도어</span><span data-lang="en" hidden>Door-to-door</span></h3>
+          <p><span data-lang="ko">호텔 로비에서 아울렛 정문까지. 환승도, 주차 스트레스도 없이 편안하게.</span><span data-lang="en" hidden>From the hotel lobby to the outlet gate. No transfers, no parking stress — just comfort.</span></p>
+        </div>
+        <div class="svc-card rv">
+          <span class="svc-card__no">05</span>
+          <h3><span data-lang="ko">영어 가능 기사</span><span data-lang="en" hidden>English-speaking driver</span></h3>
+          <p><span data-lang="ko">외국인 게스트도 편안하게. 픽업·일정 안내를 영어로 도와드립니다.</span><span data-lang="en" hidden>Comfortable for international guests too. We assist with pickup and scheduling in English.</span></p>
+        </div>
+        <div class="svc-card rv">
+          <span class="svc-card__no">06</span>
+          <h3><span data-lang="ko">경유도 자유롭게</span><span data-lang="en" hidden>Stops, freely</span></h3>
+          <p><span data-lang="ko">라베니체·아라뱃길·김포공항까지. 경로 30km 이내 사이드 스톱은 추가 비용 없이.</span><span data-lang="en" hidden>To La Venezia, Arabaetgil, and Gimpo Airport. Side stops within 30 km at no extra cost.</span></p>
+        </div>
+      </div>
+
+      <div class="svc-inc rv">
+        <span class="svc-inc__label"><span data-lang="ko">요금 포함</span><span data-lang="en" hidden>Included in the fare</span></span>
+        <span class="svc-inc__item"><span data-lang="ko">기본요금</span><span data-lang="en" hidden>Base fare</span></span>
+        <span class="svc-inc__item"><span data-lang="ko">유류비</span><span data-lang="en" hidden>Fuel</span></span>
+        <span class="svc-inc__item"><span data-lang="ko">통행료</span><span data-lang="en" hidden>Tolls</span></span>
+        <span class="svc-inc__item"><span data-lang="ko">주차비</span><span data-lang="en" hidden>Parking</span></span>
+        <span class="svc-inc__item"><span data-lang="ko">기사 봉사료</span><span data-lang="en" hidden>Driver gratuity</span></span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ Sample Day — 하루 타임라인 ============ -->
+  <section class="day">
+    <div class="wrap">
+      <div class="sec-head rv">
+        <h2 class="sec-title"><span data-lang="ko">풀데이로 보내는 하루</span><span data-lang="en" hidden>A day on full-day service</span></h2>
+        <p class="sec-lead"><span data-lang="ko">모든 시간은 당일 기사와 자유롭게 조정할 수 있습니다.</span><span data-lang="en" hidden>All times can be adjusted freely with your driver on the day.</span></p>
+      </div>
+
+      <div class="day-grid">
+        <div class="day-photo rv">
+          <img src="/assets/shopping_cate.webp" alt="쇼핑백을 들고 차량으로 향하는 하루" loading="lazy">
+        </div>
+
+        <div class="day-tl">
+        <div class="day-step rv">
+          <div class="day-step__time">09:30</div>
+          <div class="day-step__node"><span class="day-step__dot"></span></div>
+          <div class="day-step__body">
+            <h3><span data-lang="ko">호텔 픽업</span><span data-lang="en" hidden>Hotel pickup</span></h3>
+            <p><span data-lang="ko">로비에서 기사가 기다립니다. 짐은 트렁크에 싣고 바로 출발.</span><span data-lang="en" hidden>The driver waits in the lobby. Load your bags in the trunk and go.</span></p>
+          </div>
+        </div>
+        <div class="day-step rv">
+          <div class="day-step__time">10:30</div>
+          <div class="day-step__node"><span class="day-step__dot"></span></div>
+          <div class="day-step__body">
+            <h3><span data-lang="ko">아울렛 도착</span><span data-lang="en" hidden>Arrive at the outlet</span></h3>
+            <p><span data-lang="ko">정문 앞 하차. 차는 전용 구역에서 대기하고, 기사는 메시지 한 통 거리에 있습니다.</span><span data-lang="en" hidden>Drop-off at the main gate. The car waits in a dedicated area, the driver one message away.</span></p>
+          </div>
+        </div>
+        <div class="day-step rv">
+          <div class="day-step__time">11:00</div>
+          <div class="day-step__node"><span class="day-step__dot"></span></div>
+          <div class="day-step__body">
+            <h3><span data-lang="ko">명품관 쇼핑</span><span data-lang="en" hidden>Luxury shopping</span></h3>
+            <p><span data-lang="ko">다양한 프리미엄 브랜드를 천천히. 무거워진 쇼핑백은 중간중간 차에 보관하세요.</span><span data-lang="en" hidden>Browse premium brands at your pace. Stash heavy bags in the car along the way.</span></p>
+          </div>
+        </div>
+        <div class="day-step rv">
+          <div class="day-step__time">13:00</div>
+          <div class="day-step__node"><span class="day-step__dot"></span></div>
+          <div class="day-step__body">
+            <h3><span data-lang="ko">점심</span><span data-lang="en" hidden>Lunch</span></h3>
+            <p><span data-lang="ko">아울렛 안 레스토랑·푸드코트, 또는 기사 추천 맛집. 원하는 곳으로.</span><span data-lang="en" hidden>Restaurants and food courts in the outlet, or a driver-recommended spot. Wherever you like.</span></p>
+          </div>
+        </div>
+        <div class="day-step rv">
+          <div class="day-step__time">15:00</div>
+          <div class="day-step__node"><span class="day-step__dot"></span></div>
+          <div class="day-step__body">
+            <h3><span data-lang="ko">라베니체</span><span data-lang="en" hidden>La Venezia</span> <em><span data-lang="ko">선택 경유</span><span data-lang="en" hidden>Optional stop</span></em></h3>
+            <p><span data-lang="ko">차로 5분. 수변 상가와 카페를 둘러보는 오후 — 아라뱃길·김포공항으로 바꿔도 좋습니다.</span><span data-lang="en" hidden>5 min by car. An afternoon at the waterfront shops and cafés — or swap for Arabaetgil or Gimpo Airport.</span></p>
+          </div>
+        </div>
+        <div class="day-step rv">
+          <div class="day-step__time">17:30</div>
+          <div class="day-step__node"><span class="day-step__dot"></span></div>
+          <div class="day-step__body">
+            <h3><span data-lang="ko">서울 복귀</span><span data-lang="en" hidden>Return to Seoul</span></h3>
+            <p><span data-lang="ko">하루의 쇼핑백은 트렁크에 정리된 채, 호텔 로비 앞까지. 짐 한 번 들지 않은 하루.</span><span data-lang="en" hidden>The day's bags stay tidy in the trunk, all the way to the hotel lobby. A day without lifting a bag.</span></p>
+          </div>
+        </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ FAQ ============ -->
+  <section class="faq">
+    <div class="wrap">
+      <div class="sec-head rv">
+        <h2 class="sec-title"><span data-lang="ko">예약 전 자주 묻는 질문</span><span data-lang="en" hidden>FAQ before booking</span></h2>
+      </div>
+
+      <div class="faq-list rv">
+        <details class="faq-item">
+          <summary><span data-lang="ko">서울에서 김포 아울렛까지 얼마나 걸리나요?</span><span data-lang="en" hidden>How long from Seoul to Gimpo Outlet?</span></summary>
+          <p><span data-lang="ko">올림픽대로 경유 약 45km, 50–70분입니다. 인천공항에서는 60–80분, 김포공항에서는 40–60분. 주말 오후에는 20–30분 더 걸릴 수 있어 평일 오전 출발을 추천합니다.</span><span data-lang="en" hidden>About 45 km via Olympic-daero, 50–70 min. 60–80 min from Incheon Airport, 40–60 min from Gimpo Airport. Weekend afternoons may add 20–30 min, so we recommend departing on a weekday morning.</span></p>
+        </details>
+        <details class="faq-item">
+          <summary><span data-lang="ko">요금은 어떻게 되나요?</span><span data-lang="en" hidden>How much does it cost?</span></summary>
+          <p><span data-lang="ko">편도·왕복·풀데이 세 가지입니다. 차량별 고정 요금에 통행료·주차비가 포함되며, 예약 시 확정된 금액에서 추가 비용이 없습니다. 위 예약 패널에서 차량과 옵션을 고르면 예상 요금을 바로 확인할 수 있습니다.</span><span data-lang="en" hidden>There are three options: one-way, round trip, and full day. Each vehicle has a fixed fare including tolls and parking, with no extra cost beyond the amount confirmed at booking. Pick a vehicle and options in the panel above to see the estimated fare instantly.</span></p>
+        </details>
+        <details class="faq-item">
+          <summary><span data-lang="ko">쇼핑하는 동안 기사가 기다리나요?</span><span data-lang="en" hidden>Does the driver wait while I shop?</span></summary>
+          <p><span data-lang="ko">풀데이는 최대 8시간 대기가 포함됩니다. 정해진 귀환 시간 없이, 준비되면 메시지 한 통으로 출발합니다. 대기 중에도 쇼핑백을 차에 보관할 수 있습니다.</span><span data-lang="en" hidden>Full day includes up to 8 hours of waiting. No fixed return time — message us when ready and we depart. You can store bags in the car while waiting too.</span></p>
+        </details>
+        <details class="faq-item">
+          <summary><span data-lang="ko">픽업은 어디서 가능한가요?</span><span data-lang="en" hidden>Where can I be picked up?</span></summary>
+          <p><span data-lang="ko">서울 전역의 호텔·숙소·주소 어디든 가능합니다. 인천공항(T1·T2)과 김포공항은 입국장에서 네임보드로 맞이합니다.</span><span data-lang="en" hidden>Any hotel, lodging, or address across Seoul. At Incheon (T1·T2) and Gimpo airports, we greet you with a name board at arrivals.</span></p>
+        </details>
+        <details class="faq-item">
+          <summary><span data-lang="ko">라베니체나 아라뱃길도 들를 수 있나요?</span><span data-lang="en" hidden>Can I also stop by La Venezia or Arabaetgil?</span></summary>
+          <p><span data-lang="ko">네. 풀데이 기준 경로 30km 이내 경유는 추가 비용이 없습니다. 라베니체(차 5분)·아라뱃길(10분)·김포공항(15분) 모두 하루 코스로 연결됩니다.</span><span data-lang="en" hidden>Yes. On full day, stops within 30 km of the route are free. La Venezia (5 min), Arabaetgil (10 min), and Gimpo Airport (15 min) all connect into a day course.</span></p>
+        </details>
+        <details class="faq-item">
+          <summary><span data-lang="ko">외국인도 부가세 환급을 받을 수 있나요?</span><span data-lang="en" hidden>Can foreigners get a VAT refund?</span></summary>
+          <p><span data-lang="ko">네. 외국인 여권 소지자는 매장당 3만 원 이상 구매 시 10% 부가세 환급 대상입니다. 아울렛 내 환급 데스크 위치와 신청 타이밍은 기사가 안내해 드리고, 규모가 큰 환급은 출국 시 공항에서도 처리할 수 있습니다.</span><span data-lang="en" hidden>Yes. Foreign passport holders qualify for a 10% VAT refund on purchases of ₩30,000+ per store. The driver guides you to the in-outlet refund desk and timing, and larger refunds can also be processed at the airport on departure.</span></p>
+        </details>
+        <details class="faq-item">
+          <summary><span data-lang="ko">결제는 어떤 수단으로 하나요?</span><span data-lang="en" hidden>What payment methods are accepted?</span></summary>
+          <p><span data-lang="ko">Visa · Mastercard · Amex와 Alipay · WeChat Pay · Apple Pay · 카카오페이를 받습니다. 예약 시 30% 예약금, 픽업 전 잔금 결제가 기본입니다.</span><span data-lang="en" hidden>We accept Visa · Mastercard · Amex and Alipay · WeChat Pay · Apple Pay · KakaoPay. A 30% deposit at booking and the balance before pickup is standard.</span></p>
+        </details>
+        <details class="faq-item">
+          <summary><span data-lang="ko">항공편이 지연되면 어떻게 되나요?</span><span data-lang="en" hidden>What if my flight is delayed?</span></summary>
+          <p><span data-lang="ko">공항 픽업은 예약 시 받은 항공편명을 실시간으로 확인해 픽업 시간을 자동 조정합니다. 지연으로 인한 추가 요금은 없습니다.</span><span data-lang="en" hidden>For airport pickups, we track the flight number you provide at booking in real time and adjust the pickup time automatically. There's no extra charge for delays.</span></p>
+        </details>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 동종 추천 ============ -->
+  <section class="others">
+    <div class="wrap">
+      <div class="sec-head rv">
+        <h2 class="sec-title"><span data-lang="ko">다른 프리미엄 아울렛</span><span data-lang="en" hidden>Other premium outlets</span></h2>
+      </div>
+      <div class="ogrid">
+        <article class="ocard rv">
+          <a class="ocard__link" href="../shopping-paju/">
+            <div class="ocard__media"><img src="/assets/shopping_paju_hero.webp" alt="파주 프리미엄 아울렛" loading="lazy"></div>
+            <div class="ocard__body">
+              <div class="ocard__partner"><span data-lang="ko">Shinsegae Simon · 경기 파주</span><span data-lang="en" hidden>Shinsegae Simon · Paju, Gyeonggi</span></div>
+              <h3 class="ocard__name"><span data-lang="ko">파주 프리미엄 아울렛</span><span data-lang="en" hidden>Paju Premium Outlet</span></h3>
+              <p class="ocard__desc"><span data-lang="ko">국내 최대 규모의 정통 아울렛, 290여 개 프리미엄 브랜드</span><span data-lang="en" hidden>Korea's largest authentic outlet, with 290+ premium brands</span></p>
+              <div class="ocard__meta"><span class="tag tag--type"><span data-lang="ko">쇼핑</span><span data-lang="en" hidden>Shopping</span></span><span class="tag tag--private"><span data-lang="ko">프라이빗</span><span data-lang="en" hidden>Private</span></span></div>
+            </div>
+          </a>
+        </article>
+        <article class="ocard rv">
+          <a class="ocard__link" href="../shopping-yeoju/">
+            <div class="ocard__media"><img src="/assets/shopping_yeoju_hero.webp" alt="여주 프리미엄 아울렛" loading="lazy"></div>
+            <div class="ocard__body">
+              <div class="ocard__partner"><span data-lang="ko">Shinsegae Simon · 경기 여주</span><span data-lang="en" hidden>Shinsegae Simon · Yeoju, Gyeonggi</span></div>
+              <h3 class="ocard__name"><span data-lang="ko">여주 프리미엄 아울렛</span><span data-lang="en" hidden>Yeoju Premium Outlet</span></h3>
+              <p class="ocard__desc"><span data-lang="ko">국내 최초 정통 프리미엄 아울렛, 270여 개 명품 브랜드</span><span data-lang="en" hidden>Korea's first authentic premium outlet, with 270+ luxury brands</span></p>
+              <div class="ocard__meta"><span class="tag tag--type"><span data-lang="ko">쇼핑</span><span data-lang="en" hidden>Shopping</span></span><span class="tag tag--private"><span data-lang="ko">프라이빗</span><span data-lang="en" hidden>Private</span></span></div>
+            </div>
+          </a>
+        </article>
+        <article class="ocard rv">
+          <a class="ocard__link" href="../shopping-siheung/">
+            <div class="ocard__media"><img src="/assets/shopping_siheung_hero.webp" alt="시흥 프리미엄 아울렛" loading="lazy"></div>
+            <div class="ocard__body">
+              <div class="ocard__partner"><span data-lang="ko">Shinsegae Simon · 경기 시흥</span><span data-lang="en" hidden>Shinsegae Simon · Siheung, Gyeonggi</span></div>
+              <h3 class="ocard__name"><span data-lang="ko">시흥 프리미엄 아울렛</span><span data-lang="en" hidden>Siheung Premium Outlet</span></h3>
+              <p class="ocard__desc"><span data-lang="ko">스페인 해안가 마을 컨셉의 이국적인 복합 쇼핑 리조트</span><span data-lang="en" hidden>An exotic shopping resort themed on a Spanish coastal village</span></p>
+              <div class="ocard__meta"><span class="tag tag--type"><span data-lang="ko">쇼핑</span><span data-lang="en" hidden>Shopping</span></span><span class="tag tag--private"><span data-lang="ko">프라이빗</span><span data-lang="en" hidden>Private</span></span></div>
+            </div>
+          </a>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ Closing CTA (md §15) ============ -->
+  <section class="cta">
+    <div class="wrap cta-in">
+      <h2 class="cta-title"><span data-lang="ko">김포 쇼핑 하루, 준비되셨나요?</span><span data-lang="en" hidden>Ready for a day of shopping in Gimpo?</span></h2>
+      <p class="cta-sub"><span data-lang="ko">예약은 60초면 충분합니다. 운영시간(매일 06:00–22:00) 내 15분 안에 답해드려요.</span><span data-lang="en" hidden>Booking takes just 60 seconds. We reply within 15 minutes during business hours (daily 06:00–22:00).</span></p>
+      <a href="#bk" class="btn btn--primary cta-btn"><span data-lang="ko">지금 예약하기</span><span data-lang="en" hidden>Book now</span>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
+      </a>
+      <div class="cta-channels">
+        <span class="cta-ch"><b>WhatsApp</b><i>+82 2 863 3540</i></span>
+        <span class="cta-ch"><b>WeChat</b><i>groundk_kr</i></span>
+        <span class="cta-ch"><b>LINE</b><i>@groundk</i></span>
+        <span class="cta-ch"><b>KakaoTalk</b><i><span data-lang="ko">@그라운드케이</span><span data-lang="en" hidden>@groundk</span></i></span>
+      </div>
+    </div>
+  </section>
+</main>
+
+<div data-include="footer"></div>
+
+<script>
+(function(){
+  /* ---- 예약폼 상태 — 차량 1대 고정 요금(인원 무관), 차량 선택은 Fleet 카드에서 ---- */
+  var VEH={
+    g90:{name:'Genesis G90',meta:'퍼스트클래스 세단 · 1–3인',meta_en:'First-class sedan · 1–3 pax',price:150000,cap:3},
+    hilimo:{name:'Staria HiLimo',meta:'프리미엄 밴 · 1–7인',meta_en:'Premium van · 1–7 pax',price:140000,cap:7},
+    solati:{name:'Hyundai Solati',meta:'그룹 코치 · 8–13인',meta_en:'Group coach · 8–13 pax',price:260000,cap:13}
+  };
+  var state={mode:'fullday',pax:2,bag:2,veh:'hilimo'};
+  var MODE_MUL={oneway:1,round:1.7,fullday:2.2};
+  var MODE_LABEL={oneway:'편도',round:'왕복',fullday:'풀데이'};
+  var MODE_LABEL_EN={oneway:'One-way',round:'Round trip',fullday:'Full day'};
+  var MODE_HINT={
+    oneway:'아울렛까지 편도 이동 — 하차 후 종료',
+    round:'왕복 — 정한 시간에 같은 기사가 픽업',
+    fullday:'기사가 쇼핑 내내 대기 — 최대 8시간, 귀환 시간은 자유'
+  };
+  var MODE_HINT_EN={
+    oneway:'One-way to the outlet — service ends after drop-off',
+    round:'Round trip — same driver picks you up at the set time',
+    fullday:'Driver waits all day while you shop — up to 8 hours, return anytime'
+  };
+
+  function fmt(n){return n.toLocaleString('ko-KR');}
+  function render(){
+    var v=VEH[state.veh];
+    var total=Math.round(v.price*MODE_MUL[state.mode]/5000)*5000;
+    document.getElementById('total').textContent=fmt(total);
+    var _en=document.documentElement.lang==='en';
+    document.getElementById('totalLabel').textContent=(_en?'Est. fare · ':'예상 요금 · ')+(_en?MODE_LABEL_EN:MODE_LABEL)[state.mode];
+    document.getElementById('segHint').textContent=(_en?MODE_HINT_EN:MODE_HINT)[state.mode];
+    document.getElementById('vehName').textContent=v.name;
+    document.getElementById('vehMeta').textContent=_en?v.meta_en:v.meta;
+    document.getElementById('capWarn').hidden=state.pax<=v.cap;
+    // Fleet 카드 ↔ 예약폼 선택 싱크 (블루 보더 = 선택됨, 인기 표시는 태그만)
+    document.querySelectorAll('.fleet-card').forEach(function(c){
+      var sel=c.getAttribute('data-veh')===state.veh;
+      c.classList.toggle('is-sel',sel);
+      var cta=c.querySelector('.fleet-card__cta');
+      if(cta)cta.innerHTML=sel?'<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;margin-right:7px"><path d="M20 6 9 17l-5-5"/></svg>'+(_en?'Selected':'선택된 차량')+'':cta.getAttribute(_en?'data-label-en':'data-label');
+    });
+  }
+
+  /* 서비스 유형 세그먼트 */
+  var seg=document.getElementById('seg');
+  seg.addEventListener('click',function(e){
+    var b=e.target.closest('button');if(!b)return;
+    [].forEach.call(seg.children,function(x){x.classList.toggle('on',x===b);});
+    state.mode=b.getAttribute('data-mode');
+    render();
+  });
+
+  /* 카운터 — 인원은 차량 정원 가이드일 뿐, 요금에 영향 없음 */
+  function updateCapState(){
+    document.querySelectorAll('.fleet-card').forEach(function(c){
+      c.classList.toggle('is-over',state.pax>parseInt(c.getAttribute('data-cap'),10));
+    });
+    document.getElementById('capWarn').hidden=state.pax<=VEH[state.veh].cap;
+  }
+  document.querySelectorAll('.bk__counter-ctrl button').forEach(function(btn){
+    btn.addEventListener('click',function(){
+      var key=btn.getAttribute('data-c'),d=parseInt(btn.getAttribute('data-d'),10);
+      state[key]=Math.max(1,Math.min(13,state[key]+d));
+      document.getElementById(key).textContent=state[key];
+      if(key==='pax')updateCapState();
+    });
+  });
+
+  /* Fleet 카드 → 차량 선택 + 예약폼 진입 */
+  document.querySelectorAll('[data-veh-cta]').forEach(function(btn){
+    btn.addEventListener('click',function(){
+      state.veh=btn.getAttribute('data-veh-cta');
+      render();
+      document.getElementById('bk').scrollIntoView({behavior:'smooth',block:'start'});
+    });
+  });
+
+  /* 제출 데모 */
+  document.getElementById('bkSubmit').addEventListener('click',function(){
+    document.getElementById('bk').classList.add('is-done');
+    document.getElementById('bkDone').scrollIntoView({block:'nearest',behavior:'smooth'});
+  });
+
+  /* 날짜 기본값(내일) — Date 사용 가능(브라우저 런타임) */
+  try{var d=new Date();d.setDate(d.getDate()+1);document.getElementById('date').value=d.toISOString().slice(0,10);}catch(e){}
+
+  render();
+
+  /* ---- 모바일 nav 토글 + 이미지 히어로 스크롤 전환 ---- */
+  var _nav=document.getElementById('nav'),_burger=document.getElementById('navBurger');
+  if(_nav&&_burger){
+    _burger.addEventListener('click',function(){var o=_nav.classList.toggle('is-open');_burger.setAttribute('aria-expanded',o?'true':'false');_burger.setAttribute('aria-label',o?'메뉴 닫기':'메뉴 열기');});
+    document.querySelectorAll('#navDrawer a').forEach(function(a){a.addEventListener('click',function(){_nav.classList.remove('is-open');});});
+  }
+
+  /* ---- reveal ---- */
+  if('IntersectionObserver' in window){
+    var io=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target);}});},{threshold:.14,rootMargin:'0px 0px -8% 0px'});
+    document.querySelectorAll('.rv').forEach(function(el){io.observe(el);});
+  } else {document.querySelectorAll('.rv').forEach(function(el){el.classList.add('in');});}
+
+  /* 언어 토글 시 동적 요금 라벨 재렌더 */
+  window.addEventListener('langchange',render);
+})();
+</script>
+<script src="/js/naver-map.js" defer></script>
+  <script src="../../js/includes.js"></script>
+</body>
+</html>

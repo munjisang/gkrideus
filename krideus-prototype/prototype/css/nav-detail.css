@@ -1,0 +1,44 @@
+/* 이벤트/스포츠 상세 클론 전용 GNB 스타일 (src/css만 로드하는 페이지용 self-contained)
+   다크 히어로 패턴 — 이벤트 허브(event/index.html)와 동일:
+   투명 + 흰 텍스트로 시작 → 스크롤 시 .is-solid 글래스 + 어두운 텍스트.
+   body[data-nav-mode="scroll"] + includes.js가 .is-solid 토글.
+   정상 구체성(:where 미사용)이라 src/css의 일반 a/button 규칙을 이김. 필요한 디자인 토큰은 .nav 스코프에 내장. */
+.nav{
+  --bg:#FAF8F5;--ink:#1B2027;--ink-soft:#5C6675;--ink-faint:#97A0AC;
+  --accent:#2C51DB;--hair-soft:#F3EFE8;--maxw:1280px;--e-out:cubic-bezier(.16,1,.3,1);
+  position:fixed;top:0;left:0;right:0;z-index:60;background:transparent;transition:background .35s var(--e-out);
+  --nav-ink:#fff;--nav-soft:rgba(255,255,255,.78);--nav-faint:rgba(255,255,255,.55);--nav-chip:rgba(255,255,255,.16);--nav-hover:rgba(255,255,255,.14)}
+.nav.is-solid,.nav.is-open{background:color-mix(in srgb,var(--bg) 92%,transparent);backdrop-filter:saturate(140%) blur(12px);-webkit-backdrop-filter:saturate(140%) blur(12px);
+  --nav-ink:var(--ink);--nav-soft:var(--ink-soft);--nav-faint:var(--ink-faint);--nav-chip:var(--hair-soft);--nav-hover:var(--hair-soft)}
+.nav__in{max-width:var(--maxw);margin:0 auto;padding:20px clamp(24px,4vw,56px);display:flex;align-items:center;gap:44px}
+.brand{display:inline-flex;align-items:center}.brand img{height:28px;width:auto;display:block;transition:filter .35s var(--e-out)}
+.nav:not(.is-solid):not(.is-open) .brand img{filter:brightness(0) invert(1)}
+.nav__menu{display:flex;gap:32px;font-size:.95rem;font-weight:500}
+.nav__menu a{color:var(--nav-soft);padding:8px 0;transition:color .25s var(--e-out)}
+.nav__menu a:hover{color:var(--nav-ink)}
+.nav__menu a[aria-current]{color:var(--nav-ink);font-weight:600}
+.nav__menu a.is-disabled,.nav__drawer a.is-disabled{opacity:.5;cursor:default;pointer-events:none}
+.nav__right{margin-left:auto;display:flex;align-items:center;gap:8px;color:var(--nav-soft)}
+.nav__lang{display:flex;align-items:center;gap:2px;background:var(--nav-chip);border-radius:999px;padding:4px;font-size:.78rem;font-weight:600}
+.nav__lang span{padding:4px 12px;border-radius:999px;color:var(--nav-faint);cursor:pointer}
+.nav__lang span.on{background:#fff;color:var(--accent)}
+.nav__ic{width:40px;height:40px;display:grid;place-items:center;border-radius:50%;transition:background .25s var(--e-out)}
+.nav__ic:hover{background:var(--nav-hover)}
+.nav__burger{display:none;width:42px;height:42px;flex-direction:column;align-items:center;justify-content:center;gap:5px;border:none;background:none;cursor:pointer}
+.nav__burger span{display:block;width:22px;height:2px;background:var(--nav-ink);border-radius:2px;transition:transform .3s cubic-bezier(.16,1,.3,1),opacity .2s,background .35s}
+.nav.is-open .nav__burger span:nth-child(1){transform:translateY(7px) rotate(45deg)}
+.nav.is-open .nav__burger span:nth-child(2){opacity:0}
+.nav.is-open .nav__burger span:nth-child(3){transform:translateY(-7px) rotate(-45deg)}
+.nav__drawer{display:none;flex-direction:column;max-width:1280px;margin:0 auto;padding:4px clamp(24px,4vw,56px) 18px}
+.nav__drawer a{padding:14px 4px;font-size:1.05rem;font-weight:600;color:#1B2027;border-bottom:1px solid #F3EFE8;text-decoration:none}
+.nav__drawer a.is-disabled{color:#97A0AC}
+.nav__drawer a[aria-current]{color:#2C51DB}
+.nav__drawer-lang{display:inline-flex;align-self:flex-start;margin-top:14px;align-items:center;gap:2px;background:#F3EFE8;border-radius:999px;padding:4px;font-size:.78rem;font-weight:600}
+.nav__drawer-lang span{padding:4px 12px;border-radius:999px;color:#97A0AC;cursor:pointer}
+.nav__drawer-lang span.on{background:#fff;color:#2C51DB}
+@media (max-width:768px){
+  .nav__menu,.nav__ic,.nav__lang{display:none}
+  .nav__burger{display:flex}
+  .nav.is-open .nav__drawer{display:flex;animation:navDrop .3s cubic-bezier(.16,1,.3,1)}
+}
+@keyframes navDrop{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:none}}

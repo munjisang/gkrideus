@@ -1,0 +1,711 @@
+/* ============================================================
+   SPORTS DETAIL CSS — 경기장 상세 페이지 추가 포맷
+   shopping-detail.css 패턴 확장 + 셔틀/프라이빗 탭 토글
+   ============================================================ */
+
+/* ── 1. Service Tabs (셔틀 / 프라이빗) — pill segmented control, flat ── */
+.sd-svc-tabs {
+  display: flex;
+  width: 100%;
+  gap: 0.5rem;
+  margin-bottom: 2.75rem;
+  padding: 0.5rem;
+  background: #FFFFFF;
+  border: 1px solid var(--color-border-light);
+  border-radius: var(--radius-md);
+  /* `position` intentionally left unset so subpage.css @media rule can apply
+     `position: sticky` on mobile without !important. No absolute-positioned
+     children depend on this as a containing block. */
+}
+.sd-svc-tab {
+  flex: 1 1 0;
+  min-width: 0;
+  background: transparent;
+  border: 0;
+  border-radius: 0.5rem;
+  font-family: var(--font-body);
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--color-text-dim);
+  padding: 1.2rem 1.2rem;
+  cursor: pointer;
+  position: relative;
+  transition: color 0.25s, background 0.25s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  letter-spacing: -0.015em;
+}
+.sd-svc-tab:hover {
+  color: var(--color-text-dark);
+}
+.sd-svc-tab.active {
+  color: #FFFFFF;
+  background: var(--color-bg);
+  font-weight: 800;
+}
+.sd-svc-tab.active .sd-svc-tab-desc {
+  color: #FFFFFF;
+  opacity: 1;
+}
+.sd-svc-tab svg {
+  display: none;
+}
+
+/* Tab description hint (small subtitle under tab name) */
+.sd-svc-tab-desc {
+  display: block;
+  font-size: 0.82rem;
+  font-weight: 500;
+  color: var(--color-text-muted);
+  margin-top: 0.25rem;
+  letter-spacing: 0;
+  text-transform: none;
+}
+.sd-svc-tab-text {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  line-height: 1.2;
+}
+
+/* ── 2. Tab Panels ── */
+.sd-svc-panel {
+  display: none;
+}
+.sd-svc-panel.active {
+  display: block;
+  animation: sdSvcFadeIn 0.35s ease;
+}
+@keyframes sdSvcFadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .sd-svc-panel.active { animation: none; }
+}
+
+/* ── 3. Mobile responsive (탭 균등 분할 유지 · 폰트만 축소) ── */
+@media (max-width: 640px) {
+  .sd-svc-tabs {
+    gap: 0.35rem;
+    padding: 0.4rem;
+  }
+  .sd-svc-tab {
+    padding: 1rem 0.6rem;
+    font-size: 1rem;
+    gap: 0.5rem;
+    letter-spacing: -0.01em;
+    border-radius: var(--radius-sm);
+  }
+  .sd-svc-tab svg {
+    width: 18px;
+    height: 18px;
+  }
+  .sd-svc-tab-desc {
+    font-size: 0.7rem;
+    margin-top: 0.15rem;
+  }
+}
+
+/* URL truncation moved to shopping-detail.css 2026-04-14 v3 — applies to all sd-* detail pages */
+
+/* ── 4. About — single column variant (no right feature-lines) ── */
+.sd-about-single {
+  max-width: 780px;
+}
+.sd-about-single .sd-about-body p {
+  font-size: 1.0625rem;
+  line-height: 1.8;
+  color: var(--color-text-secondary-cool);
+  margin-bottom: 1.1rem;
+}
+.sd-about-single .sd-about-body p:last-child {
+  margin-bottom: 0;
+}
+
+/* ── 5. Sports overview strip — 좌석/홈구단/개장 등 ── */
+.st-sports-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 0;
+  border: 1px solid var(--color-border-light);
+  border-radius: 0.75rem;
+  overflow: hidden;
+  margin-top: 1.5rem;
+  background: #fff;
+}
+.st-sports-stat {
+  padding: 1.25rem 1.5rem;
+  border-right: 1px solid var(--color-border-light);
+  text-align: center;
+}
+.st-sports-stat:last-child { border-right: none; }
+@media (max-width: 640px) {
+  .st-sports-stat { border-right: none; border-bottom: 1px solid var(--color-border-light); }
+  .st-sports-stat:last-child { border-bottom: none; }
+}
+.st-sports-stat-label {
+  font-family: var(--font-display);
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--color-text-dim);
+  margin-bottom: 0.4rem;
+}
+.st-sports-stat-value {
+  font-family: var(--font-display);
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: var(--color-text-dark);
+  letter-spacing: -0.01em;
+}
+.st-sports-stat-value-sub {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--color-text-dim);
+  margin-top: 0.15rem;
+}
+
+/* ── 6. Race Categories (코스 안내 카드) ── */
+.st-sports-races {
+  margin-top: 3rem;
+}
+.st-sports-races-header {
+  margin-bottom: 1.5rem;
+}
+.st-sports-races-title {
+  font-family: var(--font-body);
+  font-size: 1.6rem;
+  font-weight: 800;
+  color: var(--color-text-dark);
+  letter-spacing: -0.02em;
+  margin: 0.4rem 0 0.5rem;
+}
+.st-sports-races-desc {
+  font-size: 0.95rem;
+  color: var(--color-text-secondary-cool);
+  line-height: 1.6;
+  margin: 0;
+}
+.st-sports-races-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+  margin-top: 1.25rem;
+}
+@media (max-width: 1023px) {
+  .st-sports-races-grid { grid-template-columns: 1fr; }
+}
+.st-sports-race {
+  position: relative;
+  background: #fff;
+  border: 1px solid var(--color-border-light);
+  border-radius: var(--radius-lg);
+  padding: 1.75rem 1.5rem 1.6rem;
+  display: flex;
+  flex-direction: column;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+.st-sports-race:hover {
+  border-color: var(--color-text-dark);
+  box-shadow: 0 12px 32px -16px rgba(15,17,21,0.32);
+}
+.st-sports-race--main {
+  background: var(--color-bg);
+  border-color: var(--color-text-dark);
+  color: #fff;
+}
+.st-sports-race--main:hover {
+  border-color: var(--color-gold);
+}
+.st-sports-race-tag {
+  font-family: var(--font-display);
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--color-text-dim);
+  margin-bottom: 1rem;
+}
+.st-sports-race--main .st-sports-race-tag {
+  color: var(--color-gold);
+}
+.st-sports-race-distance {
+  font-family: var(--font-display);
+  font-size: 3.6rem;
+  font-weight: 800;
+  line-height: 0.95;
+  color: var(--color-text-dark);
+  letter-spacing: -0.04em;
+}
+.st-sports-race--main .st-sports-race-distance {
+  color: #fff;
+}
+.st-sports-race-distance span {
+  font-size: 1.8rem;
+  font-weight: 700;
+  margin-left: 0.1em;
+  vertical-align: top;
+  position: relative;
+  top: 0.6em;
+  letter-spacing: 0;
+}
+.st-sports-race-name {
+  font-family: var(--font-body);
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--color-text-dark);
+  letter-spacing: -0.015em;
+  margin: 0.85rem 0 0.9rem;
+}
+.st-sports-race--main .st-sports-race-name {
+  color: #fff;
+}
+.st-sports-race-meta {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  border-top: 1px solid var(--color-border-light);
+  padding-top: 0.85rem;
+}
+.st-sports-race--main .st-sports-race-meta {
+  border-top-color: rgba(255,255,255,0.18);
+}
+.st-sports-race-meta li {
+  font-size: 0.86rem;
+  color: var(--color-text-secondary-cool);
+  line-height: 1.55;
+  padding: 0.2rem 0 0.2rem 0.95rem;
+  position: relative;
+}
+.st-sports-race-meta li::before {
+  content: "·";
+  position: absolute;
+  left: 0.25rem;
+  color: var(--color-text-muted);
+  font-weight: 800;
+}
+.st-sports-race--main .st-sports-race-meta li {
+  color: rgba(255,255,255,0.85);
+}
+.st-sports-race--main .st-sports-race-meta li::before {
+  color: var(--color-gold);
+}
+.st-sports-races-note {
+  margin-top: 1.25rem;
+  font-size: 0.85rem;
+  color: var(--color-text-dim);
+  text-align: right;
+  letter-spacing: -0.01em;
+}
+.st-sports-races-note strong {
+  color: var(--color-text-dark);
+}
+@media (max-width: 640px) {
+  .st-sports-races-title { font-size: 1.35rem; }
+  .st-sports-race { padding: 1.5rem 1.25rem 1.4rem; }
+  .st-sports-race-distance { font-size: 3rem; }
+  .st-sports-races-note { text-align: left; }
+}
+
+/* ── 7. Schedule Overview (전국 14개 노선 · 3일 운행) ── */
+.sd-schedule {
+  margin: 2.5rem 0 2rem;
+  padding: 2rem 1.75rem;
+  background: var(--color-bg-slate);
+  border: 1px solid var(--color-border-light);
+  border-radius: var(--radius-lg);
+}
+.st-sch-header {
+  margin-bottom: 1.5rem;
+}
+.st-sch-title {
+  font-family: var(--font-body);
+  font-size: 1.45rem;
+  font-weight: 800;
+  color: var(--color-text-dark);
+  letter-spacing: -0.02em;
+  margin: 0.4rem 0 0.5rem;
+}
+.st-sch-desc {
+  font-size: 0.9rem;
+  color: var(--color-text-dim);
+  line-height: 1.6;
+  margin: 0;
+}
+
+/* ── Day overview strip ── */
+.st-sch-days {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.75rem;
+  margin: 1.5rem 0 1.75rem;
+}
+@media (max-width: 767px) {
+  .st-sch-days { grid-template-columns: 1fr; }
+}
+.st-sch-day {
+  position: relative;
+  padding: 1.1rem 1.15rem 1.25rem;
+  background: #fff;
+  border: 1px solid var(--color-border-light);
+  border-radius: var(--radius-md);
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+.st-sch-day:hover {
+  border-color: var(--color-text-dark);
+  box-shadow: 0 4px 14px -10px rgba(15,17,21,0.2);
+}
+.st-sch-day-top {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+}
+.st-sch-day-date {
+  font-family: var(--font-display);
+  font-size: 1.35rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: var(--color-text-dark);
+}
+.st-sch-day-wk {
+  font-family: var(--font-body);
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--color-text-dim);
+}
+.st-sch-day-role {
+  font-family: var(--font-body);
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: var(--color-accent);
+  text-transform: uppercase;
+}
+.st-sch-day-detail {
+  font-size: 0.88rem;
+  color: #334155;
+  line-height: 1.55;
+  margin: 0;
+}
+.st-sch-day-detail small {
+  display: block;
+  margin-top: 0.2rem;
+  font-size: 0.76rem;
+  color: var(--color-text-dim);
+  font-weight: 500;
+}
+.st-sch-day-tag {
+  align-self: flex-start;
+  font-family: var(--font-display);
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding: 0.3rem 0.6rem;
+  border-radius: 0.3rem;
+  margin-top: auto;
+}
+.st-sch-day-tag--warn {
+  background: var(--color-warn-bg);
+  color: var(--color-warn-text);
+}
+.st-sch-day-tag--primary {
+  background: var(--color-success);
+  color: #fff;
+}
+.st-sch-day-tag--tentative {
+  background: var(--color-info-bg);
+  color: var(--color-info-text);
+}
+
+/* ── Regions chip list ── */
+.st-sch-regions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+  padding: 1.25rem 1.25rem;
+  background: #fff;
+  border: 1px solid var(--color-border-light);
+  border-radius: var(--radius-md);
+  margin-bottom: 1.5rem;
+}
+.st-sch-region {
+  display: grid;
+  grid-template-columns: minmax(120px, auto) 1fr;
+  gap: 0.85rem 1.1rem;
+  align-items: start;
+}
+@media (max-width: 640px) {
+  .st-sch-region { grid-template-columns: 1fr; gap: 0.4rem; }
+}
+.st-sch-region-label {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  font-family: var(--font-body);
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: var(--color-text-dark);
+  letter-spacing: -0.01em;
+  padding-top: 0.3rem;
+}
+.st-sch-region-dot {
+  width: 0.55rem;
+  height: 0.55rem;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.st-sch-region-dot--central { background: var(--color-accent); }
+.st-sch-region-dot--seoul   { background: var(--color-success); }
+.st-sch-region-dot--east    { background: var(--color-amber-600); }
+.st-sch-region-count {
+  font-family: var(--font-display);
+  font-size: 0.72rem;
+  font-weight: 700;
+  font-style: normal;
+  color: var(--color-text-muted);
+  background: var(--color-surface-chip);
+  padding: 0.15rem 0.42rem;
+  border-radius: var(--radius-xs);
+  margin-left: 0.15rem;
+}
+.st-sch-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+.st-sch-chip {
+  display: inline-flex;
+  align-items: center;
+  font-family: var(--font-body);
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #334155;
+  background: var(--color-surface-chip);
+  border: 1px solid var(--color-border-light);
+  padding: 0.38rem 0.72rem;
+  border-radius: var(--radius-full);
+  letter-spacing: -0.01em;
+  transition: background 0.2s, color 0.2s, border-color 0.2s;
+}
+.st-sch-chip:hover {
+  background: var(--color-bg);
+  color: #fff;
+  border-color: var(--color-text-dark);
+}
+
+@media (max-width: 640px) {
+  .sd-schedule { padding: 1.5rem 1.25rem; }
+  .st-sch-title { font-size: 1.2rem; }
+  .st-sch-day { padding: 0.95rem 1rem 1.1rem; }
+  .st-sch-day-date { font-size: 1.2rem; }
+  .st-sch-regions { padding: 1rem; }
+}
+
+/* ============================================================
+   NC 다이노스 공식 셔틀 노선표 섹션 — .sd-nc-routes
+   ============================================================ */
+.sd-nc-routes {
+  background: var(--color-surface-chip);
+  padding: 5rem 0 4.5rem;
+}
+
+.sd-nc-routes-header {
+  text-align: center;
+  margin-bottom: 3rem;
+}
+.sd-nc-routes-badge {
+  display: inline-block;
+  font-family: var(--font-display);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--color-success);
+  margin-bottom: 0.75rem;
+}
+.sd-nc-routes-heading {
+  font-family: var(--font-display);
+  font-size: clamp(1.6rem, 3vw, 2.25rem);
+  font-weight: 800;
+  color: var(--color-text-dark);
+  letter-spacing: -0.02em;
+  margin: 0 0 0.75rem;
+}
+.sd-nc-routes-desc {
+  color: var(--color-text-dim);
+  font-size: 0.95rem;
+  line-height: 1.6;
+  margin: 0;
+}
+
+/* Route Grid */
+.sd-nc-route-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 1rem;
+  margin-bottom: 2.5rem;
+}
+@media (min-width: 768px) {
+  .sd-nc-route-grid {
+    grid-template-columns: repeat(5, 1fr);
+  }
+}
+
+.sd-nc-route-card {
+  background: #fff;
+  border: 1px solid var(--color-border-light);
+  border-radius: var(--radius-md);
+  padding: 1.25rem 1rem;
+}
+.sd-nc-route-region {
+  font-family: var(--font-display);
+  font-size: 0.85rem;
+  font-weight: 800;
+  color: var(--color-text-dark);
+  letter-spacing: 0.03em;
+  margin-bottom: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+.sd-nc-route-count {
+  font-size: 0.72rem;
+  font-weight: 600;
+  background: rgba(5, 150, 105, 0.1);
+  color: var(--color-success);
+  border: 1px solid rgba(5, 150, 105, 0.25);
+  padding: 0.15rem 0.45rem;
+  border-radius: 3px;
+  letter-spacing: 0;
+}
+
+.sd-nc-route-stops {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+.sd-nc-route-stop {
+  font-size: 0.85rem;
+  color: var(--color-text-secondary-cool);
+  padding: 0.45rem 0;
+  border-bottom: 1px dashed var(--color-border-light);
+  line-height: 1.4;
+  position: relative;
+  padding-left: 1rem;
+}
+.sd-nc-route-stop::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--color-text-dim);
+}
+.sd-nc-route-stop:last-child {
+  border-bottom: 0;
+}
+.sd-nc-route-stop--dest {
+  font-weight: 700;
+  color: var(--color-success);
+}
+.sd-nc-route-stop--dest::before {
+  background: var(--color-success);
+  width: 7px;
+  height: 7px;
+}
+
+/* Schedule Info Strip */
+.sd-nc-schedule {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  background: #fff;
+  border: 1px solid var(--color-border-light);
+  border-radius: var(--radius-md);
+  padding: 1.75rem 2rem;
+  margin-bottom: 2rem;
+}
+@media (max-width: 767px) {
+  .sd-nc-schedule {
+    padding: 1.25rem 1.25rem;
+  }
+}
+@media (min-width: 768px) {
+  .sd-nc-schedule {
+    flex-direction: row;
+    gap: 2rem;
+  }
+}
+.sd-nc-schedule-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  flex: 1;
+}
+.sd-nc-schedule-item svg {
+  flex-shrink: 0;
+  color: var(--color-success);
+  margin-top: 2px;
+}
+.sd-nc-schedule-label {
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-text-dim);
+  margin-bottom: 0.25rem;
+}
+.sd-nc-schedule-value {
+  font-size: 0.875rem;
+  color: var(--color-text-dark);
+  line-height: 1.5;
+  font-weight: 500;
+}
+
+/* Booking CTA */
+.sd-nc-booking {
+  text-align: center;
+}
+.sd-nc-booking-note {
+  font-size: 0.85rem;
+  color: var(--color-text-dim);
+  margin: 0 0 1.25rem;
+}
+.sd-nc-booking-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: var(--color-success);
+  color: #fff;
+  padding: 1rem 2.5rem;
+  border-radius: var(--radius-sm);
+  font-weight: 700;
+  font-size: 1rem;
+  text-decoration: none;
+  box-shadow: 0 8px 24px rgba(5, 150, 105, 0.3);
+  transition: filter 0.2s;
+}
+.sd-nc-booking-cta:hover {
+  filter: brightness(1.1);
+}
+
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+  }
+}

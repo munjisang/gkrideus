@@ -1,0 +1,109 @@
+{
+  "namsan": [
+    {
+      "contentid": "126535",
+      "contenttypeid": "12",
+      "title": "남산서울타워",
+      "addr1": "서울특별시 용산구 남산공원길 105",
+      "mapx": "126.987882083295",
+      "mapy": "37.5510545366352",
+      "firstimage": ""
+    },
+    {
+      "contentid": "4012633",
+      "contenttypeid": "38",
+      "title": "GS25 남산서울타워점",
+      "addr1": "서울특별시 용산구 남산공원길 103 (용산동2가)",
+      "mapx": "126.98764975571",
+      "mapy": "37.5511821048725",
+      "firstimage": "https://tong.visitkorea.or.kr/cms/resource/21/4022521_image2_1.jpg"
+    }
+  ],
+  "tongyeong": [
+    {
+      "contentid": "533874",
+      "contenttypeid": "12",
+      "title": "통영케이블카",
+      "addr1": "경상남도 통영시 발개로 205",
+      "mapx": "128.4250363662",
+      "mapy": "34.8266120596",
+      "firstimage": ""
+    }
+  ],
+  "muju": [
+    {
+      "contentid": "126718",
+      "contenttypeid": "12",
+      "title": "무주덕유산리조트",
+      "addr1": "전북특별자치도 무주군 설천면 만선로 185",
+      "mapx": "117.9925662504",
+      "mapy": "19.6944274800",
+      "firstimage": "http://tong.visitkorea.or.kr/cms/resource/66/2003266_image2_1.JPG"
+    },
+    {
+      "contentid": "136230",
+      "contenttypeid": "32",
+      "title": "무주덕유산리조트 가족호텔",
+      "addr1": "전북특별자치도 무주군 설천면 만선로 185",
+      "mapx": "127.744358608182",
+      "mapy": "35.8790365500748",
+      "firstimage": "https://tong.visitkorea.or.kr/cms/resource/71/1604171_image2_1.jpg"
+    },
+    {
+      "contentid": "589340",
+      "contenttypeid": "32",
+      "title": "무주덕유산리조트 국민호텔",
+      "addr1": "전북특별자치도 무주군 설천면 만선로 185",
+      "mapx": "127.744358608182",
+      "mapy": "35.8790365500748",
+      "firstimage": "https://tong.visitkorea.or.kr/cms/resource/65/1604165_image2_1.jpg"
+    },
+    {
+      "contentid": "131123",
+      "contenttypeid": "28",
+      "title": "무주덕유산리조트 스키장",
+      "addr1": "전북특별자치도 무주군 설천면 만선로 185",
+      "mapx": "127.744358608182",
+      "mapy": "35.8790365500748",
+      "firstimage": "https://tong.visitkorea.or.kr/cms/resource/54/4064154_image2_1.jpg"
+    },
+    {
+      "contentid": "131237",
+      "contenttypeid": "28",
+      "title": "무주덕유산리조트 썰매장",
+      "addr1": "전북특별자치도 무주군 설천면 만선로 185",
+      "mapx": "127.744358608182",
+      "mapy": "35.8790365500748",
+      "firstimage": "https://tong.visitkorea.or.kr/cms/resource/33/4064133_image2_1.jpg"
+    },
+    {
+      "contentid": "142988",
+      "contenttypeid": "32",
+      "title": "무주덕유산리조트 호텔티롤",
+      "addr1": "전북특별자치도 무주군 설천면 만선로 185",
+      "mapx": "127.731373439132",
+      "mapy": "35.8897544818349",
+      "firstimage": "https://tong.visitkorea.or.kr/cms/resource/88/1191188_image2_1.jpg"
+    }
+  ],
+  "suncheonman": [
+    {
+      "contentid": "126730",
+      "contenttypeid": "12",
+      "title": "순천만습지",
+      "addr1": "전라남도 순천시 순천만길 513-25 (대대동)",
+      "mapx": "127.50913602700146",
+      "mapy": "34.88537532192124",
+      "firstimage": "https://tong.visitkorea.or.kr/cms/resource/96/3573796_image2_1.jpg"
+    },
+    {
+      "contentid": "2795593",
+      "contenttypeid": "12",
+      "title": "순천만습지천문대",
+      "addr1": "전라남도 순천시 순천만길 513-25",
+      "mapx": "127.5096481959",
+      "mapy": "34.8855560675",
+      "firstimage": "http://tong.visitkorea.or.kr/cms/resource/87/2798887_image2_1.JPG"
+    }
+  ]
+}

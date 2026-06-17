@@ -1,0 +1,1875 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="theme-color" content="#FAF8F5" />
+<title>공항 및 항만 프리미엄 픽업 & 샌딩 | K.Rideus 이동</title>
+<meta name="description" content="인천공항/김포공항 픽업부터 부산항/인천항 크루즈 터미널 샌딩까지. 가장 신뢰할 수 있는 관문 연계 이동 솔루션을 제공합니다." />
+
+<!-- Fonts -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Prosto+One&display=swap" rel="stylesheet">
+
+<style>
+/* ========================================================
+   Design Tokens — Vibrant Light (시안004 v1.5)
+   ======================================================== */
+:root {
+  /* Surface */
+  --bg-base: #FFFFFF;         /* Warm Cream — body 기본 */
+  --bg-soft: #FDFCFA;         /* Lighter Cream */
+  --bg-card: #FFFFFF;         /* Card White */
+  --bg-warm: #FCFAF8;         /* Categories / Brand 섹션 */
+  --bg-mute: #F2F3F4;         /* Why Us 섹션 / lang 토글 */
+
+  /* Text */
+  --text-prim: #1A1F26;       /* 제목 / Footer 배경 */
+  --text-mute: #647488;       /* 작은 desc / sub */
+  --text-body: #2E333D;       /* 헤더 설명 본문 */
+  --text-on-dark: #FFFFFF;
+  --footer-text: #A3A5A8;     /* Footer 링크 / 설명 */
+
+  /* Accent */
+  --accent: #2C51DB;          /* Identity Cobalt */
+  --accent-soft: #E8EEFF;     /* Cobalt Tint */
+  --accent-deeper: #1E40C9;   /* Hover / active */
+  --coral: #E2875C;
+
+  /* Line / Shadow */
+  --line: #D9D9D9;            /* 카드·토글 보더 */
+  --shadow-rgb: 59, 75, 95;   /* 카드 그림자 — rgba(var(--shadow-rgb), a) */
+
+  /* Dark */
+  --dark: #0F1115;
+
+  /* Layout */
+  --container: 1216px;
+
+  /* Fonts */
+  --font-display: 'Outfit', 'Pretendard', sans-serif;
+  --font-body: 'Pretendard', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+/* ========================================================
+   Reset & Base
+   ======================================================== */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html {
+  scroll-behavior: smooth;
+  overflow-x: clip;        /* clip = sticky 유지(hidden은 sticky 깨짐) */
+  width: 100%;
+}
+body {
+  font-family: var(--font-body);
+  background: var(--bg-base);
+  color: var(--text-prim);
+  line-height: 1.3;              /* 기본 행간 130% */
+  letter-spacing: 0.012em;       /* 기본 자간 1.2% */
+  -webkit-font-smoothing: antialiased;
+  overflow-x: clip;
+  width: 100%;
+}
+img, svg { max-width: 100%; display: block; }
+a { color: inherit; text-decoration: none; }
+button { font: inherit; cursor: pointer; border: none; background: none; color: inherit; }
+ul, li { list-style: none; }
+
+/* ========================================================
+   Utilities
+   ======================================================== */
+/* figma 콘텐츠 폭 정확값: 1216 (1440 기준 좌우 112).
+   1264px(=1216+패딩48) 이하에서만 패딩 적용 → 큰 화면은 콘텐츠 1216 고정 */
+.container { width: 100%; max-width: var(--container); margin: 0 auto; padding: 0; }
+@media (max-width: 1264px) { .container { padding: 0 24px; } }
+.section { padding: 88px 0; position: relative; }   /* figma 섹션 상하 패딩 88 */
+.section--base { background: var(--bg-base); }
+.section--soft { background: var(--bg-soft); }
+.section--card { background: var(--bg-card); }
+.section--dark { background: var(--dark); color: var(--text-on-dark); }
+@media (max-width: 768px) { .section { padding: 64px 0; } }
+
+h1, h2, h3, h4 {
+  font-family: var(--font-body);
+  line-height: 1.2;
+  letter-spacing: 0;
+  font-weight: 700;
+}
+h1 { font-size: 56px; line-height: 1.2; letter-spacing: 0.012em; }   /* Figma Hero h1: ls 1.2% */
+h2 { font-size: 48px; letter-spacing: 0.012em; }                     /* Figma 타이틀 통일 48 / ls 1.2% */
+h3 { font-size: 24px; }                      /* Figma 카드 h3 정확 */
+h4 { font-size: 17px; }
+
+/* 헤더 desc 토큰 — figma 2그룹:
+   18px(Hero/Compare/Categories) = .lead-lg / 20px(Brand/WhyUs/Dest) = .lead-md */
+.lead-lg,
+.lead-md {
+  font-size: 18px;             /* 섹션 설명: 18px (hero보다 한 단계 낮게) */
+  font-weight: 400;
+  line-height: 1.3;            /* 행간 130% */
+  letter-spacing: 0.012em;
+  color: var(--text-body);     /* 통일 컬러 */
+}
+/* 설명 내 강조 단어 — figma Bold(같은 색, 굵기만) */
+.lead-lg strong, .lead-md strong { font-weight: 700; color: inherit; }
+.text-mute { color: var(--text-mute); }
+.accent-word { color: var(--accent); }
+
+/* Buttons — Figma Hero CTA: 16px Bold */
+.btn {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 14px 26px;
+  border-radius: 999px;
+  font-weight: 700;
+  font-size: 16px;
+  transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+}
+.btn--primary {
+  background: var(--accent);
+  color: #fff;
+}
+.btn--primary:hover { background: var(--accent-deeper); }
+.btn--outline {
+  background: transparent;
+  color: var(--text-prim);
+  border: 1px solid #63738A;   /* figma CTA outline stroke (데스크톱·모바일 공통) */
+}
+.btn--outline:hover { background: var(--text-prim); color: #fff; }
+.btn--ghost-white {
+  background: rgba(255,255,255,0.12);
+  color: #fff;
+  border: 1px solid rgba(255,255,255,0.3);
+  font-size: 13px;
+  padding: 8px 16px;
+}
+.btn--ghost-white:hover { background: rgba(255,255,255,0.22); }
+
+/* ========================================================
+   Navbar — 글래스 오버레이 (경계 없음, hero 위 겹침)
+   ======================================================== */
+.navbar {
+  position: sticky; top: 0; z-index: 50;
+  background: rgba(255,255,255,0.55);      /* 밝은 일러스트 Hero — 글래스 복귀 */
+  backdrop-filter: blur(20px) saturate(180%);   /* 프로스트 강화 */
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  margin-bottom: -75px;                   /* hero 위 오버레이 (figma navbar=hero 겹침) */
+  /* 경계 없음 — figma stroke null */
+}
+.navbar__inner {
+  display: flex; align-items: center; justify-content: space-between;
+  height: 75px;                           /* figma 75 */
+  max-width: var(--container);
+  margin: 0 auto;
+  padding: 0 16px;                        /* figma Frame8 pad 16 */
+}
+.navbar__brand {
+  display: inline-flex;
+  align-items: center;
+}
+.navbar__brand img {
+  height: 26px;
+  width: auto;
+  display: block;
+}
+
+/* 중앙 메뉴 pill */
+.navbar__menu {
+  display: flex; align-items: center;
+  gap: 56px;
+  background: rgba(255,255,255,0.88);   /* figma Frame1 fill #fff @0.88 */
+  border-radius: 43px;                   /* figma pill */
+  padding: 12px 24px;
+  position: relative;
+}
+.navbar__menu a {
+  position: relative;
+  font-size: 16px;
+  font-weight: 600;          /* SemiBold inactive */
+  color: var(--text-prim);
+  line-height: 19px;
+  transition: color 0.2s ease;
+}
+.navbar__menu a:hover { color: var(--accent); }
+.navbar__menu a.is-active {
+  color: var(--accent);
+  font-weight: 700;
+}
+.navbar__menu a.is-active::after {
+  content: '';
+  position: absolute;
+  left: 0; bottom: -8px;        /* 텍스트 아래 8px 갭 */
+  width: 100%; height: 3px;     /* 텍스트 폭 */
+  background: var(--accent);
+}
+
+/* 우측 액션 (lang + 고객센터) */
+.navbar__actions {
+  display: flex; align-items: center;
+  gap: 8px;
+}
+.lang-toggle {
+  display: inline-flex; align-items: center;
+  background: var(--bg-mute);             /* 한영 토글 배경 */
+  border-radius: 15px;
+  padding: 4px 5px;
+  gap: 0;
+  height: 30px;
+}
+.lang-toggle span {
+  width: 32px; height: 20px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 13px;
+  line-height: 1;                  /* 텍스트 수직 중앙 (line box가 height 초과 방지) */
+  border-radius: 10px;
+  background: transparent;         /* 비활성 투명 */
+  color: var(--text-body);
+  font-weight: 400;
+  transition: color 0.2s ease;
+}
+.lang-toggle span:not(.is-on) { cursor: pointer; }
+.lang-toggle span:not(.is-on):hover { color: var(--text-prim); }
+.lang-toggle .is-on {
+  background: #fff;                /* 활성만 흰 배경 */
+  color: var(--accent);
+  font-weight: 700;
+}
+.support-link {
+  height: 30px;
+  display: inline-flex; align-items: center;
+  padding: 0 12px;
+  border: 1px solid var(--line);
+  border-radius: 24px;
+  background: #fff;
+  font-size: 13px; font-weight: 700;
+  line-height: 1;                  /* 텍스트 수직 중앙 통일 */
+  color: var(--text-prim);
+  transition: background-color 0.2s ease;
+}
+.support-link:hover { background: var(--bg-mute); }
+
+/* 햄버거 + 드로어 (모바일 전용, 데스크톱 숨김) */
+.navbar__burger { display: none; background: none; cursor: pointer; }
+.navbar__drawer { display: none; }
+
+/* ========================================================
+   S1. HERO — Figma 53:3 정밀 매칭
+   - hero section: relative, padding-block 88, height 628 (Figma)
+   - 좌측 텍스트: container 안 401px (x=112 부터)
+   - 우측 이미지: absolute right:0 (화면 우측 끝까지 확장), 856×540
+   - 이미지가 컨테이너(1216) 밖으로 빠져나가 화면 가장자리 닿음
+   - SVG mask: 시안001 두 박스 UNION (좌측만 곡선, 우측·상단·하단 직각)
+   ======================================================== */
+/* Figma 53:19 정밀 매칭 — 섹션 1440×764, 콘텐츠 1216(좌우 112)
+   이미지 영역 고정 730×612 (가변 폐기), 컨테이너 우경계 정렬, top 76 */
+.hero {
+  position: relative;
+  background: var(--bg-card);
+  overflow: hidden;
+  height: 764px;
+}
+.hero__inner {
+  position: relative;
+  max-width: 1216px;        /* figma 콘텐츠 폭 정확값 */
+  margin: 0 auto;
+  padding: 0;
+  height: 100%;
+  display: flex;
+  align-items: center;
+}
+.hero__copy {
+  width: 416px;             /* figma Frame7 폭 */
+  flex-shrink: 0;
+  margin-left: 20px;        /* figma: 컨테이너 시작에서 +20 (타이틀/설명/CTA 전체 우측 이동) */
+  position: relative;
+  z-index: 2;
+  display: flex; flex-direction: column;
+  gap: 32px;                /* figma Frame7 gap (텍스트블록 ↔ CTA) */
+}
+.hero__text {
+  display: flex; flex-direction: column;
+  gap: 16px;                /* figma Frame10 gap (h1 ↔ lead) */
+}
+/* 슬라이드 전환 시 타이틀 첫 단어 글자별 순차 전환 */
+.hero__char {
+  display: inline-block;
+  transition: opacity 0.3s ease, transform 0.3s ease;
+}
+.hero__char.is-out { opacity: 0; transform: translateY(-8px); }
+.hero__copy h1 {
+  font-size: 56px; font-weight: 700;
+  line-height: 1.2;
+  letter-spacing: 0.012em;  /* figma ls 1.2% */
+  color: var(--text-prim);
+  margin: 0;
+}
+.hero__copy .accent-word { color: var(--accent); }
+.hero__copy .lead-lg { margin: 0; font-size: 20px; }   /* hero 설명만 20px (최상위 위계) */
+.hero__ctas { display: flex; gap: 16px; }
+.hero__ctas .btn {
+  width: 200px; height: 56px;
+  border-radius: 28px;
+  font-size: 16px; font-weight: 700;
+  justify-content: center;
+  padding: 0;
+}
+
+/* Hero Image — figma 고정 730×612, 마스크는 컨테이너에 1회 적용,
+   내부 슬라이드 3장이 cross-fade 전환 */
+.hero__media {
+  position: absolute;
+  top: 76px;
+  right: 0;                 /* 콘텐츠(1216) 우경계 = figma x=1328 */
+  width: 730px;
+  height: 612px;
+  z-index: 1;
+  clip-path: url(#heroClip);        /* flubber가 morph하는 단일 마스크 */
+  -webkit-clip-path: url(#heroClip);
+}
+.hero__slide {
+  position: absolute;
+  inset: 0;
+  width: 100%; height: 100%;
+  object-fit: cover;
+  opacity: 0;
+  transition: opacity 0.9s ease;    /* morph 시간과 동기 */
+}
+.hero__slide.is-active { opacity: 1; }
+
+@media (max-width: 1280px) {
+  /* 작은 화면 fallback: 텍스트 위 / 이미지 아래, 비율 유지 */
+  .hero { height: auto; padding: 60px 0; }
+  .hero__inner { flex-direction: column; gap: 36px; align-items: stretch; padding: 0 24px; }
+  .hero__copy { width: 100%; margin-left: 0; }
+  .hero__media {
+    position: relative;
+    width: 100%;
+    max-width: 730px;
+    height: auto;
+    aspect-ratio: 730 / 612;
+    top: 0;
+    right: 0;
+    margin: 0 auto;
+  }
+}
+
+/* ========================================================
+   S2. CATEGORIES — 3 Hubs (사용자 Figma 디자인 기반)
+   ======================================================== */
+/* figma S2 배경 — 화이트와 구분되는 웜 톤 */
+#categories { background: var(--bg-warm); }
+
+/* figma S2: 타이틀(좌) + 설명(우) 가로분할, gap 120 */
+.cats__head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 120px;
+  margin-bottom: 48px;
+}
+.cats__head h2 { margin-bottom: 0; flex-shrink: 0; }
+.cats__head p { max-width: 480px; }   /* color는 .lead-lg 토큰(#2E333D) 사용 */
+@media (max-width: 900px) {
+  .cats__head { flex-direction: column; align-items: flex-start; gap: 16px; }
+}
+
+.cats__grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 20px;                       /* figma 카드 gap */
+}
+@media (max-width: 900px) {
+  .cats__grid { grid-template-columns: 1fr; }
+}
+.cat-card {
+  position: relative;
+  aspect-ratio: 392 / 595;         /* figma 카드 비율 */
+  border-radius: 20px;             /* figma 카드 radius 통일 */
+  overflow: hidden;
+  background: #1a1a1a;
+}
+.cat-card__bg {
+  position: absolute; inset: 0;
+  width: 100%; height: 100%;
+  object-fit: cover;
+  transition: transform 0.6s cubic-bezier(.2,.7,.2,1);
+}
+.cat-card:hover .cat-card__bg { transform: scale(1.04); }
+.cat-card__overlay {
+  position: absolute; inset: 0;
+  /* 하단 가독성 그라데이션 + 전체 10% 블랙(이미지별 카드 경계 모호 방지) */
+  background:
+    linear-gradient(to bottom, rgba(0,0,0,0) 40%, rgba(0,0,0,0.65) 100%),
+    rgba(0,0,0,0.1);
+}
+.cat-card__body {
+  position: absolute; left: 28px; bottom: 28px; right: 28px;
+  color: #fff;
+}
+.cat-card__title {
+  font-size: 28px; font-weight: 800; margin-bottom: 8px;
+}
+.cat-card__sub {
+  font-size: 14px; opacity: 0.85; line-height: 1.3;   /* 14px↑ → 130% */
+}
+
+/* ========================================================
+   S3. BRAND FILM
+   ======================================================== */
+.brand {
+  background: var(--bg-warm);      /* figma S3 배경 (Categories와 동일 웜톤) */
+  padding: 48px 0 88px;     /* figma S3 상단 48 / 하단 88 */
+  position: relative;
+}
+.brand__inner {
+  width: 100%;
+  max-width: var(--container);     /* 1216 */
+  margin: 0 auto;
+  padding: 0;
+  display: grid;
+  grid-template-columns: 676fr 460fr;   /* Figma: 비디오 676 : 설명 460 */
+  align-items: center;
+  gap: 80px;                       /* Figma gap = 1216 - 676 - 460 = 80 */
+}
+@media (max-width: 1264px) { .brand__inner { padding: 0 24px; } }
+.brand__video {
+  position: relative;
+  aspect-ratio: 676 / 420;         /* Figma 정확 비율 */
+  background: var(--dark);
+  border-radius: 20px;             /* figma 카드 radius 통일 */
+  overflow: hidden;
+}
+.brand__play {
+  position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%);
+  width: 72px; height: 72px; border-radius: 50%;
+  background: #fff;
+  display: flex; align-items: center; justify-content: center;
+}
+.brand__play::after {
+  content: ''; width: 0; height: 0;
+  border-left: 20px solid var(--dark);
+  border-top: 13px solid transparent;
+  border-bottom: 13px solid transparent;
+  margin-left: 6px;
+}
+.brand__copy { padding-right: 0; }
+.brand__copy h2 { margin-bottom: 18px; }
+.brand__copy h2 .accent-word { color: var(--accent); }
+.brand__copy p {
+  /* 섹션 설명 18px */
+  font-size: 18px; font-weight: 400;
+  line-height: 1.3; letter-spacing: 0.012em;
+  color: var(--text-body);
+}
+
+@media (max-width: 900px) {
+  .brand__inner { grid-template-columns: 1fr; gap: 32px; }
+  .brand__video { border-radius: 20px; margin: 0 24px; }
+  .brand__copy { padding: 0 24px; }
+}
+
+/* ========================================================
+   S4. WHY US — 앨범 차트 Coverflow 캐러셀
+   좌-중앙-우 3카드 / 중앙 큼·border / 좌우 작음·페이드
+   자동 진행 + scale/translate 공간감
+   ======================================================== */
+.whyus {
+  background: var(--bg-mute);
+  padding: 88px 0;      /* figma S4 상하 88 */
+  overflow: hidden;
+}
+.whyus__head {
+  text-align: center;
+  max-width: 896px;
+  margin: 0 auto 56px;
+  display: flex; flex-direction: column; gap: 24px;
+}
+.whyus__head h2 {
+  font-size: 48px; font-weight: 700;
+  line-height: 1.2; letter-spacing: 1.2%;
+  color: var(--text-prim);
+  margin: 0;
+}
+.whyus__head h2 .accent-word { color: var(--accent); }
+.whyus__head p {
+  /* 섹션 설명 18px */
+  font-size: 18px; font-weight: 400;
+  line-height: 1.3; letter-spacing: 0.012em;
+  color: var(--text-body);
+  margin: 0;
+}
+
+/* Stage: 절대 위치 카드들이 좌·중앙·우 3 슬롯에 표시 */
+.whyus__stage {
+  position: relative;
+  height: 480px;
+  perspective: 1400px;
+  cursor: grab;
+  touch-action: pan-y;          /* 가로 스와이프=카드 전환, 세로=페이지 스크롤 */
+}
+.whyus__stage.is-dragging { cursor: grabbing; }
+
+/* 카드 기본 = 활성 중심 사이즈 (3:4 세로 일러스트 카드 340×453) */
+.why-card {
+  position: absolute;
+  left: 50%; top: 50%;
+  width: 340px;
+  aspect-ratio: 3 / 4;
+  border-radius: 20px;
+  overflow: hidden;
+  background: #1f2a44;     /* 이미지 로드 전 폴백 */
+  transform: translate(-50%, -50%) scale(0.6);
+  opacity: 0;
+  z-index: 0;
+  box-shadow: 4px 14px 28px rgba(var(--shadow-rgb),0.16);
+  transition: transform 0.7s cubic-bezier(.4,.2,.2,1),
+              opacity 0.7s cubic-bezier(.4,.2,.2,1),
+              box-shadow 0.7s ease,
+              filter 0.7s ease;
+  will-change: transform, opacity;
+}
+
+/* 이미지 풀배경 + 하단 그라데 오버레이 + 텍스트 */
+.why-card__img {
+  position: absolute; inset: 0;
+  width: 100%; height: 100%;
+  object-fit: cover;
+  user-select: none; -webkit-user-drag: none;
+}
+.why-card__overlay {
+  position: absolute; inset: 0;
+  background: linear-gradient(to bottom, transparent 38%, rgba(16,21,32,.30) 60%, rgba(16,21,32,.88) 100%);
+}
+.why-card__body {
+  position: absolute; left: 28px; right: 28px; bottom: 28px;
+  color: #fff;
+}
+.why-card__overline {
+  display: block;
+  font-family: var(--font-display, 'Outfit', sans-serif);
+  font-size: 12px; font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,.72);
+  margin: 0 0 8px;
+}
+.why-card__title {
+  font-size: 24px; font-weight: 700;
+  letter-spacing: -0.01em;
+  margin: 0 0 10px;
+}
+.why-card__desc {
+  font-size: 15px; font-weight: 400;
+  line-height: 1.5;
+  color: rgba(255,255,255,.88);
+  margin: 0;
+}
+
+/* 위치별 transform (data-pos) — 세로 카드 coverflow */
+.why-card[data-pos="-1"] {       /* 좌측 작은 카드 */
+  transform: translate(calc(-50% - 296px), -50%) scale(0.8);
+  opacity: 0.6;
+  z-index: 1;
+  filter: blur(1px);
+  box-shadow: 2px 10px 22px rgba(var(--shadow-rgb),0.18);
+}
+.why-card[data-pos="0"] {        /* 중앙 큰 카드 */
+  transform: translate(-50%, -50%) scale(1);
+  opacity: 1;
+  z-index: 3;
+  box-shadow: 6px 22px 44px rgba(var(--shadow-rgb),0.24);
+}
+.why-card[data-pos="1"] {        /* 우측 작은 카드 */
+  transform: translate(calc(-50% + 296px), -50%) scale(0.8);
+  opacity: 0.6;
+  z-index: 1;
+  filter: blur(1px);
+  box-shadow: 2px 10px 22px rgba(var(--shadow-rgb),0.18);
+}
+/* 나머지(다음/이전) 카드는 더 뒤로 + 안 보이게 */
+.why-card[data-pos="-2"] {
+  transform: translate(calc(-50% - 480px), -50%) scale(0.6);
+  opacity: 0; z-index: 0;
+}
+.why-card[data-pos="2"] {
+  transform: translate(calc(-50% + 480px), -50%) scale(0.6);
+  opacity: 0; z-index: 0;
+}
+
+/* ========================================================
+   S5. DESTINATIONS — Mosaic (Figma 64:607 정밀 매칭)
+   ======================================================== */
+#destinations { padding: 80px 0; }   /* figma S5 섹션 패딩 80 */
+.dest__head {
+  margin-bottom: 36px;
+  text-align: left;
+  display: flex; flex-direction: column; gap: 12px;
+}
+.dest__head h2 {
+  font-size: 48px; font-weight: 700;   /* figma 타이틀 통일 48 */
+  line-height: 1.2;
+  color: var(--text-prim);
+  margin: 0;
+}
+.dest__head p {
+  margin: 0;   /* 폰트는 .lead-md 토큰 사용 — 다른 섹션과 통일 (20px #2E333D) */
+}
+
+/* Figma 정확 비율: 큰카드 596 : 작은카드영역 596 (1:1) */
+.dest__grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+  height: 508px;
+}
+.dest__small-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: 1fr 1fr;
+  gap: 20px;
+}
+@media (max-width: 900px) {
+  .dest__grid {
+    grid-template-columns: 1fr;
+    height: auto;
+  }
+}
+
+.dest-card {
+  position: relative;
+  border-radius: 16px;
+  overflow: hidden;
+  background: var(--bg-card);
+}
+
+/* Big card (좌측 풀높이) */
+.dest-card--big {
+  border-radius: 20px;
+}
+@media (max-width: 900px) {
+  .dest-card--big { height: 420px; }
+}
+.dest-card__bg {
+  position: absolute; inset: 0;
+  width: 100%; height: 100%;
+  object-fit: cover;
+  z-index: 0;
+  transition: transform 0.6s cubic-bezier(.2,.7,.2,1);
+}
+.dest-card--big:hover .dest-card__bg { transform: scale(1.04); }
+.dest-card--big .dest-card__overlay {
+  position: absolute; inset: 0;
+  /* 하단 가독성 그라데이션 + 전체 10% 블랙 */
+  background:
+    linear-gradient(to bottom, rgba(0,0,0,0) 40%, rgba(0,0,0,0.75) 100%),
+    rgba(0,0,0,0.1);
+  z-index: 1;
+}
+.dest-card--big .dest-card__featured {
+  position: absolute; top: 28px; left: 28px;
+  font-family: var(--font-display);
+  font-size: 11px; font-weight: 700; letter-spacing: 0.18em;
+  color: #fff; opacity: 0.9;
+  z-index: 2;
+}
+.dest-card--big .dest-card__body {
+  position: absolute; left: 28px; right: 28px; bottom: 28px;
+  color: #fff;
+  z-index: 2;
+}
+.dest-card--big .dest-card__tags {
+  display: flex; gap: 8px; margin-bottom: 16px;
+}
+.dest-card--big .dest-card__title {
+  font-size: 32px; font-weight: 700; margin-bottom: 8px;
+}
+.dest-card--big .dest-card__desc {
+  font-size: 14px; font-weight: 400; opacity: 0.95;
+}
+/* 원형 화살표 버튼 — Glass morphism (Figma 64:643: opacity 0.18 + stroke 흰 1px + GLASS effect) */
+.dest-card--big .dest-card__arrow {
+  position: absolute;
+  right: 28px; bottom: 28px;
+  width: 48px; height: 48px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.18);
+  border: 1px solid rgba(255,255,255,1);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  display: flex; align-items: center; justify-content: center;
+  z-index: 2;
+  color: #fff;
+  transition: background-color 0.2s ease;
+}
+.dest-card--big .dest-card__arrow:hover { background: rgba(255,255,255,0.32); }
+.dest-card--big .dest-card__arrow svg { width: 20px; height: 20px; }
+
+/* Small card (288x244, stroke #D9D9D9 1px) */
+.dest-card--sm {
+  display: flex; flex-direction: column;
+  height: 244px;
+  border: 1px solid var(--line);
+}
+.dest-card--sm .dest-card__media {
+  position: relative;
+  height: 168px;
+  overflow: hidden;
+}
+.dest-card--sm .dest-card__media img {
+  width: 100%; height: 100%;
+  object-fit: cover;
+  transition: transform 0.6s cubic-bezier(.2,.7,.2,1);
+}
+.dest-card--sm:hover .dest-card__media img { transform: scale(1.04); }
+.dest-card--sm .dest-card__media::after {
+  content: ''; position: absolute; inset: 0;
+  background: rgba(0,0,0,0.1);   /* 전체 10% 블랙 (이미지별 경계 모호 방지) */
+  z-index: 1;
+}
+.dest-card--sm .dest-card__tags {
+  position: absolute;            /* 데스크톱: 이미지 위 좌하단 (body에서 빼내 카드 기준) */
+  left: 16px; top: 113px;        /* media 하단 위 12px (이미지 안) */
+  display: flex; gap: 8px;
+  z-index: 2;                    /* 10% 오버레이 위로 */
+}
+.dest-card--sm .dest-card__body {
+  padding: 12px 16px 16px;
+}
+.dest-card--sm .dest-card__title {
+  font-size: 16px; font-weight: 700;
+  color: var(--text-prim);
+  margin-bottom: 8px;
+}
+.dest-card--sm .dest-card__desc {
+  font-size: 12px; color: var(--text-mute); line-height: 1.5;   /* 13px↓ → 150% */
+}
+.dest__dots { display: none; }   /* 도트 인디케이터 — 모바일 가로 스크롤에서만 노출 */
+
+/* Pill tags (Figma 64:647 베이스: padding 0/18 + Medium 14px + 흰 텍스트)
+   Compare 컬러 시스템 따라 셔틀=코발트, 프라이빗=코랄로 구분 */
+.pill {
+  display: inline-flex; align-items: center;
+  height: 28px;
+  padding: 0 18px;
+  border-radius: 17px;
+  color: #fff;
+  font-size: 14px; font-weight: 500;
+  white-space: nowrap;
+  line-height: 1;
+  background: var(--dark);   /* 기본 fallback */
+}
+.pill--shuttle  { background: var(--accent); }   /* 셔틀 = 코발트 */
+.pill--private  { background: var(--coral); }    /* 프라이빗 = 코랄 */
+
+/* ========================================================
+   S6. FOOTER
+   ======================================================== */
+.footer {
+  background: var(--text-prim);   /* figma Footer 배경 */
+  color: rgba(255,255,255,0.7);
+  padding: 64px 0 28px;
+}
+.footer__inner {
+  max-width: var(--container);
+  margin: 0 auto; padding: 0 24px;
+  display: grid;
+  grid-template-columns: 1.4fr 1fr 1fr 1fr;
+  gap: 48px;
+}
+.footer__brand .logo {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 24px;
+  color: #fff;
+  letter-spacing: 0.04em;
+  margin-bottom: 14px;
+}
+.footer__brand p { font-size: 13px; line-height: 1.7; color: var(--footer-text); }
+.footer__col h3 {
+  font-size: 14px; font-weight: 600; color: #fff;
+  margin-bottom: 14px;
+}
+.footer__col ul { display: grid; gap: 8px; }
+.footer__col li {
+  font-size: 14px;
+  display: flex; align-items: center; gap: 10px;
+}
+.footer__col a { color: var(--footer-text); transition: color 0.2s; }
+.footer__col a:hover { color: #fff; }
+.footer__col .badge {
+  font-size: 11px;
+  color: #fff;
+  opacity: 0.35;
+}
+.footer__col a.is-accent { color: var(--accent); font-weight: 600; opacity: 1; }
+.footer__divider {
+  max-width: var(--container);
+  margin: 36px auto 0; padding: 0 24px;
+  height: 1px; background: rgba(255,255,255,0.30);
+}
+.footer__bottom {
+  max-width: var(--container);
+  margin: 22px auto 0; padding: 0 24px;
+  display: flex; justify-content: space-between;
+  font-size: 11px; color: rgba(255,255,255,0.4);
+}
+.footer__bottom span:last-child { color: #fff; }
+
+/* ========================================================
+   Scroll Reveal — subtle (모션 감소 설정 시 자동 비활성)
+   ======================================================== */
+@media (prefers-reduced-motion: no-preference) {
+  [data-reveal],
+  [data-reveal-group] > * {
+    opacity: 0;
+    transform: translateY(28px);
+    transition: opacity 0.7s cubic-bezier(0.16, 1, 0.3, 1),
+                transform 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  [data-reveal].is-in,
+  [data-reveal-group].is-in > * {
+    opacity: 1;
+    transform: none;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .why-card { transition: none; }   /* coverflow 카드 즉시 전환 (자동회전은 JS가 정지) */
+}
+@media (max-width: 900px) {
+  .footer__inner {
+    grid-template-columns: 1fr 1fr;
+    gap: 28px;
+  }
+}
+
+/* ========================================================
+   Mobile (≤768px) — navbar 제외 (별도 디자인 예정)
+   ======================================================== */
+@media (max-width: 768px) {
+  /* figma 모바일 좌우 패딩 20 통일 */
+  .container { padding: 0 20px; }
+
+  /* 타이포 — 360 기준 비례(clamp: 360에서 기준값, 큰 폭에서 vw 비례 확대) */
+  h1, .hero__copy h1 { font-size: clamp(32px, 8.9vw, 40px); }   /* 360→32 */
+  h2 { font-size: clamp(28px, 7.8vw, 34px); }                   /* 360→28 */
+  .whyus__head h2, .dest__head h2 { font-size: clamp(28px, 7.8vw, 34px); }
+  .hero__copy .lead-lg { font-size: clamp(16px, 4.45vw, 19px); }  /* 360→16 */
+  .lead-lg, .lead-md { font-size: clamp(15px, 4.17vw, 18px); }    /* 360→15 */
+
+  /* Hero — figma 모바일: 이미지 상단 + 모바일 마스크 + CTA 세로 */
+  .hero__inner { gap: 48px; padding-inline: 20px; }   /* figma: 이미지↔텍스트 48, 컨테이너 좌우 20 */
+  .hero__copy {
+    gap: 48px; margin-left: 0;                  /* figma text-cta gap 48 (텍스트블록 ↔ CTA) */
+    align-items: center; text-align: center;   /* figma 모바일: 가운데 정렬 */
+  }
+  .hero__media {
+    order: -1;                       /* 이미지를 텍스트 위로 */
+    aspect-ratio: 320 / 254;
+    max-width: none;
+    clip-path: url(#heroClipMobile);
+    -webkit-clip-path: url(#heroClipMobile);
+  }
+  .hero__ctas { flex-direction: column; gap: 12px; width: 100%; }   /* CTA 풀폭 */
+  .hero__ctas .btn { width: 100%; flex: none; height: clamp(49px, 13.6vw, 56px); font-size: clamp(14px, 3.9vw, 16px); }   /* 360→14/49 비례 */
+
+  /* Categories — figma 모바일: 세로 스택 카드 320×176, 텍스트 하단 */
+  .cat-card { aspect-ratio: 320 / 176; border-radius: 24px; }
+  .cat-card__body { left: 24px; right: 24px; bottom: 25px; }
+  .cat-card__title { font-size: 20px; font-weight: 700; margin-bottom: 10px; }
+  .cat-card__sub { font-size: 14px; opacity: 1; }
+
+  /* Why Us — 모바일 coverflow: 3:4 세로 카드 (중앙 268×357 + 양옆 살짝) */
+  .whyus__stage { height: 400px; }
+  .why-card {
+    width: 268px;
+    aspect-ratio: 3 / 4;
+    height: auto; min-height: 0;
+    padding: 0;
+  }
+  .why-card__body { left: 22px; right: 22px; bottom: 22px; }
+  .why-card__title { font-size: 21px; margin-bottom: 8px; }
+  .why-card__desc { font-size: 14px; }
+  .why-card[data-pos="-1"] { transform: translate(calc(-50% - 150px), -50%) scale(0.78); opacity: 0.5; }
+  .why-card[data-pos="1"]  { transform: translate(calc(-50% + 150px), -50%) scale(0.78); opacity: 0.5; }
+  .why-card[data-pos="-2"], .why-card[data-pos="2"] { opacity: 0; pointer-events: none; }
+
+  /* Brand — figma 모바일: 헤더(가운데) 위 + 비디오(다크 320×199) 아래 */
+  .brand { padding: 36px 0; }
+  .brand__inner { gap: 20px; padding: 0 20px; }
+  .brand__copy { order: -1; text-align: center; padding: 0; }
+  .brand__copy p { font-size: 16px; }
+  .brand__video { aspect-ratio: 320 / 199; margin: 0; }
+
+  /* navbar 모바일 — 로고 + 햄버거 + 드로어 (figma 96:292, 60h) */
+  .navbar {
+    margin-bottom: 0;
+    background: var(--bg-card);          /* 흰색 불투명 (글래스 해제) */
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
+  .navbar__inner { height: 60px; }
+  .navbar__brand img { height: 24px; }   /* figma 모바일 로고 */
+  .navbar__menu, .navbar__actions { display: none; }
+  .navbar__burger {
+    display: flex; flex-direction: column; gap: 8px;   /* figma 바 중심간격 12 (높이4 + gap8) */
+    width: 48px; height: 48px; align-items: center; justify-content: center;   /* 터치 영역 48 (바 크기는 유지) */
+    margin-right: -4px;   /* 영역 확장분 보정 — 바 시각 위치 유지 */
+  }
+  .navbar__burger span {
+    height: 4px; border-radius: 3px;
+    background: var(--text-prim);
+    transition: transform 0.3s ease, opacity 0.3s ease, width 0.3s ease;
+  }
+  .navbar__burger span:nth-child(1),
+  .navbar__burger span:nth-child(3) { width: 18px; }                              /* figma 위·아래 짧은 바 */
+  .navbar__burger span:nth-child(2) { width: 32px; background: var(--accent); }   /* figma 가운데 긴 바 — 파랑 */
+  /* 열림 X — 두께 4px 유지, 선을 길게 늘려 슬림하게 */
+  .navbar.is-open .navbar__burger span:nth-child(1) { width: 26px; transform: translateY(12px) rotate(45deg); }
+  .navbar.is-open .navbar__burger span:nth-child(2) { opacity: 0; }
+  .navbar.is-open .navbar__burger span:nth-child(3) { width: 26px; transform: translateY(-12px) rotate(-45deg); }
+  .navbar__drawer {
+    display: flex; flex-direction: column;
+    position: absolute; top: 60px; left: 0; right: 0;
+    background: rgba(255,255,255,0.97);
+    backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+    padding: 8px 20px 24px;
+    box-shadow: 0 12px 24px rgba(var(--shadow-rgb),0.12);
+    transform: translateY(-12px); opacity: 0; pointer-events: none;
+    transition: transform 0.25s ease, opacity 0.25s ease;
+  }
+  .navbar.is-open .navbar__drawer { transform: translateY(0); opacity: 1; pointer-events: auto; }
+  .navbar__drawer-link {
+    font-size: 18px; font-weight: 600; color: var(--text-prim);
+    padding: 14px 4px; border-bottom: 1px solid rgba(0,0,0,0.05);
+  }
+  .navbar__drawer-lang { display: flex; justify-content: flex-end; align-items: center; gap: 8px; padding: 16px 4px 0; }   /* 언어 설정 — globe 아이콘 + 우측 정렬 */
+  .navbar__lang-icon { width: 18px; height: 18px; color: var(--text-mute); flex-shrink: 0; }
+
+  /* Destinations — figma 모바일: BIG 4:3 + 작은 카드 가로 스크롤 */
+  .dest-card--big { aspect-ratio: 320 / 240; height: auto; border-radius: 16px; }
+  .dest-card--big .dest-card__featured { top: 20px; left: 20px; }
+  .dest-card--big .dest-card__body { left: 20px; right: 20px; bottom: 20px; }
+  .dest-card--big .dest-card__tags { margin-bottom: 12px; }
+  .dest-card--big .dest-card__title { font-size: 20px; }
+  .dest-card--big .dest-card__arrow { display: none; }   /* figma 모바일: 화살표 없음 — desc 풀폭 */
+
+  .dest__small-grid {
+    display: flex; gap: 20px;
+    overflow-x: auto; -webkit-overflow-scrolling: touch;
+    scroll-snap-type: x mandatory;
+    scrollbar-width: none;                    /* 좌·우 모두 container 패딩 20 (마지막 카드 우측 여백) */
+  }
+  .dest__small-grid::-webkit-scrollbar { display: none; }
+  .dest-card--sm {
+    flex: 0 0 225px; height: 280px;
+    scroll-snap-align: start;                /* 보더는 데스크톱 1px #D9D9D9 유지 (figma stroke) */
+  }
+  .dest-card--sm .dest-card__media { height: 161px; flex-shrink: 0; }
+  .dest-card--sm .dest-card__tags { position: static; margin-bottom: 12px; }  /* figma: 정보영역 안 */
+  .dest-card--sm .dest-card__body { padding: 12px; }
+  .dest-card--sm .dest-card__title { font-size: 16px; font-weight: 600; margin-bottom: 4px; }
+  .dest-card--sm .dest-card__desc { font-size: 14px; color: #64748b; line-height: 1.4; }
+  .dest__dots { display: flex; justify-content: center; gap: 8px; margin-top: 20px; }
+  .dest__dot { width: 6px; height: 6px; border-radius: 50%; background: var(--line); transition: width 0.25s, background 0.25s; }
+  .dest__dot.is-active { width: 18px; background: var(--accent); border-radius: 3px; }
+}
+
+/* ========================================================
+   Movement Hub — v2.1 (airport 골격 x v1.5 토큰)
+   ======================================================== */
+.mv-overline {
+  display:inline-block; font-family:'Outfit',sans-serif;
+  font-size:13px; font-weight:600; letter-spacing:.14em; text-transform:uppercase;
+  color:var(--accent); margin-bottom:16px;
+}
+.mv-sec-head { text-align:center; max-width:760px; margin:0 auto 56px; }
+.mv-sec-head h2 { font-size:42px; font-weight:700; line-height:1.2; letter-spacing:-.01em; color:var(--text-prim); margin:0 0 20px; }
+.mv-sec-head h2 .accent-word { color:var(--accent); }
+.mv-sec-head .lead-lg { color:var(--text-body); margin:0; }
+
+/* S1 Hero */
+.mv-hero { position:relative; height:100svh; min-height:640px; display:flex; align-items:center; overflow:hidden; background:var(--dark); }   /* 콘텐츠 폭과 균형 (1440→1280) */
+.mv-hero__bg { position:absolute; inset:0; z-index:0; }
+.mv-hero__bg img { width:100%; height:100%; object-fit:cover; }
+.mv-hero__scrim { position:absolute; inset:0;
+  background:linear-gradient(rgba(0,0,0,.2), rgba(0,0,0,.2)),
+    linear-gradient(100deg, rgba(16,20,36,.64) 0%, rgba(16,20,36,.30) 46%, rgba(16,20,36,0) 72%); }
+.mv-hero__inner { position:relative; z-index:1; width:100%; max-width:1216px; margin:0 auto; padding:0 112px; color:#fff; text-shadow:0 1px 12px rgba(14,17,28,.34); }
+.mv-crumb { display:flex; gap:10px; align-items:center; font-size:14px; color:rgba(255,255,255,.7); margin-bottom:26px; }
+.mv-crumb a { color:rgba(255,255,255,.7); text-decoration:none; }
+.mv-crumb a:hover { color:#fff; }
+.mv-crumb__cur { color:#fff; font-weight:600; }
+.mv-hero__title { font-size:52px; font-weight:800; line-height:1.18; letter-spacing:-.015em; margin:0 0 24px; }
+.mv-hero__title .accent-word { color:#7B97FF; }
+.mv-hero__sub { font-size:18px; line-height:1.55; color:rgba(255,255,255,.82); margin:0 0 36px; }
+.mv-hero__ctas { display:flex; gap:16px; flex-wrap:wrap; }
+.mv-hero__ctas .btn { text-shadow:none; }
+.btn--white { background:#fff; color:var(--text-prim); border:none; box-shadow:0 6px 18px rgba(14,17,28,.18); }
+.btn--white:hover { background:#eef1f5; }
+.mv-hero__scroll { position:absolute; left:50%; bottom:28px; transform:translateX(-50%); display:flex; flex-direction:column; align-items:center; gap:10px; z-index:1; }
+.mv-hero__scroll span { font-family:'Outfit',sans-serif; font-size:11px; letter-spacing:.2em; text-transform:uppercase; color:rgba(255,255,255,.6); }
+.mv-hero__scroll i { width:1px; height:40px; background:linear-gradient(to bottom, rgba(255,255,255,.6), transparent); }
+
+/* S2 Strip — 연한 면 카드 + 라인 아이콘 (면과 아이콘만, 보더/그림자 없음) */
+.mv-strip { background:#fff; padding:44px 0; }
+.mv-strip__card { display:grid; grid-template-columns:repeat(4,1fr); gap:8px;
+  background:var(--bg-mute); border-radius:24px; padding:40px 24px; }
+.mv-strip__item { display:flex; flex-direction:column; align-items:center; gap:12px; text-align:center; padding:4px 12px; }
+.mv-strip__icon { color:var(--accent); display:flex; align-items:center; justify-content:center; }
+.mv-strip__icon svg { width:28px; height:28px; }
+.mv-strip__label { font-family:'Outfit',sans-serif; font-size:11px; letter-spacing:.14em; text-transform:uppercase; color:var(--text-mute); }
+.mv-strip__value { font-size:19px; font-weight:700; color:var(--text-prim); letter-spacing:-.01em; }
+
+/* S3 Gateways — 공항/항만/철도 3섹션 분리 (배경 면으로만 구분) */
+.mv-gateways { padding:88px 0; }
+.mv-gateways--air { background:var(--bg-base); }
+.mv-gateways--port { background:var(--bg-mute); }
+.mv-gateways--rail { background:var(--accent-soft); }
+.mv-gate-grid { display:grid; gap:24px; grid-template-columns:repeat(3,1fr); }
+.mv-gate-grid--4 { grid-template-columns:repeat(4,1fr); }
+.mv-gate-grid--2 { grid-template-columns:repeat(2,1fr); }
+/* 항만 2개 = 와이드 배너형. 8:3 → 공항(4열 4:3) 카드와 높이 균형 → 동일 유형감 유지 */
+.mv-gate-grid--2 .mv-gate { aspect-ratio:8/3; }
+@media (min-width:769px) and (max-width:1024px){
+  .mv-gate-grid--4 { grid-template-columns:repeat(2,1fr); }
+  .mv-gate-grid--2 .mv-gate { aspect-ratio:4/3; }   /* 태블릿: 공항도 2열이라 동일 4:3 */
+}
+@media (max-width:768px){ .mv-gate-grid--2 .mv-gate { aspect-ratio:16/9; } }
+/* 공항 모자이크 — 커버리지 위계(ICN 大 좌측 / GMP 中 우상 / PUS·CJU 小 우하) */
+.mv-air-mosaic { display:grid; grid-template-columns:2fr 1fr 1fr; grid-template-rows:1fr 1fr; gap:24px; height:480px; }
+.mv-air-mosaic .mv-gate { aspect-ratio:auto; height:100%; }
+.mv-air-mosaic > :nth-child(1) { grid-row:1 / 3; }        /* ICN — 좌측 풀높이 */
+.mv-air-mosaic > :nth-child(2) { grid-column:2 / 4; }     /* GMP — 우상 와이드 */
+.mv-air-mosaic > :nth-child(1) .mv-gate__name { font-size:26px; }   /* ICN 큰 카드 타이틀 강조 */
+@media (min-width:769px) and (max-width:1024px){ .mv-air-mosaic { height:420px; } }
+@media (max-width:768px){
+  .mv-air-mosaic { grid-template-columns:1fr; grid-template-rows:none; height:auto; }
+  .mv-air-mosaic > :nth-child(1), .mv-air-mosaic > :nth-child(2) { grid-row:auto; grid-column:auto; }
+  .mv-air-mosaic .mv-gate { aspect-ratio:4/3; height:auto; }
+  .mv-air-mosaic > :nth-child(1) .mv-gate__name { font-size:21px; }
+}
+/* 철도 가로 로드맵 배너 (accent-soft 면 위 흰 카드 — 면 차이로 분리, 그림자 없음) */
+.mv-rail-banner { display:flex; align-items:center; justify-content:space-between; gap:40px;
+  background:#fff; border-radius:20px; padding:40px 48px; }
+.mv-rail-banner__text { flex:1; }
+.mv-rail-banner__title { font-size:24px; font-weight:700; color:var(--text-prim); margin:0 0 8px; }
+.mv-rail-banner__desc { font-size:15px; line-height:1.6; color:var(--text-mute); margin:0; max-width:620px; }
+.mv-rail-banner__badge { flex:none; }
+.mv-gate { position:relative; aspect-ratio:4/3; border-radius:20px; overflow:hidden; display:block; text-decoration:none;
+  box-shadow:0 10px 28px rgba(var(--shadow-rgb),.10); transition:box-shadow .4s ease, filter .4s ease; }
+.mv-gate:hover { box-shadow:0 16px 38px rgba(var(--shadow-rgb),.18); filter:brightness(1.04); }
+.mv-gate__img { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; }
+.mv-gate__ov { position:absolute; inset:0;
+  background:linear-gradient(to top, rgba(16,21,32,.88) 0%, rgba(16,21,32,.30) 46%, transparent 76%); }
+.mv-gate__body { position:absolute; left:24px; right:24px; bottom:22px; color:#fff; }
+.mv-gate__tag { display:inline-block; font-family:'Outfit',sans-serif; font-size:12px; font-weight:700; letter-spacing:.06em;
+  padding:4px 11px; background:rgba(255,255,255,.18); backdrop-filter:blur(4px); border-radius:7px; margin-bottom:12px; }
+.mv-gate__name { font-size:21px; font-weight:700; margin:0 0 6px; }
+.mv-gate__desc { font-size:14px; line-height:1.5; color:rgba(255,255,255,.86); margin:0; }
+.mv-gate--soon { background:var(--bg-mute); box-shadow:none; cursor:default; display:flex; align-items:flex-end; }
+.mv-gate--soon .mv-gate__body { position:static; width:100%; box-sizing:border-box; color:var(--text-prim); padding:0 24px 22px; }
+.mv-gate--soon .mv-gate__name { color:var(--text-prim); }
+.mv-gate--soon .mv-gate__desc { color:var(--text-mute); }
+.mv-gate__tag--soon { background:var(--accent-soft); color:var(--accent); }
+.mv-gate__soon-badge { display:inline-block; margin-top:14px; font-size:12px; font-weight:600; color:var(--text-mute);
+  background:var(--bg-card); padding:4px 12px; border-radius:20px; }
+
+/* S5 USP — 가로 split 행형 (아이콘 배경 없음, 인포덱과 반전 차별) */
+.mv-usp { background:var(--bg-mute); padding:88px 0; }
+.mv-usp__list { display:flex; flex-direction:column; gap:16px; }
+.mv-usp__row { display:grid; grid-template-columns:320px 1fr; gap:40px; align-items:center;
+  background:#fff; border-radius:18px; padding:30px 40px; }
+.mv-usp__head { display:flex; align-items:center; gap:18px; }
+.mv-usp__icon { color:var(--accent); display:flex; flex:none; }
+.mv-usp__title { font-size:23px; font-weight:700; letter-spacing:-.01em; color:var(--text-prim); margin:0; }
+.mv-usp__detail { display:flex; flex-wrap:wrap; align-items:center; gap:12px 40px; }
+.mv-usp__detail span { font-size:16px; color:var(--text-body); position:relative; }
+.mv-usp__detail span:not(:last-child)::after { content:"·"; position:absolute; right:-22px; color:var(--line); }
+.mv-usp__detail span.is-accent { color:var(--accent); font-weight:600; }
+
+/* Movement Hub — Mobile */
+@media (max-width:768px) {
+  .mv-hero { min-height:480px; }
+  .mv-hero__inner { padding:0 20px; }
+  .mv-hero__title { font-size:clamp(30px,8vw,40px); }
+  .mv-hero__sub { font-size:16px; }
+  .mv-hero__sub br { display:none; }
+  .mv-strip { padding:28px 0; }
+  .mv-strip__card { grid-template-columns:1fr 1fr; gap:16px; padding:28px 16px; }
+  .mv-gateways, .mv-why, .mv-usp { padding:64px 0; }
+  .mv-sec-head { margin-bottom:40px; }
+  .mv-sec-head h2 { font-size:28px; }
+  .mv-gate-grid { grid-template-columns:1fr; }
+  .mv-why__grid { grid-template-columns:1fr; gap:40px; }
+  .mv-why__left { position:static; }
+  .mv-why__left h2 { font-size:30px; }
+  .mv-usp__row { grid-template-columns:1fr; gap:14px; padding:24px; }
+  .mv-usp__detail { flex-direction:column; align-items:flex-start; gap:6px; }
+  .mv-usp__detail span:not(:last-child)::after { display:none; }
+  .mv-rail-banner { flex-direction:column; align-items:flex-start; gap:18px; padding:28px 24px; }
+}
+
+/* S4 Resort Banner — glass-wing compact (airport ski-spotlight 차용, v1.5 토큰) */
+.mv-resort-section { background:var(--bg-soft); padding:0 0 64px; }
+.mv-resort-card { position:relative; min-height:280px; border-radius:20px; overflow:hidden; }
+.mv-resort-media { position:absolute; inset:0; z-index:1; }
+.mv-resort-media img { width:100%; height:100%; object-fit:cover; display:block; }
+.mv-resort-media::after { content:""; position:absolute; inset:0;
+  background:linear-gradient(100deg, transparent 28%, rgba(10,12,18,.74) 60%); pointer-events:none; }
+.mv-resort-body { position:relative; z-index:2; margin-left:auto; width:52%; max-width:480px;
+  padding:40px 44px; background:rgba(15,17,21,.26); backdrop-filter:blur(14px); -webkit-backdrop-filter:blur(14px);
+  display:flex; flex-direction:column; justify-content:center; min-height:inherit; }
+.mv-resort-meta { display:inline-flex; align-items:center; gap:10px; margin-bottom:12px; flex-wrap:wrap; }
+.mv-resort-tag { background:var(--accent-soft); color:var(--accent); font-family:'Outfit',sans-serif;
+  font-size:11px; font-weight:700; letter-spacing:.12em; text-transform:uppercase; padding:4px 11px; border-radius:4px; }
+.mv-resort-date { color:rgba(255,255,255,.6); font-size:12px; font-weight:500; font-family:'Outfit',sans-serif; letter-spacing:.06em; }
+.mv-resort-title { font-family:var(--font-body); font-size:clamp(22px,2.4vw,28px); font-weight:700; color:#fff; margin:0 0 6px; line-height:1.25; letter-spacing:-.01em; }
+.mv-resort-subtitle { color:#7B97FF; font-size:15px; font-weight:600; margin:0 0 12px; letter-spacing:.02em; }
+.mv-resort-desc { color:rgba(255,255,255,.74); line-height:1.6; font-size:14px; margin:0 0 22px; }
+.mv-resort-cta { background:var(--accent); color:#fff; padding:12px 24px; border-radius:999px;
+  font-size:14px; font-weight:700; text-decoration:none; display:inline-flex; align-items:center; gap:8px;
+  align-self:flex-start; transition:background-color .2s; }
+.mv-resort-cta:hover { background:var(--accent-deeper); }
+@media (max-width:767px) {
+  .mv-resort-media::after { background:linear-gradient(to top, rgba(10,12,18,.92) 50%, transparent 100%); }
+  .mv-resort-body { width:100%; max-width:none; background:none; backdrop-filter:none; -webkit-backdrop-filter:none;
+    padding:28px 20px; position:absolute; bottom:0; left:0; right:0; min-height:auto; }
+}
+/* glass-wing compact — 스크롤 진입 시 풀폭 확장 (미지원 브라우저 graceful fallback) */
+@supports (animation-timeline: view()) {
+  .glass-wing--compact {
+    animation: glass-wing-compact-expand linear both;
+    animation-timeline: view();
+    animation-range: entry 30% cover 55%;
+    will-change: margin, min-height, border-radius;
+  }
+  @keyframes glass-wing-compact-expand {
+    from { margin-left:0; margin-right:0; min-height:280px; border-radius:20px; }
+    to { margin-left:calc(50% - 50vw); margin-right:calc(50% - 50vw); min-height:52vh; border-radius:0; }
+  }
+  @media (prefers-reduced-motion: reduce) { .glass-wing--compact { animation:none; } }
+}
+
+/* ========================================================
+   인포덱 칼럼 — 매거진형 (이동망 요약, 풀블리드 무드 + 우측 카드)
+   ======================================================== */
+.mv-infodeck { position:relative; min-height:560px; display:flex; align-items:center; padding:80px 0; overflow:hidden; }
+.mv-infodeck__bg { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; }
+.mv-infodeck__scrim { position:absolute; inset:0; background:linear-gradient(100deg, rgba(15,17,21,.20) 0%, rgba(15,17,21,.04) 48%, rgba(15,17,21,0) 68%); }
+.mv-infodeck .container { position:relative; display:flex; justify-content:flex-end; }
+.mv-infodeck__card { width:min(620px, 94%); background:#fff; border-radius:24px; padding:44px 46px; }
+.mv-infodeck__eyebrow { display:block; color:var(--accent); font-weight:600; font-size:.8rem; letter-spacing:.04em; }
+.mv-infodeck__title { font-size:1.7rem; font-weight:700; color:var(--text-prim); line-height:1.36; margin:.55rem 0 1.1rem; }
+.mv-infodeck__body { font-size:1rem; line-height:1.72; color:var(--text-body); }
+.mv-infodeck__body b { font-weight:600; color:var(--text-prim); }
+.mv-infodeck__stats { display:flex; gap:2.2rem; margin-top:1.7rem; }
+.mv-infodeck__stat { display:flex; flex-direction:column; gap:.15rem; }
+.mv-infodeck__num { font-size:1.9rem; font-weight:700; color:var(--accent); line-height:1; }
+.mv-infodeck__num--word { font-size:1.2rem; }
+.mv-infodeck__lbl { font-size:.8rem; color:var(--text-mute); }
+@media (max-width:768px){
+  .mv-infodeck { min-height:auto; padding:0; display:block; }
+  .mv-infodeck__bg { position:relative; height:240px; }
+  .mv-infodeck__scrim { display:none; }
+  .mv-infodeck .container { justify-content:center; margin-top:-44px; }
+  .mv-infodeck__card { width:92%; padding:28px; }
+  .mv-infodeck__title { font-size:1.4rem; }
+  .mv-infodeck__stats { gap:1.4rem; flex-wrap:wrap; }
+}
+
+/* ===== 공통 허브 nav (self-contained, 프로토타입 통일)
+   다크 히어로 일체화: 최상단=투명 오버레이+흰 텍스트(다크모드),
+   스크롤(.is-solid)=크림 글래스+원래 색 ===== */
+.nav{position:fixed;top:0;left:0;right:0;z-index:60;background:transparent;transition:background .35s cubic-bezier(.16,1,.3,1);
+  --nav-ink:#fff;--nav-soft:rgba(255,255,255,.78);--nav-faint:rgba(255,255,255,.55);--nav-chip:rgba(255,255,255,.16);--nav-hover:rgba(255,255,255,.14)}
+.nav.is-solid,.nav.is-open{background:rgba(250,248,245,.92);backdrop-filter:saturate(140%) blur(12px);-webkit-backdrop-filter:saturate(140%) blur(12px);
+  --nav-ink:#1B2027;--nav-soft:#5C6675;--nav-faint:#97A0AC;--nav-chip:#F3EFE8;--nav-hover:#F3EFE8}
+.nav__in{max-width:1280px;margin:0 auto;padding:20px clamp(24px,4vw,56px);display:flex;align-items:center;gap:44px}
+.nav .brand{display:inline-flex;align-items:center;background:none;padding:0;position:static}
+.nav .brand img{height:28px;width:auto;display:block;transition:filter .35s cubic-bezier(.16,1,.3,1)}
+.nav:not(.is-solid):not(.is-open) .brand img{filter:brightness(0) invert(1)}
+.nav__menu{display:flex;gap:32px;font-size:.95rem;font-weight:500;font-family:'Pretendard',-apple-system,sans-serif}
+.nav__menu a{color:var(--nav-soft);padding:8px 0;text-decoration:none;transition:color .25s cubic-bezier(.16,1,.3,1)}
+.nav__menu a:hover{color:var(--nav-ink)}
+.nav__menu a[aria-current]{color:var(--nav-ink);font-weight:600}
+.nav__right{margin-left:auto;display:flex;align-items:center;gap:8px;color:var(--nav-soft)}
+.nav__lang{display:flex;align-items:center;gap:2px;background:var(--nav-chip);border-radius:999px;padding:4px;font-size:.78rem;font-weight:600}
+.nav__lang span{padding:4px 12px;border-radius:999px;color:var(--nav-faint)}
+.nav__lang span.on{background:#fff;color:#2C51DB}
+.nav__ic{width:40px;height:40px;display:grid;place-items:center;border-radius:50%;background:none;border:none;cursor:pointer;color:inherit;transition:background .25s cubic-bezier(.16,1,.3,1)}
+.nav__ic:hover{background:var(--nav-hover)}
+/* 모바일 nav (햄버거 + 드로어) — 4페이지 공통 */
+.nav__burger{display:none;width:42px;height:42px;flex-direction:column;align-items:center;justify-content:center;gap:5px;border:none;background:none;cursor:pointer}
+.nav__burger span{display:block;width:22px;height:2px;background:var(--nav-ink);border-radius:2px;transition:transform .3s cubic-bezier(.16,1,.3,1),opacity .2s,background .35s}
+.nav.is-open .nav__burger span:nth-child(1){transform:translateY(7px) rotate(45deg)}
+.nav.is-open .nav__burger span:nth-child(2){opacity:0}
+.nav.is-open .nav__burger span:nth-child(3){transform:translateY(-7px) rotate(-45deg)}
+.nav__drawer{display:none;flex-direction:column;max-width:1280px;margin:0 auto;padding:4px clamp(24px,4vw,56px) 18px}
+.nav__drawer a{padding:14px 4px;font-size:1.05rem;font-weight:600;color:#1B2027;border-bottom:1px solid #F3EFE8;text-decoration:none}
+.nav__drawer a.is-disabled{color:#97A0AC}
+.nav__drawer a[aria-current]{color:#2C51DB}
+.nav__drawer-lang{display:inline-flex;align-self:flex-start;margin-top:14px;align-items:center;gap:2px;background:#F3EFE8;border-radius:999px;padding:4px;font-size:.78rem;font-weight:600}
+.nav__drawer-lang span{padding:4px 12px;border-radius:999px;color:#97A0AC}
+.nav__drawer-lang span.on{background:#fff;color:#2C51DB}
+@media (max-width:780px){.nav__in{gap:16px}}
+@media (max-width:768px){
+  .nav__menu,.nav__ic,.nav__lang{display:none}
+  .nav__burger{display:flex}
+  .nav.is-open .nav__drawer{display:flex;animation:navDrop .3s cubic-bezier(.16,1,.3,1)}
+}
+@keyframes navDrop{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:none}}
+/* ===== 공항·항만 검색바 (이미지 구조 차용 · movement 디자인 토큰 적용) ===== */
+.mv-search{display:flex;align-items:stretch;gap:6px;background:var(--bg-card);border-radius:20px;padding:8px;box-shadow:0 24px 60px -22px rgba(14,17,28,.5);margin-top:clamp(28px,3vw,40px);max-width:1000px;text-shadow:none}
+.mv-search__field{flex:1;display:flex;align-items:center;gap:12px;padding:12px 18px;border-radius:14px;transition:background .2s;min-width:0}
+.mv-search__field + .mv-search__field{box-shadow:-1px 0 0 var(--line)}
+.mv-search__field:hover{background:rgba(20,24,33,.04)}
+.mv-search__ic{width:20px;height:20px;color:var(--accent);flex-shrink:0}
+.mv-search__box{display:flex;flex-direction:column;gap:3px;min-width:0;flex:1}
+.mv-search__box label{font-size:12px;font-weight:600;color:var(--text-mute);letter-spacing:.01em}
+.mv-search__box input{border:none;background:none;padding:0;font-family:var(--font-body);font-size:15px;font-weight:600;color:var(--text-prim);width:100%}
+.mv-search__box input::placeholder{color:var(--text-mute);font-weight:500}
+.mv-search__box input:focus{outline:none}
+.mv-search__btn{flex-shrink:0;gap:8px;padding:0 28px;border-radius:14px;white-space:nowrap}
+.mv-search__btn svg{width:18px;height:18px;flex-shrink:0}
+.mv-search__field{position:relative}
+.mv-search__field[data-pop]{cursor:pointer}
+.mv-search__val{display:block;font-size:15px;font-weight:600;color:var(--text-prim);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mv-search__val.is-ph{color:var(--text-mute);font-weight:500}
+.mv-pop{position:absolute;top:calc(100% + 12px);left:0;min-width:236px;background:var(--bg-card);border-radius:14px;box-shadow:0 20px 50px -16px rgba(14,17,28,.45);padding:8px;z-index:30;display:none}
+.mv-search__field.is-open .mv-pop{display:block}
+.mv-pop__label{font-size:11px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--text-mute);padding:8px 12px 6px}
+.mv-pop__item{display:flex;flex-direction:column;gap:2px;width:100%;text-align:left;padding:9px 12px;border-radius:10px;font-size:14px;font-weight:600;color:var(--text-prim);background:none;border:none;cursor:pointer;font-family:var(--font-body)}
+.mv-pop__item:hover{background:var(--accent-soft)}
+.mv-pop__item small{font-weight:500;color:var(--text-mute);font-size:12px}
+.mv-pop--when{padding:14px;min-width:280px}
+.mv-pop--when label{display:flex;align-items:center;justify-content:space-between;gap:14px;font-size:13px;font-weight:600;color:var(--text-mute)}
+.mv-pop--when label + label{margin-top:10px}
+.mv-pop--when input{border:1px solid var(--line);border-radius:10px;padding:9px 12px;font-family:var(--font-body);font-size:14px;font-weight:600;color:var(--text-prim);background:#fff}
+.mv-pop--pax{min-width:240px}
+.mv-pax-row{display:flex;align-items:center;justify-content:space-between;gap:24px;padding:8px 12px}
+.mv-pax-row>span{font-size:14px;font-weight:600;color:var(--text-prim)}
+.mv-pax-ctrl{display:inline-flex;align-items:center;gap:16px}
+.mv-pax-ctrl button{width:32px;height:32px;border-radius:50%;border:1px solid var(--line);background:#fff;font-size:18px;line-height:1;color:var(--text-prim);display:grid;place-items:center;cursor:pointer;transition:border-color .15s,color .15s}
+.mv-pax-ctrl button:hover{border-color:var(--accent);color:var(--accent)}
+.mv-pax-ctrl b{min-width:18px;text-align:center;font-size:16px;font-weight:700;color:var(--text-prim)}
+@media (max-width:768px){.mv-pop{left:8px;right:8px;min-width:0}}
+.mv-codes{margin-top:18px;display:flex;flex-wrap:wrap;align-items:center;gap:8px 14px;color:rgba(255,255,255,.72);font-size:14px}
+.mv-codes b{font-weight:600}
+.mv-codes a{color:#fff;font-weight:700;letter-spacing:.02em;text-underline-offset:3px}
+.mv-codes a:hover{color:var(--accent-soft);text-decoration:underline}
+@media (max-width:768px){
+  .mv-search{flex-direction:column;gap:4px;border-radius:18px}
+  .mv-search__field + .mv-search__field{box-shadow:0 -1px 0 var(--line)}
+  .mv-search__field:hover{background:none}
+  .mv-search__btn{width:100%;height:52px;margin-top:4px}
+}
+</style>
+</head>
+<body data-base="../" data-nav-mode="scroll">
+
+<!-- ========================================================
+     Navbar — 공통 허브 nav (프로토타입 4페이지 통일)
+     구 .navbar 마크업 교체 — 구 CSS/JS는 셀렉터·id 미매칭으로 미발동
+     ======================================================== -->
+<div data-include="navbar"></div>
+
+<main id="main">
+
+<!-- ========================================================
+     S1. Hero — 이동 허브 (다크 단일 이미지)
+     ======================================================== -->
+<section class="mv-hero">
+  <div class="mv-hero__bg">
+    <img src="/assets/movement_hero.webp" alt="인천국제공항 터미널 외관 — 새벽 이륙" />
+    <div class="mv-hero__scrim"></div>
+  </div>
+  <div class="mv-hero__inner">
+    <nav class="mv-crumb" aria-label="현재 위치">
+      <a href="/"><span data-lang="ko">홈</span><span data-lang="en" hidden>Home</span></a><span aria-hidden="true">/</span><span class="mv-crumb__cur"><span data-lang="ko">이동</span><span data-lang="en" hidden>Movement</span></span>
+    </nav>
+    <h1 class="mv-hero__title"><span data-lang="ko">공항·항만에서 목적지까지,</span><span data-lang="en" hidden>Welcome to Korea.</span><br><span class="accent-word"><span data-lang="ko">가장 편안한 방법</span><span data-lang="en" hidden>Where to next?</span></span></h1>
+    <p class="mv-hero__sub"><span data-lang="ko">인천·김포·김해·제주 공항 + 부산항·인천항 국제여객터미널</span><span data-lang="en" hidden>Compare A'REX, limousine bus, KTX connect, and chauffeur</span><br><span data-lang="ko">Door-to-Door 프라이빗 밴 전용 서비스</span><span data-lang="en" hidden>from any Korean airport — your card works.</span></p>
+    <form class="mv-search" onsubmit="return false" aria-label="공항·항만 이동 검색">
+      <div class="mv-search__field" data-pop id="fldFrom">
+        <svg class="mv-search__ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2 16l20-6-7 12-3-5-5-1z"/><path d="M22 2 11 13"/></svg>
+        <span class="mv-search__box">
+          <label><span data-lang="ko">출발 공항·항만</span><span data-lang="en" hidden>From airport/port</span></label>
+          <span class="mv-search__val" id="fromVal" data-ko="인천공항 (ICN)" data-en="Incheon Int'l Airport (ICN)">Incheon Int'l Airport (ICN)</span>
+        </span>
+        <div class="mv-pop" id="popFrom">
+          <div class="mv-pop__label"><span data-lang="ko">공항·항만</span><span data-lang="en" hidden>Airports &amp; ports</span></div>
+          <button type="button" class="mv-pop__item" data-from-ko="인천공항 (ICN)" data-from-en="Incheon Int'l Airport (ICN)"><span data-lang="ko">인천공항 (ICN)</span><span data-lang="en" hidden>Incheon Int'l Airport (ICN)</span><small><span data-lang="ko">수도권 · 국제선 허브</span><span data-lang="en" hidden>Seoul · Int'l hub</span></small></button>
+          <button type="button" class="mv-pop__item" data-from-ko="김포공항 (GMP)" data-from-en="Gimpo Int'l Airport (GMP)"><span data-lang="ko">김포공항 (GMP)</span><span data-lang="en" hidden>Gimpo Int'l Airport (GMP)</span><small><span data-lang="ko">수도권 · 국내·단거리</span><span data-lang="en" hidden>Seoul · Domestic &amp; short-haul</span></small></button>
+          <button type="button" class="mv-pop__item" data-from-ko="김해공항 (PUS)" data-from-en="Gimhae Int'l Airport (PUS)"><span data-lang="ko">김해공항 (PUS)</span><span data-lang="en" hidden>Gimhae Int'l Airport (PUS)</span><small><span data-lang="ko">부산·영남 관문</span><span data-lang="en" hidden>Busan · Yeongnam gateway</span></small></button>
+          <button type="button" class="mv-pop__item" data-from-ko="제주공항 (CJU)" data-from-en="Jeju Int'l Airport (CJU)"><span data-lang="ko">제주공항 (CJU)</span><span data-lang="en" hidden>Jeju Int'l Airport (CJU)</span><small><span data-lang="ko">제주</span><span data-lang="en" hidden>Jeju Island</span></small></button>
+          <button type="button" class="mv-pop__item" data-from-ko="부산항 국제여객터미널" data-from-en="Busan Int'l Ferry Terminal"><span data-lang="ko">부산항 국제여객터미널</span><span data-lang="en" hidden>Busan Int'l Ferry Terminal</span><small><span data-lang="ko">부산 · 크루즈·페리</span><span data-lang="en" hidden>Busan · Cruise &amp; ferry</span></small></button>
+          <button type="button" class="mv-pop__item" data-from-ko="인천항 국제여객터미널" data-from-en="Incheon Int'l Ferry Terminal"><span data-lang="ko">인천항 국제여객터미널</span><span data-lang="en" hidden>Incheon Int'l Ferry Terminal</span><small><span data-lang="ko">수도권 · 한중 페리</span><span data-lang="en" hidden>Incheon · Korea–China ferry</span></small></button>
+        </div>
+      </div>
+      <div class="mv-search__field" data-pop id="fldDest">
+        <svg class="mv-search__ic" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C8.1 2 5 5.1 5 9c0 5.2 7 13 7 13s7-7.8 7-13c0-3.9-3.1-7-7-7zm0 9.5a2.5 2.5 0 110-5 2.5 2.5 0 010 5z"/></svg>
+        <span class="mv-search__box">
+          <label><span data-lang="ko">목적지</span><span data-lang="en" hidden>To</span></label>
+          <span class="mv-search__val is-ph" id="destVal" data-ko="도시·호텔 선택" data-en="Select city/hotel">Select city/hotel</span>
+        </span>
+        <div class="mv-pop" id="popDest">
+          <div class="mv-pop__label"><span data-lang="ko">추천 목적지</span><span data-lang="en" hidden>Suggested</span></div>
+          <button type="button" class="mv-pop__item" data-dest-ko="코엑스 (COEX)" data-dest-en="COEX"><span data-lang="ko">코엑스 (COEX)</span><span data-lang="en" hidden>COEX</span><small><span data-lang="ko">강남 삼성동 · 컨벤션</span><span data-lang="en" hidden>Gangnam Samseong · Convention</span></small></button>
+          <button type="button" class="mv-pop__item" data-dest-ko="명동 (Myeongdong)" data-dest-en="Myeongdong"><span data-lang="ko">명동 (Myeongdong)</span><span data-lang="en" hidden>Myeongdong</span><small><span data-lang="ko">중구 · 쇼핑·관광</span><span data-lang="en" hidden>Jung-gu · Shopping</span></small></button>
+          <button type="button" class="mv-pop__item" data-dest-ko="강남역 (Gangnam)" data-dest-en="Gangnam Stn"><span data-lang="ko">강남역 (Gangnam)</span><span data-lang="en" hidden>Gangnam Stn</span><small><span data-lang="ko">강남 · 비즈니스</span><span data-lang="en" hidden>Gangnam · Business</span></small></button>
+          <button type="button" class="mv-pop__item" data-dest-ko="동대문 (DDP)" data-dest-en="DDP"><span data-lang="ko">동대문 (DDP)</span><span data-lang="en" hidden>DDP</span><small><span data-lang="ko">중구 · 쇼핑</span><span data-lang="en" hidden>Jung-gu · Shopping</span></small></button>
+          <button type="button" class="mv-pop__item" data-dest-ko="홍대 (Hongdae)" data-dest-en="Hongdae"><span data-lang="ko">홍대 (Hongdae)</span><span data-lang="en" hidden>Hongdae</span><small><span data-lang="ko">마포 · 문화</span><span data-lang="en" hidden>Mapo · Culture</span></small></button>
+          <button type="button" class="mv-pop__item" data-dest-ko="잠실 (Jamsil)" data-dest-en="Jamsil"><span data-lang="ko">잠실 (Jamsil)</span><span data-lang="en" hidden>Jamsil</span><small><span data-lang="ko">송파 · 롯데월드</span><span data-lang="en" hidden>Songpa · Lotte World</span></small></button>
+          <button type="button" class="mv-pop__item" data-dest-ko="서울역 (Seoul Stn)" data-dest-en="Seoul Station"><span data-lang="ko">서울역 (Seoul Stn)</span><span data-lang="en" hidden>Seoul Station</span><small><span data-lang="ko">중구 · KTX 환승</span><span data-lang="en" hidden>Jung-gu · KTX transfer</span></small></button>
+        </div>
+      </div>
+      <div class="mv-search__field" data-pop id="fldWhen">
+        <svg class="mv-search__ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
+        <span class="mv-search__box">
+          <label><span data-lang="ko">도착 시간</span><span data-lang="en" hidden>Arrival time</span></label>
+          <span class="mv-search__val is-ph" id="whenVal" data-ko="날짜·시간 선택" data-en="Select date/time">Select date/time</span>
+        </span>
+        <div class="mv-pop mv-pop--when" id="popWhen">
+          <label><span><span data-lang="ko">날짜</span><span data-lang="en" hidden>Date</span></span><input type="date" id="whenDate"></label>
+          <label><span><span data-lang="ko">시간</span><span data-lang="en" hidden>Time</span></span><input type="time" id="whenTime" value="14:00"></label>
+        </div>
+      </div>
+      <div class="mv-search__field" data-pop id="fldPax">
+        <svg class="mv-search__ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+        <span class="mv-search__box">
+          <label><span data-lang="ko">인원</span><span data-lang="en" hidden>Travelers</span></label>
+          <span class="mv-search__val" id="paxVal" data-ko="성인 1" data-en="1 adult">1 adult</span>
+        </span>
+        <div class="mv-pop mv-pop--pax" id="popPax">
+          <div class="mv-pax-row">
+            <span><span data-lang="ko">성인</span><span data-lang="en" hidden>Adults</span></span>
+            <span class="mv-pax-ctrl">
+              <button type="button" data-pax="-1" aria-label="인원 감소">−</button>
+              <b id="paxNum">1</b>
+              <button type="button" data-pax="1" aria-label="인원 증가">+</button>
+            </span>
+          </div>
+        </div>
+      </div>
+      <button type="submit" class="btn btn--primary mv-search__btn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.6-3.6"/></svg>
+        <span data-lang="ko">검색</span><span data-lang="en" hidden>Search</span>
+      </button>
+    </form>
+    <div class="mv-codes">
+      <b><span data-lang="ko">또는 공항 코드로 선택</span><span data-lang="en" hidden>Or pick by airport code</span></b>
+      <a href="#gateways">ICN</a><a href="#gateways">GMP</a><a href="#gateways">PUS</a><a href="#gateways">CJU</a>
+    </div>
+  </div>
+  <div class="mv-hero__scroll" aria-hidden="true"><span>Scroll</span><i></i></div>
+</section>
+
+<!-- ========================================================
+     S3a. 공항 컬렉션 (ICN/GMP/PUS/CJU)
+     ======================================================== -->
+<section class="section mv-gateways mv-gateways--air" id="gateways">
+  <div class="container">
+    <div class="mv-sec-head" data-reveal>
+      <h2><span data-lang="ko">공항</span><span data-lang="en" hidden>Airports</span> <span class="accent-word"><span data-lang="ko">컬렉션</span><span data-lang="en" hidden>Collection</span></span></h2>
+      <p class="lead-lg"><span data-lang="ko">인천·김포·김해·제주 — 4개 국제공항 Door-to-Door 프라이빗 이동</span><span data-lang="en" hidden>Incheon·Gimpo·Gimhae·Jeju — Door-to-Door private rides across 4 int'l airports</span></p>
+    </div>
+    <div class="mv-air-mosaic" data-reveal-group>
+      <a class="mv-gate" href="/airport/icn/">
+        <img class="mv-gate__img" src="/assets/airport_icn_hero.webp" alt="인천국제공항" loading="lazy">
+        <div class="mv-gate__ov"></div>
+        <div class="mv-gate__body">
+          <h3 class="mv-gate__name"><span data-lang="ko">인천국제공항 (ICN)</span><span data-lang="en" hidden>Incheon Int'l Airport (ICN)</span></h3>
+          <p class="mv-gate__desc"><span data-lang="ko">글로벌 허브 공항 · 서울 주요 거점 연결</span><span data-lang="en" hidden>Global hub airport · connects to key Seoul areas</span></p>
+        </div>
+      </a>
+      <a class="mv-gate" href="/airport/gmp/">
+        <img class="mv-gate__img" src="/assets/airport_gmp_hero.webp" alt="김포국제공항" loading="lazy">
+        <div class="mv-gate__ov"></div>
+        <div class="mv-gate__body">
+          <h3 class="mv-gate__name"><span data-lang="ko">김포국제공항 (GMP)</span><span data-lang="en" hidden>Gimpo Int'l Airport (GMP)</span></h3>
+          <p class="mv-gate__desc"><span data-lang="ko">서울 도심 15km · 수원·분당·일산·판교 경기권 연결</span><span data-lang="en" hidden>15 km from central Seoul · connects Suwon·Bundang·Ilsan·Pangyo</span></p>
+        </div>
+      </a>
+      <a class="mv-gate" href="/airport/pus/">
+        <img class="mv-gate__img" src="/assets/airport_pus_hero.webp" alt="김해국제공항" loading="lazy">
+        <div class="mv-gate__ov"></div>
+        <div class="mv-gate__body">
+          <h3 class="mv-gate__name"><span data-lang="ko">김해국제공항 (PUS)</span><span data-lang="en" hidden>Gimhae Int'l Airport (PUS)</span></h3>
+          <p class="mv-gate__desc"><span data-lang="ko">부산 관문 · 시내 약 30분 · 부산항 연결</span><span data-lang="en" hidden>Gateway to Busan · ~30 min downtown · connects to Busan Port</span></p>
+        </div>
+      </a>
+      <a class="mv-gate" href="/airport/cju/">
+        <img class="mv-gate__img" src="/assets/airport_cju_hero.webp" alt="제주국제공항" loading="lazy">
+        <div class="mv-gate__ov"></div>
+        <div class="mv-gate__body">
+          <h3 class="mv-gate__name"><span data-lang="ko">제주국제공항 (CJU)</span><span data-lang="en" hidden>Jeju Int'l Airport (CJU)</span></h3>
+          <p class="mv-gate__desc"><span data-lang="ko">제주 전역 리조트·호텔 Door-to-Door</span><span data-lang="en" hidden>Door-to-Door to resorts·hotels across Jeju</span></p>
+        </div>
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- ========================================================
+     S3a2. 캐리 배너 (물류 허브 크로스셀)
+     ======================================================== -->
+<section class="section mv-carry-banner" style="padding-top:0">
+  <div class="container">
+    <a href="https://logistics.rideus.net/hubs" target="_blank" rel="noopener noreferrer" style="display:block" aria-label="Rideus Logistics Hubs">
+      <picture>
+        <source media="(max-width:768px)" srcset="/assets/carry_mobile.png">
+        <img src="/assets/carry_web.png" alt="" loading="lazy" style="width:100%;height:auto;display:block;border-radius:16px">
+      </picture>
+    </a>
+  </div>
+</section>
+
+<!-- ========================================================
+     S3b. 항만 컬렉션 (부산항/인천항)
+     ======================================================== -->
+<section class="section mv-gateways mv-gateways--port">
+  <div class="container">
+    <div class="mv-sec-head" data-reveal>
+      <h2><span data-lang="ko">항만</span><span data-lang="en" hidden>Ports</span> <span class="accent-word"><span data-lang="ko">컬렉션</span><span data-lang="en" hidden>Collection</span></span></h2>
+      <p class="lead-lg"><span data-lang="ko">부산항·인천항 국제여객터미널 — 크루즈·카페리 여객 연계 이동</span><span data-lang="en" hidden>Busan·Incheon int'l ferry terminals — cruise·ferry connections</span></p>
+    </div>
+    <div class="mv-gate-grid mv-gate-grid--2" data-reveal-group>
+      <a class="mv-gate" href="/airport/busan-port/">
+        <img class="mv-gate__img" src="/assets/airport_busan_port_hero.webp" alt="부산항 국제여객터미널" loading="lazy">
+        <div class="mv-gate__ov"></div>
+        <div class="mv-gate__body">
+          <h3 class="mv-gate__name"><span data-lang="ko">부산항 국제여객터미널</span><span data-lang="en" hidden>Busan Int'l Ferry Terminal</span></h3>
+          <p class="mv-gate__desc"><span data-lang="ko">일본 카페리·크루즈 여객 · 김해공항 약 30분</span><span data-lang="en" hidden>Japan ferry·cruise passengers · ~30 min to Gimhae Airport</span></p>
+        </div>
+      </a>
+      <a class="mv-gate" href="/airport/incheon-port/">
+        <img class="mv-gate__img" src="/assets/airport_incheon_port_hero.webp" alt="인천항 국제여객터미널" loading="lazy">
+        <div class="mv-gate__ov"></div>
+        <div class="mv-gate__body">
+          <h3 class="mv-gate__name"><span data-lang="ko">인천항 국제여객터미널</span><span data-lang="en" hidden>Incheon Int'l Ferry Terminal</span></h3>
+          <p class="mv-gate__desc"><span data-lang="ko">한·중 카페리 관문 · 송도·인천공항 연결</span><span data-lang="en" hidden>Korea-China ferry gateway · connects Songdo·Incheon Airport</span></p>
+        </div>
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- ========================================================
+     S3c → 인포덱 칼럼 (이동망 요약 · 매거진형)
+     ======================================================== -->
+<section class="mv-infodeck">
+  <img class="mv-infodeck__bg" src="../../assets/movement_infodeck.webp" alt="공항 터미널에서 목적지로 향하는 프라이빗 이동의 여정" loading="lazy">
+  <span class="mv-infodeck__scrim" aria-hidden="true"></span>
+  <div class="container">
+    <div class="mv-infodeck__card" data-reveal>
+      <span class="mv-infodeck__eyebrow"><span data-lang="ko">라이더스 네트워크</span><span data-lang="en" hidden>RIDEUS Network</span></span>
+      <h2 class="mv-infodeck__title"><span data-lang="ko">공항·항만에서 목적지까지,</span><span data-lang="en" hidden>From airport or port to your destination,</span><br><span data-lang="ko">하나의 이동망으로 잇습니다</span><span data-lang="en" hidden>connected as one network</span></h2>
+      <p class="mv-infodeck__body"><span data-lang="ko">인천·김포·김해·제주 <b>4개 국제공항</b>과 부산·인천 <b>2개 국제여객터미널</b>, 전국 <b>6개 핵심 거점</b>을 하나로 연결합니다. 도착하는 순간부터 목적지 문 앞까지 &mdash; 환승도, 대기도 없이 <b>프라이빗 전용</b> 차량이 단독으로 모십니다.</span><span data-lang="en" hidden>Incheon·Gimpo·Gimhae·Jeju's <b>4 international airports</b>, Busan·Incheon's <b>2 international ferry terminals</b>, and <b>6 key hubs</b> nationwide &mdash; connected into one network. From the moment you arrive to your destination's door &mdash; no transfers, no waiting &mdash; a <b>private dedicated</b> vehicle takes you exclusively.</span></p>
+      <div class="mv-infodeck__stats">
+        <div class="mv-infodeck__stat"><span class="mv-infodeck__num">6</span><span class="mv-infodeck__lbl"><span data-lang="ko">핵심 거점</span><span data-lang="en" hidden>Key hubs</span></span></div>
+        <div class="mv-infodeck__stat"><span class="mv-infodeck__num">4</span><span class="mv-infodeck__lbl"><span data-lang="ko">국제공항</span><span data-lang="en" hidden>Int'l airports</span></span></div>
+        <div class="mv-infodeck__stat"><span class="mv-infodeck__num">2</span><span class="mv-infodeck__lbl"><span data-lang="ko">국제항만</span><span data-lang="en" hidden>Int'l ports</span></span></div>
+        <div class="mv-infodeck__stat"><span class="mv-infodeck__num mv-infodeck__num--word"><span data-lang="ko">프라이빗</span><span data-lang="en" hidden>Private</span></span><span class="mv-infodeck__lbl"><span data-lang="ko">전용 운행</span><span data-lang="en" hidden>Dedicated service</span></span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ========================================================
+     S4. 리조트 배너 — glass-wing (이동 → 여행 크로스셀)
+     ======================================================== -->
+<section class="mv-resort-section">
+  <div class="container">
+    <div class="mv-resort-card glass-wing--compact" data-reveal>
+      <div class="mv-resort-media">
+        <img src="/assets/private_leisure.webp" alt="리조트 정문 앞 프라이빗 전용 차량 픽업 — 가족과 짐" loading="lazy">
+      </div>
+      <div class="mv-resort-body">
+        <div class="mv-resort-meta">
+          <span class="mv-resort-tag">Resort</span>
+          <span class="mv-resort-date"><span data-lang="ko">프라이빗 도어투도어</span><span data-lang="en" hidden>Private Door-to-Door</span></span>
+        </div>
+        <h2 class="mv-resort-title"><span data-lang="ko">리조트까지, 문 앞에서 문 앞까지</span><span data-lang="en" hidden>To the resort, door to door</span></h2>
+        <p class="mv-resort-subtitle"><span data-lang="ko">용평 · 알펜시아 · 하이원</span><span data-lang="en" hidden>Yongpyong · Alpensia · High1</span></p>
+        <p class="mv-resort-desc"><span data-lang="ko">공항·항만 도착부터 리조트 정문까지, 환승 없는 프라이빗 직행. 스키 장비도 골프백도 그대로 싣고 편안하게.</span><span data-lang="en" hidden>From airport or port arrival to the resort entrance — a transfer-free private ride. Load your ski gear and golf bags and travel in comfort.</span></p>
+        <a href="/prototype/travel/index.html" class="mv-resort-cta"><span data-lang="ko">리조트 이동 알아보기 →</span><span data-lang="en" hidden>Explore resort transfers →</span></a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ========================================================
+     S5. USP — 가로 split 행형
+     ======================================================== -->
+<section class="section mv-usp">
+  <div class="container">
+    <div class="mv-sec-head" data-reveal>
+      <h2><span data-lang="ko">공항·항만 이동,</span><span data-lang="en" hidden>Airport and port transfers,</span> <span class="accent-word"><span data-lang="ko">더 쉽게</span><span data-lang="en" hidden>made easier</span></span> <span data-lang="ko">준비하세요</span><span data-lang="en" hidden>get ready</span></h2>
+    </div>
+    <div class="mv-usp__list" data-reveal-group>
+      <div class="mv-usp__row">
+        <div class="mv-usp__head">
+          <span class="mv-usp__icon"><svg width="32" height="32" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg></span>
+          <h3 class="mv-usp__title"><span data-lang="ko">24시간 운행</span><span data-lang="en" hidden>24-hour service</span></h3>
+        </div>
+        <div class="mv-usp__detail">
+          <span><span data-lang="ko">4개 공항 · 2개 항만</span><span data-lang="en" hidden>4 airports · 2 ports</span></span>
+          <span><span data-lang="ko">Door-to-Door 연결</span><span data-lang="en" hidden>Door-to-Door connection</span></span>
+          <span class="is-accent"><span data-lang="ko">원하는 시간대로 예약</span><span data-lang="en" hidden>Book the time you want</span></span>
+        </div>
+      </div>
+      <div class="mv-usp__row">
+        <div class="mv-usp__head">
+          <span class="mv-usp__icon"><svg width="32" height="32" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg></span>
+          <h3 class="mv-usp__title"><span data-lang="ko">프리미엄 서비스</span><span data-lang="en" hidden>Premium service</span></h3>
+        </div>
+        <div class="mv-usp__detail">
+          <span><span data-lang="ko">Door-to-Door 전용 차량</span><span data-lang="en" hidden>Door-to-Door dedicated vehicle</span></span>
+          <span><span data-lang="ko">전문 드라이버</span><span data-lang="en" hidden>Professional drivers</span></span>
+          <span class="is-accent"><span data-lang="ko">프라이빗 밴 80,000원~</span><span data-lang="en" hidden>Private van from ₩80,000</span></span>
+        </div>
+      </div>
+      <div class="mv-usp__row">
+        <div class="mv-usp__head">
+          <span class="mv-usp__icon"><svg width="32" height="32" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg></span>
+          <h3 class="mv-usp__title"><span data-lang="ko">넉넉한 공간</span><span data-lang="en" hidden>Spacious interior</span></h3>
+        </div>
+        <div class="mv-usp__detail">
+          <span><span data-lang="ko">대형 캐리어 + 기내 수하물</span><span data-lang="en" hidden>Large luggage + carry-ons</span></span>
+          <span><span data-lang="ko">유아 동반 편의</span><span data-lang="en" hidden>Family-with-infant friendly</span></span>
+          <span class="is-accent"><span data-lang="ko">가족 단위 이동 최적</span><span data-lang="en" hidden>Ideal for family travel</span></span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<!-- ========================================================
+     Footer
+     ======================================================== -->
+<div data-include="footer"></div>
+
+<script src="../../assets/flubber.min.js"></script>
+<script>
+/* Hero — flubber path morph 슬라이더
+   이미지 cross-fade + 마스크 형태가 hc1→hc2→hc3로 실제 변형(morph) */
+(function () {
+  const slider = document.querySelector('[data-hero-slider]');
+  const shape = document.getElementById('heroClipShape');
+  if (!slider || !shape) return;
+  const slides = [...slider.querySelectorAll('.hero__slide')];
+  const paths = ['hc1','hc2','hc3'].map(id => {
+    const p = document.querySelector('#'+id+' path');
+    return p ? p.getAttribute('d') : null;
+  });
+  if (slides.length < 2 || paths.some(p => !p)) return;
+  shape.setAttribute('d', paths[0]);   // 초기 모양
+
+  // 모바일 마스크 morph (objectBoundingBox 정규화 3종 — 데스크톱과 동시 전환)
+  const shapeM = document.getElementById('heroClipShapeMobile');
+  const pathsM = ['hcm1','hcm2','hcm3'].map(id => { const p = document.querySelector('#'+id+' path'); return p ? p.getAttribute('d') : null; });
+  const hasMobileMask = !!(shapeM && pathsM.every(Boolean));
+  if (hasMobileMask) shapeM.setAttribute('d', pathsM[0]);
+
+  // 슬라이드별 타이틀 첫 단어 (이동→목적지 / 여행→여행지 / 이벤트→이벤트)
+  const WORDS = ['목적지', '여행지', '이벤트'];
+  const wordEl = document.querySelector('[data-hero-word]');
+  function setWord(str){ if(wordEl) wordEl.innerHTML = [...str].map(c => '<span class="hero__char">'+c+'</span>').join(''); }
+  function animateWord(idx){
+    if(!wordEl) return;
+    const target = WORDS[idx] || WORDS[0];
+    const chars = [...wordEl.querySelectorAll('.hero__char')];
+    chars.forEach((ch, i) => {
+      setTimeout(() => {
+        ch.classList.add('is-out');
+        setTimeout(() => { ch.textContent = target[i] || ''; ch.classList.remove('is-out'); }, 280);
+      }, i * 140);   // 글자별 순차(stagger)
+    });
+  }
+  setWord(WORDS[0]);
+
+  const INTERVAL = 4500, DUR = 900;
+  let cur = 0, timer = null, animating = false;
+
+  // flubber 미로드 시: 단순 fade + 즉시 모양 교체 (graceful fallback)
+  const hasFlubber = (typeof flubber !== 'undefined' && flubber.interpolate);
+
+  function morph(next) {
+    if (animating || next === cur) return;
+    animating = true;
+    slides[cur].classList.remove('is-active');
+    slides[next].classList.add('is-active');
+    animateWord(next);   // 타이틀 단어 글자별 전환
+
+    if (!hasFlubber) {
+      shape.setAttribute('d', paths[next]);
+      if (hasMobileMask) shapeM.setAttribute('d', pathsM[next]);
+      cur = next; animating = false; return;
+    }
+
+    let interp, interpM = null;
+    try { interp = flubber.interpolate(paths[cur], paths[next], { maxSegmentLength: 6 }); }
+    catch (e) { shape.setAttribute('d', paths[next]); if (hasMobileMask) shapeM.setAttribute('d', pathsM[next]); cur = next; animating = false; return; }
+    if (hasMobileMask) {
+      try { interpM = flubber.interpolate(pathsM[cur], pathsM[next], { maxSegmentLength: 0.03 }); }
+      catch (e) { interpM = null; shapeM.setAttribute('d', pathsM[next]); }
+    }
+
+    let t0 = null;
+    function frame(now) {
+      if (t0 === null) t0 = now;
+      const p = Math.min((now - t0) / DUR, 1);
+      const e = p < 0.5 ? 2*p*p : 1 - Math.pow(-2*p + 2, 2)/2;   // easeInOutQuad
+      shape.setAttribute('d', interp(e));
+      if (interpM) shapeM.setAttribute('d', interpM(e));
+      if (p < 1) requestAnimationFrame(frame);
+      else { cur = next; animating = false; }
+    }
+    requestAnimationFrame(frame);
+  }
+
+  const advance = () => morph((cur + 1) % slides.length);
+  const start = () => { if (!timer) timer = setInterval(advance, INTERVAL); };
+  const stop = () => { if (timer) { clearInterval(timer); timer = null; } };
+
+  if ('IntersectionObserver' in window) {
+    new IntersectionObserver((es) => es.forEach(e => e.isIntersecting ? start() : stop()), { threshold: 0.1 }).observe(slider);
+  } else start();
+})();
+
+/* Why Us — 앨범 차트 Coverflow 캐러셀
+   - 카드 N개, 매 N초마다 active 인덱스 +1
+   - 각 카드: 활성 기준 상대 위치(-1/0/1) → data-pos 부여
+   - CSS transform이 부드럽게 슬라이드 + 스케일 적용
+   - hover 시 정지, 화면 밖이면 정지 (IntersectionObserver) */
+(function () {
+  const stage = document.querySelector('[data-coverflow]');
+  if (!stage) return;
+  const cards = [...stage.querySelectorAll('.why-card')];
+  const N = cards.length;
+  let active = 0;
+  let timer = null;
+  let paused = false;
+  const INTERVAL = 3500;
+  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;   // 모션 최소화 선호 시 자동회전 정지
+
+  function setPositions() {
+    cards.forEach((card, i) => {
+      // 활성 기준 상대 위치 (양수: 우측, 음수: 좌측, 순환 처리)
+      let rel = ((i - active) % N + N) % N;
+      if (rel > N / 2) rel -= N;   // -N/2 ~ +N/2 범위로 정규화
+      let pos;
+      if (rel === 0) pos = '0';
+      else if (rel === -1) pos = '-1';
+      else if (rel === 1) pos = '1';
+      else if (rel < -1) pos = '-2';
+      else pos = '2';
+      card.dataset.pos = pos;
+    });
+  }
+
+  function next() {
+    active = (active + 1) % N;
+    setPositions();
+  }
+  function prev() {
+    active = (active - 1 + N) % N;
+    setPositions();
+  }
+
+  function start() {
+    if (timer || reduceMotion) return;   // 모션 최소화 선호 시 자동회전 안 함
+    timer = setInterval(() => { if (!paused) next(); }, INTERVAL);
+  }
+  function stop() {
+    if (!timer) return;
+    clearInterval(timer); timer = null;
+  }
+
+  // Hover pause
+  stage.addEventListener('mouseenter', () => { paused = true; });
+  stage.addEventListener('mouseleave', () => { paused = false; });
+
+  // 드래그 / 스와이프로 카드 전환 (터치·마우스 통합)
+  let dragX = null;
+  stage.addEventListener('pointerdown', (e) => {
+    dragX = e.clientX; paused = true; stage.classList.add('is-dragging');
+  });
+  const endDrag = (e) => {
+    if (dragX === null) return;
+    const dx = (e.clientX ?? dragX) - dragX;
+    if (dx < -40) next();        // 왼쪽으로 끌면 다음
+    else if (dx > 40) prev();    // 오른쪽으로 끌면 이전
+    dragX = null; paused = false; stage.classList.remove('is-dragging');
+  };
+  stage.addEventListener('pointerup', endDrag);
+  stage.addEventListener('pointercancel', endDrag);
+  stage.addEventListener('pointerleave', endDrag);
+
+  // 화면 안일 때만 동작
+  const io = new IntersectionObserver((entries) => {
+    entries.forEach(e => e.isIntersecting ? start() : stop());
+  }, { threshold: 0.2 });
+  io.observe(stage);
+
+  // 초기 배치
+  setPositions();
+})();
+
+/* Scroll Reveal — subtle (1회만, 첫 스크롤 이후 발동) */
+(function () {
+  if (!('IntersectionObserver' in window)) return;
+  const io = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      if (e.isIntersecting) { e.target.classList.add('is-in'); io.unobserve(e.target); }
+    });
+  }, { threshold: 0.15, rootMargin: '0px 0px -12% 0px' });
+  const targets = [...document.querySelectorAll('[data-reveal],[data-reveal-group]')];
+  targets.forEach(el => {
+    if (el.hasAttribute('data-reveal-group')) {
+      [...el.children].forEach((c, i) => { c.style.transitionDelay = (i * 0.1) + 's'; });
+    }
+  });
+  // 첫 화면에 걸친 섹션이 로드 즉시 튀어나오지 않도록 — 스크롤 시작 후 관찰
+  let armed = false;
+  function arm() {
+    if (armed) return; armed = true;
+    targets.forEach(el => io.observe(el));
+  }
+  // 첫 화면에 걸친 reveal 요소를 즉시 노출 — fold 경계라 observer threshold를 못 넘어도 표시
+  function revealAbove() {
+    targets.forEach(el => {
+      if (el.getBoundingClientRect().top < window.innerHeight) {
+        el.classList.add('is-in'); io.unobserve(el);
+      }
+    });
+  }
+  if (window.scrollY > 4) arm();   // 새로고침 시 이미 스크롤돼 있으면 즉시
+  else {
+    window.addEventListener('scroll', arm, { once: true, passive: true });
+    setTimeout(() => { arm(); revealAbove(); }, 1600);   // 안전장치: 1.6초간 스크롤 없으면 첫 화면 콘텐츠 강제 노출
+  }
+})();
+
+/* 모바일 navbar 햄버거 토글 */
+(function () {
+  const nav = document.getElementById('navbar');
+  if (!nav) return;
+  const burger = nav.querySelector('.navbar__burger');
+  if (!burger) return;
+  burger.addEventListener('click', () => {
+    const open = nav.classList.toggle('is-open');
+    burger.setAttribute('aria-expanded', open ? 'true' : 'false');
+    burger.setAttribute('aria-label', open ? '메뉴 닫기' : '메뉴 열기');
+  });
+  nav.querySelectorAll('.navbar__drawer a').forEach(a => {
+    a.addEventListener('click', () => {
+      nav.classList.remove('is-open');
+      burger.setAttribute('aria-expanded', 'false');
+      burger.setAttribute('aria-label', '메뉴 열기');
+    });
+  });
+})();
+
+/* 공통 허브 nav — 모바일 햄버거 토글 + 다크 히어로 스크롤 전환 */
+(function(){var n=document.getElementById('nav'),b=document.getElementById('navBurger');if(n&&b){b.addEventListener('click',function(){var o=n.classList.toggle('is-open');b.setAttribute('aria-expanded',o?'true':'false');b.setAttribute('aria-label',o?'메뉴 닫기':'메뉴 열기');});document.querySelectorAll('#navDrawer a').forEach(function(a){a.addEventListener('click',function(){n.classList.remove('is-open');});});}})();
+
+/* 인기목적지 가로 스크롤 — 도트 인디케이터 동기화 (모바일) */
+(function () {
+  const grid = document.querySelector('.dest__small-grid');
+  const dots = [...document.querySelectorAll('.dest__dot')];
+  if (!grid || !dots.length) return;
+  const cards = [...grid.querySelectorAll('.dest-card--sm')];
+  let raf = null;
+  grid.addEventListener('scroll', () => {
+    if (raf) return;
+    raf = requestAnimationFrame(() => {
+      raf = null;
+      const gridLeft = grid.getBoundingClientRect().left;
+      let closest = 0, min = Infinity;
+      cards.forEach((c, i) => {
+        const d = Math.abs(c.getBoundingClientRect().left - gridLeft);
+        if (d < min) { min = d; closest = i; }
+      });
+      dots.forEach((d, i) => d.classList.toggle('is-active', i === closest));
+    });
+  }, { passive: true });
+})();
+</script>
+  <script>
+  (function(){
+    var search=document.querySelector('.mv-search');
+    if(!search)return;
+    function curKo(){return document.documentElement.lang!=='en';}
+    function renderVal(el){if(!el)return;var t=el.getAttribute(curKo()?'data-ko':'data-en');if(t!=null)el.textContent=t;}
+    var fields=[].slice.call(search.querySelectorAll('.mv-search__field[data-pop]'));
+    function closeAll(){fields.forEach(function(f){f.classList.remove('is-open');});}
+    fields.forEach(function(f){
+      f.addEventListener('click',function(e){
+        if(e.target.closest('.mv-pop'))return;
+        var was=f.classList.contains('is-open');
+        closeAll();
+        if(!was)f.classList.add('is-open');
+      });
+    });
+    document.addEventListener('click',function(e){if(!e.target.closest('.mv-search'))closeAll();});
+    /* 출발 공항·항만 선택 */
+    var fromVal=document.getElementById('fromVal');
+    search.querySelectorAll('[data-from-ko]').forEach(function(b){
+      b.addEventListener('click',function(){
+        fromVal.setAttribute('data-ko',b.getAttribute('data-from-ko'));
+        fromVal.setAttribute('data-en',b.getAttribute('data-from-en'));
+        renderVal(fromVal);
+        closeAll();
+      });
+    });
+    /* 목적지 추천 선택 — 선택값을 data-ko/en에 저장해 언어 전환에도 유지 */
+    var destVal=document.getElementById('destVal');
+    search.querySelectorAll('[data-dest-ko]').forEach(function(b){
+      b.addEventListener('click',function(){
+        destVal.setAttribute('data-ko',b.getAttribute('data-dest-ko'));
+        destVal.setAttribute('data-en',b.getAttribute('data-dest-en'));
+        destVal.classList.remove('is-ph');renderVal(destVal);
+        closeAll();
+      });
+    });
+    /* 날짜·시간 픽커 — 선택 후엔 날짜 포맷(언어 무관) */
+    var wd=document.getElementById('whenDate'),wt=document.getElementById('whenTime'),wv=document.getElementById('whenVal');
+    try{var d=new Date();wd.value=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}catch(e){}
+    wt.value='12:00';
+    function updWhen(){
+      var dv=wd.value,tv=wt.value;
+      if(dv||tv){wv.textContent=(dv?dv.slice(5).replace('-','.'):'')+(dv&&tv?' · ':'')+(tv||'');wv.classList.remove('is-ph');wv.removeAttribute('data-ko');wv.removeAttribute('data-en');}
+    }
+    wd.addEventListener('change',updWhen);wt.addEventListener('change',updWhen);
+    updWhen();
+    /* 인원 카운터 — 언어별 표기 */
+    var pax=1,paxVal=document.getElementById('paxVal');
+    function renderPax(){paxVal.setAttribute('data-ko','성인 '+pax);paxVal.setAttribute('data-en',pax+(pax>1?' adults':' adult'));renderVal(paxVal);}
+    search.querySelectorAll('[data-pax]').forEach(function(b){
+      b.addEventListener('click',function(){
+        pax=Math.max(1,Math.min(13,pax+parseInt(b.getAttribute('data-pax'),10)));
+        document.getElementById('paxNum').textContent=pax;renderPax();
+      });
+    });
+    /* 초기 렌더 + 언어 전환 동기화 (includes.js applyLang→langchange 디스패치) */
+    renderVal(fromVal);renderVal(destVal);renderVal(wv);renderPax();
+    window.addEventListener('langchange',function(){
+      renderVal(fromVal);renderVal(destVal);if(wv.classList.contains('is-ph'))renderVal(wv);renderPax();
+    });
+    /* 검색 → 결과 페이지 이동 (입력값 쿼리 전달) */
+    search.addEventListener('submit',function(e){
+      e.preventDefault();
+      var from=fromVal.getAttribute(curKo()?'data-ko':'data-en')||fromVal.textContent.trim();
+      var to=destVal.classList.contains('is-ph')?'':(destVal.getAttribute(curKo()?'data-ko':'data-en')||destVal.textContent.trim());
+      var p=new URLSearchParams({from:from,to:to,date:wd.value||'',time:wt.value||'',pax:pax});
+      location.href='results/index.html?'+p.toString();
+    });
+  })();
+  </script>
+  <script src="../js/includes.js"></script>
+</body>
+</html>

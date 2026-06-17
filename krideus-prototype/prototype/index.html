@@ -1,0 +1,1554 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="theme-color" content="#FAF8F5" />
+<title>RIDEUS — 목적지에 맞게, 이동을 선택하다.</title>
+
+<!-- Fonts -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Prosto+One&display=swap" rel="stylesheet">
+
+<style>
+/* ========================================================
+   Design Tokens — Vibrant Light (시안004 v1.5)
+   ======================================================== */
+:root {
+  /* Surface */
+  --bg-base: #FAF8F5;         /* Warm Cream — body 기본 */
+  --bg-soft: #FDFCFA;         /* Lighter Cream */
+  --bg-card: #FFFFFF;         /* Card White */
+  --bg-warm: #FCFAF8;         /* Categories / Brand 섹션 */
+  --bg-mute: #F2F3F4;         /* Why Us 섹션 / lang 토글 */
+
+  /* Text */
+  --text-prim: #1A1F26;       /* 제목 / Footer 배경 */
+  --text-mute: #647488;       /* 작은 desc / sub */
+  --text-body: #2E333D;       /* 헤더 설명 본문 */
+  --text-on-dark: #FFFFFF;
+  --footer-text: #A3A5A8;     /* Footer 링크 / 설명 */
+
+  /* Accent */
+  --accent: #2C51DB;          /* Identity Cobalt */
+  --accent-soft: #E8EEFF;     /* Cobalt Tint */
+  --accent-deeper: #1E40C9;   /* Hover / active */
+  --coral: #E2875C;
+  --shuttle: #E8632F;         /* 셔틀 = 오렌지 (concept identity) */
+  --private: #5B45B8;         /* 프라이빗 = 바이올렛 (concept identity) */
+
+  /* Line / Shadow */
+  --line: #D9D9D9;            /* 카드·토글 보더 */
+  --shadow-rgb: 59, 75, 95;   /* 카드 그림자 — rgba(var(--shadow-rgb), a) */
+
+  /* Dark */
+  --dark: #0F1115;
+
+  /* Layout */
+  --container: 1216px;
+
+  /* Fonts */
+  --font-display: 'Outfit', 'Pretendard', sans-serif;
+  --font-body: 'Pretendard', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+/* ========================================================
+   Reset & Base
+   ======================================================== */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html {
+  scroll-behavior: smooth;
+  overflow-x: clip;        /* clip = sticky 유지(hidden은 sticky 깨짐) */
+  width: 100%;
+}
+body {
+  font-family: var(--font-body);
+  background: var(--bg-base);
+  color: var(--text-prim);
+  line-height: 1.3;              /* 기본 행간 130% */
+  letter-spacing: 0.012em;       /* 기본 자간 1.2% */
+  -webkit-font-smoothing: antialiased;
+  overflow-x: clip;
+  width: 100%;
+}
+img, svg { max-width: 100%; display: block; }
+a { color: inherit; text-decoration: none; }
+button { font: inherit; cursor: pointer; border: none; background: none; color: inherit; }
+ul, li { list-style: none; }
+
+/* ========================================================
+   Utilities
+   ======================================================== */
+/* figma 콘텐츠 폭 정확값: 1216 (1440 기준 좌우 112).
+   1264px(=1216+패딩48) 이하에서만 패딩 적용 → 큰 화면은 콘텐츠 1216 고정 */
+.container { width: 100%; max-width: var(--container); margin: 0 auto; padding: 0; }
+@media (max-width: 1264px) { .container { padding: 0 24px; } }
+.section { padding: 88px 0; position: relative; }   /* figma 섹션 상하 패딩 88 */
+.section--base { background: var(--bg-base); }
+.section--soft { background: var(--bg-soft); }
+.section--card { background: var(--bg-card); }
+.section--dark { background: var(--dark); color: var(--text-on-dark); }
+@media (max-width: 768px) { .section { padding: 64px 0; } }
+
+h1, h2, h3, h4 {
+  font-family: var(--font-body);
+  line-height: 1.2;
+  letter-spacing: 0;
+  font-weight: 700;
+}
+h1 { font-size: 56px; line-height: 1.2; letter-spacing: 0.012em; }   /* Figma Hero h1: ls 1.2% */
+h2 { font-size: 48px; letter-spacing: 0.012em; }                     /* Figma 타이틀 통일 48 / ls 1.2% */
+h3 { font-size: 24px; }                      /* Figma 카드 h3 정확 */
+h4 { font-size: 17px; }
+
+/* 헤더 desc 토큰 — figma 2그룹:
+   18px(Hero/Compare/Categories) = .lead-lg / 20px(Brand/WhyUs/Dest) = .lead-md */
+.lead-lg,
+.lead-md {
+  font-size: 18px;             /* 섹션 설명: 18px (hero보다 한 단계 낮게) */
+  font-weight: 400;
+  line-height: 1.3;            /* 행간 130% */
+  letter-spacing: 0.012em;
+  color: var(--text-body);     /* 통일 컬러 */
+}
+/* 설명 내 강조 단어 — figma Bold(같은 색, 굵기만) */
+.lead-lg strong, .lead-md strong { font-weight: 700; color: inherit; }
+.text-mute { color: var(--text-mute); }
+.accent-word { color: var(--accent); }
+
+/* Buttons — Figma Hero CTA: 16px Bold */
+.btn {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 14px 26px;
+  border-radius: 999px;
+  font-weight: 700;
+  font-size: 16px;
+  transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+}
+.btn--primary {
+  background: var(--accent);
+  color: #fff;
+}
+.btn--primary:hover { background: var(--accent-deeper); }
+.btn--outline {
+  background: transparent;
+  color: var(--text-prim);
+  border: 1px solid #63738A;   /* figma CTA outline stroke (데스크톱·모바일 공통) */
+}
+.btn--outline:hover { background: var(--text-prim); color: #fff; }
+.btn--ghost-white {
+  background: rgba(255,255,255,0.12);
+  color: #fff;
+  border: 1px solid rgba(255,255,255,0.3);
+  font-size: 13px;
+  padding: 8px 16px;
+}
+.btn--ghost-white:hover { background: rgba(255,255,255,0.22); }
+
+/* ========================================================
+   Navbar — 글래스 오버레이 (경계 없음, hero 위 겹침)
+   ======================================================== */
+.navbar {
+  position: sticky; top: 0; z-index: 50;
+  background: rgba(255,255,255,0.55);      /* 밝은 프로스트 — 뒤 콘텐츠 비침 + 가독성 */
+  backdrop-filter: blur(20px) saturate(180%);   /* 프로스트 강화 */
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  margin-bottom: -75px;                   /* hero 위 오버레이 (figma navbar=hero 겹침) */
+  /* 경계 없음 — figma stroke null */
+}
+.navbar__inner {
+  display: flex; align-items: center; justify-content: space-between;
+  height: 75px;                           /* figma 75 */
+  max-width: var(--container);
+  margin: 0 auto;
+  padding: 0 16px;                        /* figma Frame8 pad 16 */
+}
+.navbar__brand {
+  display: inline-flex;
+  align-items: center;
+}
+.navbar__brand img {
+  height: 26px;
+  width: auto;
+  display: block;
+}
+
+/* 중앙 메뉴 pill */
+.navbar__menu {
+  display: flex; align-items: center;
+  gap: 56px;
+  background: rgba(255,255,255,0.88);   /* figma Frame1 fill #fff @0.88 */
+  border-radius: 43px;                   /* figma pill */
+  padding: 12px 24px;
+  position: relative;
+}
+.navbar__menu a {
+  position: relative;
+  font-size: 16px;
+  font-weight: 600;          /* SemiBold inactive */
+  color: var(--text-prim);
+  line-height: 19px;
+  transition: color 0.2s ease;
+}
+.navbar__menu a:hover { color: var(--accent); }
+.navbar__menu a.is-active {
+  color: var(--accent);
+  font-weight: 700;
+}
+.navbar__menu a.is-active::after {
+  content: '';
+  position: absolute;
+  left: 0; bottom: -8px;        /* 텍스트 아래 8px 갭 */
+  width: 100%; height: 3px;     /* 텍스트 폭 */
+  background: var(--accent);
+}
+
+/* 우측 액션 (lang + 고객센터) */
+.navbar__actions {
+  display: flex; align-items: center;
+  gap: 8px;
+}
+.lang-toggle {
+  display: inline-flex; align-items: center;
+  background: var(--bg-mute);             /* 한영 토글 배경 */
+  border-radius: 15px;
+  padding: 4px 5px;
+  gap: 0;
+  height: 30px;
+}
+.lang-toggle span {
+  width: 32px; height: 20px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 13px;
+  line-height: 1;                  /* 텍스트 수직 중앙 (line box가 height 초과 방지) */
+  border-radius: 10px;
+  background: transparent;         /* 비활성 투명 */
+  color: var(--text-body);
+  font-weight: 400;
+  transition: color 0.2s ease;
+}
+.lang-toggle span:not(.is-on) { cursor: pointer; }
+.lang-toggle span:not(.is-on):hover { color: var(--text-prim); }
+.lang-toggle .is-on {
+  background: #fff;                /* 활성만 흰 배경 */
+  color: var(--accent);
+  font-weight: 700;
+}
+.support-link {
+  height: 30px;
+  display: inline-flex; align-items: center;
+  padding: 0 12px;
+  border: 1px solid var(--line);
+  border-radius: 24px;
+  background: #fff;
+  font-size: 13px; font-weight: 700;
+  line-height: 1;                  /* 텍스트 수직 중앙 통일 */
+  color: var(--text-prim);
+  transition: background-color 0.2s ease;
+}
+.support-link:hover { background: var(--bg-mute); }
+
+/* 햄버거 + 드로어 (모바일 전용, 데스크톱 숨김) */
+.navbar__burger { display: none; background: none; cursor: pointer; }
+.navbar__drawer { display: none; }
+
+/* ========================================================
+   S1. HERO — Figma 53:3 정밀 매칭
+   - hero section: relative, padding-block 88, height 628 (Figma)
+   - 좌측 텍스트: container 안 401px (x=112 부터)
+   - 우측 이미지: absolute right:0 (화면 우측 끝까지 확장), 856×540
+   - 이미지가 컨테이너(1216) 밖으로 빠져나가 화면 가장자리 닿음
+   - SVG mask: 시안001 두 박스 UNION (좌측만 곡선, 우측·상단·하단 직각)
+   ======================================================== */
+/* Figma 53:19 정밀 매칭 — 섹션 1440×764, 콘텐츠 1216(좌우 112)
+   이미지 영역 고정 730×612 (가변 폐기), 컨테이너 우경계 정렬, top 76 */
+.hero {
+  position: relative;
+  background: var(--bg-card);
+  overflow: hidden;
+  height: 764px;
+}
+.hero__inner {
+  position: relative;
+  max-width: 1216px;        /* figma 콘텐츠 폭 정확값 */
+  margin: 0 auto;
+  padding: 0;
+  height: 100%;
+  display: flex;
+  align-items: center;
+}
+.hero__copy {
+  width: 416px;             /* figma Frame7 폭 */
+  flex-shrink: 0;
+  margin-left: 20px;        /* figma: 컨테이너 시작에서 +20 (타이틀/설명/CTA 전체 우측 이동) */
+  position: relative;
+  z-index: 2;
+  display: flex; flex-direction: column;
+  gap: 32px;                /* figma Frame7 gap (텍스트블록 ↔ CTA) */
+}
+.hero__text {
+  display: flex; flex-direction: column;
+  gap: 16px;                /* figma Frame10 gap (h1 ↔ lead) */
+}
+/* 슬라이드 전환 시 타이틀 첫 단어 글자별 순차 전환 */
+.hero__char {
+  display: inline-block;
+  transition: opacity 0.3s ease, transform 0.3s ease;
+}
+.hero__char.is-out { opacity: 0; transform: translateY(-8px); }
+.hero__copy h1 {
+  font-size: 56px; font-weight: 700;
+  line-height: 1.2;
+  letter-spacing: 0.012em;  /* figma ls 1.2% */
+  color: var(--text-prim);
+  margin: 0;
+}
+.hero__copy .accent-word { color: var(--accent); }
+.hero__copy .lead-lg { margin: 0; font-size: 20px; }   /* hero 설명만 20px (최상위 위계) */
+.hero__ctas { display: flex; gap: 16px; }
+.hero__ctas .btn {
+  width: 200px; height: 56px;
+  border-radius: 28px;
+  font-size: 16px; font-weight: 700;
+  justify-content: center;
+  padding: 0;
+}
+
+/* Hero Image — figma 고정 730×612, 마스크는 컨테이너에 1회 적용,
+   내부 슬라이드 3장이 cross-fade 전환 */
+.hero__media {
+  position: absolute;
+  top: 76px;
+  right: 0;                 /* 콘텐츠(1216) 우경계 = figma x=1328 */
+  width: 730px;
+  height: 612px;
+  z-index: 1;
+  clip-path: url(#heroClip);        /* flubber가 morph하는 단일 마스크 */
+  -webkit-clip-path: url(#heroClip);
+}
+.hero__slide {
+  position: absolute;
+  inset: 0;
+  width: 100%; height: 100%;
+  object-fit: cover;
+  opacity: 0;
+  transition: opacity 0.9s ease;    /* morph 시간과 동기 */
+}
+.hero__slide.is-active { opacity: 1; }
+
+@media (max-width: 1280px) {
+  /* 작은 화면 fallback: 텍스트 위 / 이미지 아래, 비율 유지 */
+  .hero { height: auto; padding: 60px 0; }
+  .hero__inner { flex-direction: column; gap: 36px; align-items: stretch; padding: 0 24px; }
+  .hero__copy { width: 100%; margin-left: 0; }
+  .hero__media {
+    position: relative;
+    width: 100%;
+    max-width: 730px;
+    height: auto;
+    aspect-ratio: 730 / 612;
+    top: 0;
+    right: 0;
+    margin: 0 auto;
+  }
+}
+
+/* ========================================================
+   S2. CATEGORIES — 3 Hubs (사용자 Figma 디자인 기반)
+   ======================================================== */
+/* figma S2 배경 — 화이트와 구분되는 웜 톤 */
+#categories { background: var(--bg-warm); }
+
+/* figma S2: 타이틀(좌) + 설명(우) 가로분할, gap 120 */
+.cats__head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 120px;
+  margin-bottom: 48px;
+}
+.cats__head h2 { margin-bottom: 0; flex-shrink: 0; }
+.cats__head p { max-width: 480px; }   /* color는 .lead-lg 토큰(#2E333D) 사용 */
+@media (max-width: 900px) {
+  .cats__head { flex-direction: column; align-items: flex-start; gap: 16px; }
+}
+
+.cats__grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 20px;                       /* figma 카드 gap */
+}
+@media (max-width: 1024px) {
+  .cats__grid { grid-template-columns: 1fr 1fr; }
+}
+@media (max-width: 560px) {
+  .cats__grid { grid-template-columns: 1fr; }
+}
+.cat-card.is-disabled { cursor: default; }
+.cat-card {
+  position: relative;
+  aspect-ratio: 392 / 595;         /* figma 카드 비율 */
+  border-radius: 20px;             /* figma 카드 radius 통일 */
+  overflow: hidden;
+  background: #1a1a1a;
+}
+.cat-card__bg {
+  position: absolute; inset: 0;
+  width: 100%; height: 100%;
+  object-fit: cover;
+  transition: transform 0.6s cubic-bezier(.2,.7,.2,1);
+}
+.cat-card:hover .cat-card__bg { transform: scale(1.04); }
+.cat-card__overlay {
+  position: absolute; inset: 0;
+  /* 하단 가독성 그라데이션 + 전체 10% 블랙(이미지별 카드 경계 모호 방지) */
+  background:
+    linear-gradient(to bottom, rgba(0,0,0,0) 40%, rgba(0,0,0,0.65) 100%),
+    rgba(0,0,0,0.1);
+}
+.cat-card__body {
+  position: absolute; left: 28px; bottom: 28px; right: 28px;
+  color: #fff;
+}
+.cat-card__title {
+  font-size: 28px; font-weight: 800; margin-bottom: 8px;
+}
+.cat-card__sub {
+  font-size: 14px; opacity: 0.85; line-height: 1.3;   /* 14px↑ → 130% */
+  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
+  overflow: hidden; min-height: 2.6em;   /* 2줄 고정 정렬 — 초과 시 말줄임(…) */
+}
+
+/* ========================================================
+   S3. BRAND FILM
+   ======================================================== */
+.brand-film {
+  background: var(--bg-warm);      /* figma S3 배경 (Categories와 동일 웜톤) */
+  padding: 48px 0 88px;     /* figma S3 상단 48 / 하단 88 */
+  position: relative;
+}
+.brand__inner {
+  width: 100%;
+  max-width: var(--container);     /* 1216 */
+  margin: 0 auto;
+  padding: 0;
+  display: grid;
+  grid-template-columns: 676fr 460fr;   /* Figma: 비디오 676 : 설명 460 */
+  align-items: center;
+  gap: 80px;                       /* Figma gap = 1216 - 676 - 460 = 80 */
+}
+@media (max-width: 1264px) { .brand__inner { padding: 0 24px; } }
+.brand__video {
+  position: relative;
+  aspect-ratio: 676 / 420;         /* Figma 정확 비율 */
+  background: var(--dark);
+  border-radius: 20px;             /* figma 카드 radius 통일 */
+  overflow: hidden;
+}
+.brand__play {
+  position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%);
+  width: 72px; height: 72px; border-radius: 50%;
+  background: #fff;
+  display: flex; align-items: center; justify-content: center;
+}
+.brand__play::after {
+  content: ''; width: 0; height: 0;
+  border-left: 20px solid var(--dark);
+  border-top: 13px solid transparent;
+  border-bottom: 13px solid transparent;
+  margin-left: 6px;
+}
+.brand__copy { padding-right: 0; }
+.brand__copy h2 { margin-bottom: 18px; }
+.brand__copy h2 .accent-word { color: var(--accent); }
+.brand__copy p {
+  /* 섹션 설명 18px */
+  font-size: 18px; font-weight: 400;
+  line-height: 1.3; letter-spacing: 0.012em;
+  color: var(--text-body);
+}
+
+@media (max-width: 900px) {
+  .brand__inner { grid-template-columns: 1fr; gap: 32px; }
+  .brand__video { border-radius: 20px; margin: 0 24px; }
+  .brand__copy { padding: 0 24px; }
+}
+
+/* ========================================================
+   S4. WHY US — 앨범 차트 Coverflow 캐러셀
+   좌-중앙-우 3카드 / 중앙 큼·border / 좌우 작음·페이드
+   자동 진행 + scale/translate 공간감
+   ======================================================== */
+.whyus {
+  background: var(--bg-mute);
+  padding: 88px 0;      /* figma S4 상하 88 */
+  overflow: hidden;
+}
+.whyus__head {
+  text-align: center;
+  max-width: 896px;
+  margin: 0 auto 56px;
+  display: flex; flex-direction: column; gap: 24px;
+}
+.whyus__head h2 {
+  font-size: 48px; font-weight: 700;
+  line-height: 1.2; letter-spacing: 1.2%;
+  color: var(--text-prim);
+  margin: 0;
+}
+.whyus__head h2 .accent-word { color: var(--accent); }
+.whyus__head p {
+  /* 섹션 설명 18px */
+  font-size: 18px; font-weight: 400;
+  line-height: 1.3; letter-spacing: 0.012em;
+  color: var(--text-body);
+  margin: 0;
+}
+
+/* Stage: 절대 위치 카드들이 좌·중앙·우 3 슬롯에 표시 */
+.whyus__stage {
+  position: relative;
+  height: 480px;
+  perspective: 1400px;
+  cursor: grab;
+  touch-action: pan-y;          /* 가로 스와이프=카드 전환, 세로=페이지 스크롤 */
+}
+.whyus__stage.is-dragging { cursor: grabbing; }
+
+/* 카드 기본 = 활성 중심 사이즈 (3:4 세로 일러스트 카드 340×453) */
+.why-card {
+  position: absolute;
+  left: 50%; top: 50%;
+  width: 340px;
+  aspect-ratio: 3 / 4;
+  border-radius: 20px;
+  overflow: hidden;
+  background: #1f2a44;     /* 이미지 로드 전 폴백 */
+  transform: translate(-50%, -50%) scale(0.6);
+  opacity: 0;
+  z-index: 0;
+  box-shadow: 4px 14px 28px rgba(var(--shadow-rgb),0.16);
+  transition: transform 0.7s cubic-bezier(.4,.2,.2,1),
+              opacity 0.7s cubic-bezier(.4,.2,.2,1),
+              box-shadow 0.7s ease,
+              filter 0.7s ease;
+  will-change: transform, opacity;
+}
+
+/* 이미지 풀배경 + 하단 그라데 오버레이 + 텍스트 */
+.why-card__img {
+  position: absolute; inset: 0;
+  width: 100%; height: 100%;
+  object-fit: cover;
+  user-select: none; -webkit-user-drag: none;
+}
+.why-card__overlay {
+  position: absolute; inset: 0;
+  background: linear-gradient(to bottom, transparent 38%, rgba(16,21,32,.30) 60%, rgba(16,21,32,.88) 100%);
+}
+.why-card__body {
+  position: absolute; left: 28px; right: 28px; bottom: 28px;
+  color: #fff;
+}
+.why-card__overline {
+  display: block;
+  font-family: var(--font-display, 'Outfit', sans-serif);
+  font-size: 12px; font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,.72);
+  margin: 0 0 8px;
+}
+.why-card__title {
+  font-size: 24px; font-weight: 700;
+  letter-spacing: -0.01em;
+  margin: 0 0 10px;
+}
+.why-card__desc {
+  font-size: 15px; font-weight: 400;
+  line-height: 1.5;
+  color: rgba(255,255,255,.88);
+  margin: 0;
+}
+
+/* 위치별 transform (data-pos) — 세로 카드 coverflow */
+.why-card[data-pos="-1"] {       /* 좌측 작은 카드 */
+  transform: translate(calc(-50% - 296px), -50%) scale(0.8);
+  opacity: 0.6;
+  z-index: 1;
+  filter: blur(1px);
+  box-shadow: 2px 10px 22px rgba(var(--shadow-rgb),0.18);
+}
+.why-card[data-pos="0"] {        /* 중앙 큰 카드 */
+  transform: translate(-50%, -50%) scale(1);
+  opacity: 1;
+  z-index: 3;
+  box-shadow: 6px 22px 44px rgba(var(--shadow-rgb),0.24);
+}
+.why-card[data-pos="1"] {        /* 우측 작은 카드 */
+  transform: translate(calc(-50% + 296px), -50%) scale(0.8);
+  opacity: 0.6;
+  z-index: 1;
+  filter: blur(1px);
+  box-shadow: 2px 10px 22px rgba(var(--shadow-rgb),0.18);
+}
+/* 나머지(다음/이전) 카드는 더 뒤로 + 안 보이게 */
+.why-card[data-pos="-2"] {
+  transform: translate(calc(-50% - 480px), -50%) scale(0.6);
+  opacity: 0; z-index: 0;
+}
+.why-card[data-pos="2"] {
+  transform: translate(calc(-50% + 480px), -50%) scale(0.6);
+  opacity: 0; z-index: 0;
+}
+
+/* ========================================================
+   S5. DESTINATIONS — Mosaic (Figma 64:607 정밀 매칭)
+   ======================================================== */
+#destinations { padding: 80px 0; }   /* figma S5 섹션 패딩 80 */
+.dest__head {
+  margin-bottom: 36px;
+  text-align: left;
+  display: flex; flex-direction: column; gap: 12px;
+}
+.dest__head h2 {
+  font-size: 48px; font-weight: 700;   /* figma 타이틀 통일 48 */
+  line-height: 1.2;
+  color: var(--text-prim);
+  margin: 0;
+}
+.dest__head p {
+  margin: 0;   /* 폰트는 .lead-md 토큰 사용 — 다른 섹션과 통일 (20px #2E333D) */
+}
+
+/* Figma 정확 비율: 큰카드 596 : 작은카드영역 596 (1:1) */
+.dest__grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+  height: 508px;
+}
+.dest__small-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: 1fr 1fr;
+  gap: 20px;
+}
+@media (max-width: 900px) {
+  .dest__grid {
+    grid-template-columns: 1fr;
+    height: auto;
+  }
+}
+
+.dest-card {
+  position: relative;
+  border-radius: 16px;
+  overflow: hidden;
+  background: var(--bg-card);
+}
+
+/* Big card (좌측 풀높이) */
+.dest-card--big {
+  border-radius: 20px;
+}
+@media (max-width: 900px) {
+  .dest-card--big { height: 420px; }
+}
+.dest-card__bg {
+  position: absolute; inset: 0;
+  width: 100%; height: 100%;
+  object-fit: cover;
+  z-index: 0;
+  transition: transform 0.6s cubic-bezier(.2,.7,.2,1);
+}
+.dest-card--big:hover .dest-card__bg { transform: scale(1.04); }
+.dest-card--big .dest-card__overlay {
+  position: absolute; inset: 0;
+  /* 하단 가독성 그라데이션 + 전체 10% 블랙 */
+  background:
+    linear-gradient(to bottom, rgba(0,0,0,0) 40%, rgba(0,0,0,0.75) 100%),
+    rgba(0,0,0,0.1);
+  z-index: 1;
+}
+.dest-card--big .dest-card__featured {
+  position: absolute; top: 28px; left: 28px;
+  font-family: var(--font-display);
+  font-size: 11px; font-weight: 700; letter-spacing: 0.18em;
+  color: #fff; opacity: 0.9;
+  z-index: 2;
+}
+.dest-card--big .dest-card__body {
+  position: absolute; left: 28px; right: 28px; bottom: 28px;
+  color: #fff;
+  z-index: 2;
+}
+.dest-card--big .dest-card__tags {
+  display: flex; gap: 8px; margin-bottom: 16px;
+}
+.dest-card--big .dest-card__title {
+  font-size: 32px; font-weight: 700; margin-bottom: 8px;
+}
+.dest-card--big .dest-card__desc {
+  font-size: 14px; font-weight: 400; opacity: 0.95;
+}
+/* 원형 화살표 버튼 — Glass morphism (Figma 64:643: opacity 0.18 + stroke 흰 1px + GLASS effect) */
+.dest-card--big .dest-card__arrow {
+  position: absolute;
+  right: 28px; bottom: 28px;
+  width: 48px; height: 48px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.18);
+  border: 1px solid rgba(255,255,255,1);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  display: flex; align-items: center; justify-content: center;
+  z-index: 2;
+  color: #fff;
+  transition: background-color 0.2s ease;
+}
+.dest-card--big .dest-card__arrow:hover { background: rgba(255,255,255,0.32); }
+.dest-card--big .dest-card__arrow svg { width: 20px; height: 20px; }
+
+/* Small card (288x244, stroke #D9D9D9 1px) */
+.dest-card--sm {
+  display: flex; flex-direction: column;
+  height: 244px;
+  border: 1px solid var(--line);
+}
+.dest-card--sm .dest-card__media {
+  position: relative;
+  height: 168px;
+  overflow: hidden;
+}
+.dest-card--sm .dest-card__media img {
+  width: 100%; height: 100%;
+  object-fit: cover;
+  transition: transform 0.6s cubic-bezier(.2,.7,.2,1);
+}
+.dest-card--sm:hover .dest-card__media img { transform: scale(1.04); }
+.dest-card--sm .dest-card__media::after {
+  content: ''; position: absolute; inset: 0;
+  background: rgba(0,0,0,0.1);   /* 전체 10% 블랙 (이미지별 경계 모호 방지) */
+  z-index: 1;
+}
+.dest-card--sm .dest-card__tags {
+  position: absolute;            /* 데스크톱: 이미지 위 좌하단 (body에서 빼내 카드 기준) */
+  left: 16px; top: 113px;        /* media 하단 위 12px (이미지 안) */
+  display: flex; gap: 8px;
+  z-index: 2;                    /* 10% 오버레이 위로 */
+}
+.dest-card--sm .dest-card__body {
+  padding: 12px 16px 16px;
+}
+.dest-card--sm .dest-card__title {
+  font-size: 16px; font-weight: 700;
+  color: var(--text-prim);
+  margin-bottom: 8px;
+}
+.dest-card--sm .dest-card__desc {
+  font-size: 12px; color: var(--text-mute); line-height: 1.5;   /* 13px↓ → 150% */
+}
+.dest__dots { display: none; }   /* 도트 인디케이터 — 모바일 가로 스크롤에서만 노출 */
+
+/* Pill tags (Figma 64:647 베이스: padding 0/18 + Medium 14px + 흰 텍스트)
+   Compare 컬러 시스템 따라 셔틀=코발트, 프라이빗=코랄로 구분 */
+.pill {
+  display: inline-flex; align-items: center;
+  height: 28px;
+  padding: 0 18px;
+  border-radius: 17px;
+  color: #fff;
+  font-size: 14px; font-weight: 500;
+  white-space: nowrap;
+  line-height: 1;
+  background: var(--dark);   /* 기본 fallback */
+}
+.pill--shuttle  { background: var(--shuttle); }   /* 셔틀 = 오렌지 */
+.pill--private  { background: var(--private); }    /* 프라이빗 = 바이올렛 */
+
+/* ========================================================
+   S6. FOOTER
+   ======================================================== */
+.footer {
+  background: var(--text-prim);   /* figma Footer 배경 */
+  color: rgba(255,255,255,0.7);
+  padding: 64px 0 28px;
+}
+.footer__inner {
+  max-width: var(--container);
+  margin: 0 auto; padding: 0 24px;
+  display: grid;
+  grid-template-columns: 1.4fr 1fr 1fr 1fr;
+  gap: 48px;
+}
+.footer__brand .logo {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 24px;
+  color: #fff;
+  letter-spacing: 0.04em;
+  margin-bottom: 14px;
+}
+.footer__brand p { font-size: 13px; line-height: 1.7; color: var(--footer-text); }
+.footer__col h3 {
+  font-size: 14px; font-weight: 600; color: #fff;
+  margin-bottom: 14px;
+}
+.footer__col ul { display: grid; gap: 8px; }
+.footer__col li {
+  font-size: 14px;
+  display: flex; align-items: center; gap: 10px;
+}
+.footer__col a { color: var(--footer-text); transition: color 0.2s; }
+.footer__col a:hover { color: #fff; }
+.footer__col .badge {
+  font-size: 11px;
+  color: #fff;
+  opacity: 0.35;
+}
+.footer__col a.is-accent { color: var(--accent); font-weight: 600; opacity: 1; }
+.footer__divider {
+  max-width: var(--container);
+  margin: 36px auto 0; padding: 0 24px;
+  height: 1px; background: rgba(255,255,255,0.30);
+}
+.footer__bottom {
+  max-width: var(--container);
+  margin: 22px auto 0; padding: 0 24px;
+  display: flex; justify-content: space-between;
+  font-size: 11px; color: rgba(255,255,255,0.4);
+}
+.footer__bottom span:last-child { color: #fff; }
+
+/* ========================================================
+   Scroll Reveal — subtle (모션 감소 설정 시 자동 비활성)
+   ======================================================== */
+@media (prefers-reduced-motion: no-preference) {
+  [data-reveal],
+  [data-reveal-group] > * {
+    opacity: 0;
+    transform: translateY(28px);
+    transition: opacity 0.7s cubic-bezier(0.16, 1, 0.3, 1),
+                transform 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  [data-reveal].is-in,
+  [data-reveal-group].is-in > * {
+    opacity: 1;
+    transform: none;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .why-card { transition: none; }   /* coverflow 카드 즉시 전환 (자동회전은 JS가 정지) */
+}
+@media (max-width: 900px) {
+  .footer__inner {
+    grid-template-columns: 1fr 1fr;
+    gap: 28px;
+  }
+}
+
+/* ========================================================
+   Mobile (≤768px) — navbar 제외 (별도 디자인 예정)
+   ======================================================== */
+@media (max-width: 768px) {
+  /* figma 모바일 좌우 패딩 20 통일 */
+  .container { padding: 0 20px; }
+
+  /* 타이포 — 360 기준 비례(clamp: 360에서 기준값, 큰 폭에서 vw 비례 확대) */
+  h1, .hero__copy h1 { font-size: clamp(32px, 8.9vw, 40px); }   /* 360→32 */
+  h2 { font-size: clamp(28px, 7.8vw, 34px); }                   /* 360→28 */
+  .whyus__head h2, .dest__head h2 { font-size: clamp(28px, 7.8vw, 34px); }
+  .hero__copy .lead-lg { font-size: clamp(16px, 4.45vw, 19px); }  /* 360→16 */
+  .lead-lg, .lead-md { font-size: clamp(15px, 4.17vw, 18px); }    /* 360→15 */
+
+  /* Hero — figma 모바일: 이미지 상단 + 모바일 마스크 + CTA 세로 */
+  .hero__inner { gap: 48px; padding-inline: 20px; }   /* figma: 이미지↔텍스트 48, 컨테이너 좌우 20 */
+  .hero__copy {
+    gap: 48px; margin-left: 0;                  /* figma text-cta gap 48 (텍스트블록 ↔ CTA) */
+    align-items: center; text-align: center;   /* figma 모바일: 가운데 정렬 */
+  }
+  .hero__media {
+    order: -1;                       /* 이미지를 텍스트 위로 */
+    aspect-ratio: 320 / 254;
+    max-width: none;
+    clip-path: url(#heroClipMobile);
+    -webkit-clip-path: url(#heroClipMobile);
+  }
+  .hero__ctas { flex-direction: column; gap: 12px; width: 100%; }   /* CTA 풀폭 */
+  .hero__ctas .btn { width: 100%; flex: none; height: clamp(49px, 13.6vw, 56px); font-size: clamp(14px, 3.9vw, 16px); }   /* 360→14/49 비례 */
+
+  /* Categories — figma 모바일: 세로 스택 카드 320×176, 텍스트 하단 */
+  .cat-card { aspect-ratio: 320 / 176; border-radius: 24px; }
+  .cat-card__body { left: 24px; right: 24px; bottom: 25px; }
+  .cat-card__title { font-size: 20px; font-weight: 700; margin-bottom: 10px; }
+  .cat-card__sub { font-size: 14px; opacity: 1; }
+
+  /* Why Us — 모바일 coverflow: 3:4 세로 카드 (중앙 268×357 + 양옆 살짝) */
+  .whyus__stage { height: 400px; }
+  .why-card {
+    width: 268px;
+    aspect-ratio: 3 / 4;
+    height: auto; min-height: 0;
+    padding: 0;
+  }
+  .why-card__body { left: 22px; right: 22px; bottom: 22px; }
+  .why-card__title { font-size: 21px; margin-bottom: 8px; }
+  .why-card__desc { font-size: 14px; }
+  .why-card[data-pos="-1"] { transform: translate(calc(-50% - 150px), -50%) scale(0.78); opacity: 0.5; }
+  .why-card[data-pos="1"]  { transform: translate(calc(-50% + 150px), -50%) scale(0.78); opacity: 0.5; }
+  .why-card[data-pos="-2"], .why-card[data-pos="2"] { opacity: 0; pointer-events: none; }
+
+  /* Brand — figma 모바일: 헤더(가운데) 위 + 비디오(다크 320×199) 아래 */
+  .brand-film { padding: 36px 0; }
+  .brand__inner { gap: 20px; padding: 0 20px; }
+  .brand__copy { order: -1; text-align: center; padding: 0; }
+  .brand__copy p { font-size: 16px; }
+  .brand__video { aspect-ratio: 320 / 199; margin: 0; }
+
+  /* navbar 모바일 — 로고 + 햄버거 + 드로어 (figma 96:292, 60h) */
+  .navbar {
+    margin-bottom: 0;
+    background: var(--bg-card);          /* 흰색 불투명 (글래스 해제) */
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
+  .navbar__inner { height: 60px; }
+  .navbar__brand img { height: 24px; }   /* figma 모바일 로고 */
+  .navbar__menu, .navbar__actions { display: none; }
+  .navbar__burger {
+    display: flex; flex-direction: column; gap: 8px;   /* figma 바 중심간격 12 (높이4 + gap8) */
+    width: 48px; height: 48px; align-items: center; justify-content: center;   /* 터치 영역 48 (바 크기는 유지) */
+    margin-right: -4px;   /* 영역 확장분 보정 — 바 시각 위치 유지 */
+  }
+  .navbar__burger span {
+    height: 4px; border-radius: 3px;
+    background: var(--text-prim);
+    transition: transform 0.3s ease, opacity 0.3s ease, width 0.3s ease;
+  }
+  .navbar__burger span:nth-child(1),
+  .navbar__burger span:nth-child(3) { width: 18px; }                              /* figma 위·아래 짧은 바 */
+  .navbar__burger span:nth-child(2) { width: 32px; background: var(--accent); }   /* figma 가운데 긴 바 — 파랑 */
+  /* 열림 X — 두께 4px 유지, 선을 길게 늘려 슬림하게 */
+  .navbar.is-open .navbar__burger span:nth-child(1) { width: 26px; transform: translateY(12px) rotate(45deg); }
+  .navbar.is-open .navbar__burger span:nth-child(2) { opacity: 0; }
+  .navbar.is-open .navbar__burger span:nth-child(3) { width: 26px; transform: translateY(-12px) rotate(-45deg); }
+  .navbar__drawer {
+    display: flex; flex-direction: column;
+    position: absolute; top: 60px; left: 0; right: 0;
+    background: rgba(255,255,255,0.97);
+    backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+    padding: 8px 20px 24px;
+    box-shadow: 0 12px 24px rgba(var(--shadow-rgb),0.12);
+    transform: translateY(-12px); opacity: 0; pointer-events: none;
+    transition: transform 0.25s ease, opacity 0.25s ease;
+  }
+  .navbar.is-open .navbar__drawer { transform: translateY(0); opacity: 1; pointer-events: auto; }
+  .navbar__drawer-link {
+    font-size: 18px; font-weight: 600; color: var(--text-prim);
+    padding: 14px 4px; border-bottom: 1px solid rgba(0,0,0,0.05);
+  }
+  .navbar__drawer-lang { display: flex; justify-content: flex-end; align-items: center; gap: 8px; padding: 16px 4px 0; }   /* 언어 설정 — globe 아이콘 + 우측 정렬 */
+  .navbar__lang-icon { width: 18px; height: 18px; color: var(--text-mute); flex-shrink: 0; }
+
+  /* Destinations — figma 모바일: BIG 4:3 + 작은 카드 가로 스크롤 */
+  .dest-card--big { aspect-ratio: 320 / 240; height: auto; border-radius: 16px; }
+  .dest-card--big .dest-card__featured { top: 20px; left: 20px; }
+  .dest-card--big .dest-card__body { left: 20px; right: 20px; bottom: 20px; }
+  .dest-card--big .dest-card__tags { margin-bottom: 12px; }
+  .dest-card--big .dest-card__title { font-size: 20px; }
+  .dest-card--big .dest-card__arrow { display: none; }   /* figma 모바일: 화살표 없음 — desc 풀폭 */
+
+  .dest__small-grid {
+    display: flex; gap: 20px;
+    overflow-x: auto; -webkit-overflow-scrolling: touch;
+    scroll-snap-type: x mandatory;
+    scrollbar-width: none;                    /* 좌·우 모두 container 패딩 20 (마지막 카드 우측 여백) */
+  }
+  .dest__small-grid::-webkit-scrollbar { display: none; }
+  .dest-card--sm {
+    flex: 0 0 225px; height: 280px;
+    scroll-snap-align: start;                /* 보더는 데스크톱 1px #D9D9D9 유지 (figma stroke) */
+  }
+  .dest-card--sm .dest-card__media { height: 161px; flex-shrink: 0; }
+  .dest-card--sm .dest-card__tags { position: static; margin-bottom: 12px; }  /* figma: 정보영역 안 */
+  .dest-card--sm .dest-card__body { padding: 12px; }
+  .dest-card--sm .dest-card__title { font-size: 16px; font-weight: 600; margin-bottom: 4px; }
+  .dest-card--sm .dest-card__desc { font-size: 14px; color: #64748b; line-height: 1.4; }
+  .dest__dots { display: flex; justify-content: center; gap: 8px; margin-top: 20px; }
+  .dest__dot { width: 6px; height: 6px; border-radius: 50%; background: var(--line); transition: width 0.25s, background 0.25s; }
+  .dest__dot.is-active { width: 18px; background: var(--accent); border-radius: 3px; }
+}
+/* ===== 공통 허브 nav (self-contained, 프로토타입 통일)
+   홈은 히어로가 화이트(--bg-card) — nav도 화이트 기반 ===== */
+.nav{position:sticky;top:0;z-index:60;background:rgba(255,255,255,.86);backdrop-filter:saturate(140%) blur(12px);-webkit-backdrop-filter:saturate(140%) blur(12px)}
+.nav__in{max-width:1280px;margin:0 auto;padding:20px clamp(24px,4vw,56px);display:flex;align-items:center;gap:44px}
+.brand{display:inline-flex;align-items:center}
+.brand img{height:28px;width:auto;display:block}
+.nav__menu{display:flex;gap:32px;font-size:.95rem;font-weight:500;font-family:'Pretendard',-apple-system,sans-serif}
+.nav__menu a{color:#5C6675;padding:8px 0;text-decoration:none;transition:color .25s cubic-bezier(.16,1,.3,1)}
+.nav__menu a:hover{color:#1B2027}
+.nav__menu a[aria-current]{color:#1B2027;font-weight:600}
+.nav__right{margin-left:auto;display:flex;align-items:center;gap:8px;color:#5C6675}
+.nav__lang{display:flex;align-items:center;gap:2px;background:#F2F3F4;border-radius:999px;padding:4px;font-size:.78rem;font-weight:600}
+.nav__lang span{padding:4px 12px;border-radius:999px;color:#97A0AC}
+.nav__lang span.on{background:#fff;color:#2C51DB}
+.nav__ic{width:40px;height:40px;display:grid;place-items:center;border-radius:50%;background:none;border:none;cursor:pointer;color:inherit;transition:background .25s cubic-bezier(.16,1,.3,1)}
+.nav__ic:hover{background:#F2F3F4}
+/* 모바일 nav (햄버거 + 드로어) — 4페이지 공통 */
+.nav__burger{display:none;width:42px;height:42px;flex-direction:column;align-items:center;justify-content:center;gap:5px;border:none;background:none;cursor:pointer}
+.nav__burger span{display:block;width:22px;height:2px;background:#1B2027;border-radius:2px;transition:transform .3s cubic-bezier(.16,1,.3,1),opacity .2s}
+.nav.is-open .nav__burger span:nth-child(1){transform:translateY(7px) rotate(45deg)}
+.nav.is-open .nav__burger span:nth-child(2){opacity:0}
+.nav.is-open .nav__burger span:nth-child(3){transform:translateY(-7px) rotate(-45deg)}
+.nav__drawer{display:none;flex-direction:column;max-width:1280px;margin:0 auto;padding:4px clamp(24px,4vw,56px) 18px}
+.nav__drawer a{padding:14px 4px;font-size:1.05rem;font-weight:600;color:#1B2027;border-bottom:1px solid #F2F3F4;text-decoration:none}
+.nav__drawer a.is-disabled{color:#97A0AC}
+.nav__drawer a[aria-current]{color:#2C51DB}
+.nav__drawer-lang{display:inline-flex;align-self:flex-start;margin-top:14px;align-items:center;gap:2px;background:#F2F3F4;border-radius:999px;padding:4px;font-size:.78rem;font-weight:600}
+.nav__drawer-lang span{padding:4px 12px;border-radius:999px;color:#97A0AC}
+.nav__drawer-lang span.on{background:#fff;color:#2C51DB}
+@media (max-width:780px){.nav__in{gap:16px}}
+@media (max-width:768px){
+  .nav__menu,.nav__ic,.nav__lang{display:none}
+  .nav__burger{display:flex}
+  .nav.is-open .nav__drawer{display:flex;animation:navDrop .3s cubic-bezier(.16,1,.3,1)}
+}
+@keyframes navDrop{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:none}}
+</style>
+</head>
+<body data-base="">
+
+<div data-include="navbar"></div>
+
+<main id="main">
+
+<!-- ========================================================
+     S1. Hero (시안001 2박스 마스킹)
+     ======================================================== -->
+<section class="hero">
+  <div class="hero__inner">
+    <div class="hero__copy">
+      <div class="hero__text">
+        <h1 data-lang="ko"><span data-hero-word>목적지</span>에 맞게,<br><span class="accent-word">이동</span>을 선택하다.</h1>
+        <h1 data-lang="en" hidden>From anywhere in Korea,<br>to <span class="accent-word">everywhere else</span>.</h1>
+        <p class="lead-lg"><span data-lang="ko">목적지를 정했다면, 나에게 딱 맞는<br><strong>이동 서비스</strong>를 선택해보세요.</span><span data-lang="en" hidden>One search across airports, ports, intercity routes, destinations, and events — <strong>paid in your currency, operated by people</strong>.</span></p>
+      </div>
+      <div class="hero__ctas">
+        <a href="#categories" class="btn btn--primary"><span data-lang="ko">카테고리 둘러보기 →</span><span data-lang="en" hidden>Browse categories →</span></a>
+        <a href="#" class="btn btn--outline"><span data-lang="ko">지금 예약 상담 받기</span><span data-lang="en" hidden>Book a consultation</span></a>
+      </div>
+    </div>
+
+    <!-- Hero Image — figma 53:33 마스크(730×612 고정) + 3-slide cross-fade
+         clip-path는 컨테이너(.hero__media)에 1회 적용, 내부 슬라이드는 opacity 전환 -->
+    <div class="hero__media" id="heroMedia" data-hero-slider>
+      <svg width="0" height="0" style="position:absolute;width:0;height:0;overflow:hidden" aria-hidden="true">
+        <defs>
+          <!-- hc1: 이동·인천대교 (figma 86:210, 730×580) -->
+          <clipPath id="hc1" clipPathUnits="userSpaceOnUse"><path d="M442.247 0.194389C445.89 -0.0902408 449.801 -0.0811538 453.895 0.347709C453.907 0.349 453.92 0.351294 453.933 0.352592C458.503 0.834231 462.392 1.74334 465.459 2.66412C465.489 2.67305 465.519 2.68151 465.549 2.69048C469.006 3.73429 472.914 5.24453 476.973 7.45025C476.986 7.45774 477.001 7.4652 477.015 7.47271C480.84 9.55562 484.369 12.0238 487.542 14.835L487.552 14.8448C490.49 17.4495 493.576 20.7502 496.325 24.836L496.331 24.8438C499.03 28.8557 501.013 33.0459 502.353 37.2481L502.354 37.2491C503.749 41.6282 504.548 46.3527 504.551 51.3096V59.0762L661.933 12.8399L661.941 12.8379C664.341 12.1334 667.75 11.3084 671.922 10.8926L672.767 10.8155L672.792 10.8135C676.137 10.5341 679.727 10.5439 683.486 10.9649C683.498 10.9662 683.51 10.9675 683.522 10.9688C687.718 11.4416 691.289 12.3335 694.105 13.2374C694.132 13.2461 694.159 13.2549 694.187 13.2637C697.361 14.2884 700.95 15.7712 704.677 17.9366C704.689 17.9439 704.702 17.9507 704.715 17.9581C708.227 20.0029 711.468 22.4258 714.382 25.1856L714.391 25.1954C717.089 27.7524 719.922 30.993 722.446 35.004L722.451 35.0108C724.929 38.9492 726.751 43.0632 727.98 47.1885L727.981 47.1895C729.263 51.4884 729.997 56.1261 729.999 60.9922V424.423C729.999 425.417 729.966 426.394 729.908 427.351H729.911L729.91 427.352L729.908 427.351C729.902 427.456 729.897 427.563 729.89 427.668C729.881 427.803 729.87 427.938 729.86 428.073C729.849 428.224 729.835 428.374 729.822 428.523L729.798 428.812C729.797 428.825 729.796 428.838 729.795 428.851C729.384 433.356 728.343 437.79 726.69 442.03C724.447 447.788 721.335 452.556 718.09 456.351C716.858 457.791 715.543 459.166 714.151 460.467L714.089 460.524C709.051 465.233 703.076 468.917 696.525 471.361L696.386 471.414L696.324 471.437L696.232 471.472C696.251 471.465 696.269 471.456 696.288 471.449C696.069 471.53 695.849 471.61 695.629 471.688C695.594 471.7 695.559 471.713 695.523 471.726C694.748 471.998 693.84 472.298 692.816 472.599L692.81 472.601L334.788 577.782L334.776 577.785C332.197 578.542 328.495 579.425 323.956 579.807H323.954C320.576 580.091 316.982 580.078 313.245 579.66C313.23 579.659 313.214 579.656 313.199 579.654C309.018 579.183 305.448 578.295 302.609 577.384L302.532 577.359C299.366 576.337 295.777 574.856 292.044 572.687L292.01 572.667C288.49 570.618 285.267 568.202 282.382 565.476L282.33 565.428C279.606 562.847 276.797 559.617 274.302 555.662L274.27 555.612C271.777 551.651 269.962 547.533 268.74 543.435L268.737 543.429C267.469 539.172 266.721 534.527 266.721 529.606V524.819L74.1319 577.74L74.1192 577.744C71.3104 578.515 67.2784 579.415 62.335 579.804H62.333C58.6538 580.093 54.7394 580.079 50.6699 579.653C50.6535 579.652 50.6366 579.65 50.6201 579.648C46.0667 579.169 42.1774 578.264 39.086 577.335L39.003 577.31C35.5545 576.269 31.6447 574.76 27.5791 572.55L27.543 572.53C23.709 570.443 20.1985 567.982 17.0567 565.205L17.001 565.156C14.0346 562.527 10.9742 559.237 8.25686 555.208L8.2217 555.157C5.50739 551.122 3.53063 546.928 2.20022 542.753L2.19729 542.746C0.816291 538.41 3.28728e-05 533.679 2.51699e-05 528.665V158.456C-0.00625755 152.468 1.16356 146.408 3.60549 140.545C5.91121 135.01 9.04455 130.405 12.294 126.711L12.9453 125.984L12.9815 125.945C16.4626 122.14 20.2966 119.059 24.1446 116.611L24.9131 116.129L26.0733 115.436C28.801 113.847 31.6768 112.47 34.668 111.32L34.6836 111.314L35.7051 110.932C36.047 110.807 36.3908 110.686 36.7354 110.567C37.6885 110.24 38.6339 109.941 39.5684 109.669L40.499 109.405L40.503 109.404L430.421 2.25884L430.431 2.25689C433.044 1.53921 436.757 0.699005 441.3 0.275444L442.22 0.196342L442.247 0.194389Z"/></clipPath>
+          <!-- hc2: 여행·산호수 (figma 86:149, 730×580) -->
+          <clipPath id="hc2" clipPathUnits="userSpaceOnUse"><path d="M571.639 0C659.099 0.000252293 730 70.9009 730 158.361C730 208.079 707.087 252.444 671.246 281.478L723.445 442.125C733.715 473.731 729.341 508.843 711.717 536.266C694.093 563.688 665.418 580 634.836 580H128C57.3076 580 0 522.692 0 452V105C3.39297e-08 104.722 0.00273216 104.445 0.00488281 104.168C-0.173277 82.8229 5.68401 61.6397 17.1914 43.7344C34.8155 16.3116 63.4897 3.86729e-05 94.0723 0H571.639Z"/></clipPath>
+          <!-- hc3: 이벤트·콘서트 (figma 53:33, 730×612) -->
+          <clipPath id="hc3" clipPathUnits="userSpaceOnUse"><path d="M601.458 0C672.15 0 729.458 57.3076 729.458 128V189.039H730V484C730 554.692 672.692 612 602 612H211.48C94.6831 612 0.000123731 517.317 0 400.52C0 317.402 47.9505 245.482 117.698 210.917C138.998 91.0322 243.739 0 369.742 0H601.458Z"/></clipPath>
+          <!-- heroClip: flubber가 hc1↔hc2↔hc3 사이를 morph하는 실제 적용 마스크 -->
+          <clipPath id="heroClip" clipPathUnits="userSpaceOnUse"><path id="heroClipShape" d=""/></clipPath>
+          <!-- 모바일 마스크 3종 (데스크톱 hc1/hc2/hc3 objectBoundingBox 정규화) + morph 대상 -->
+          <clipPath id="hcm1" clipPathUnits="objectBoundingBox"><path d="M 0.60582 0.00032 C 0.61081 -0.00015 0.61617 -0.00013 0.62177 0.00057 C 0.62179 0.00057 0.62181 0.00057 0.62183 0.00058 C 0.62809 0.00136 0.63341 0.00285 0.63762 0.00435 C 0.63766 0.00437 0.63770 0.00438 0.63774 0.00440 C 0.64247 0.00610 0.64783 0.00857 0.65339 0.01217 C 0.65341 0.01219 0.65343 0.01220 0.65345 0.01221 C 0.65868 0.01561 0.66352 0.01965 0.66787 0.02424 L 0.66788 0.02426 C 0.67190 0.02851 0.67613 0.03391 0.67990 0.04058 L 0.67991 0.04059 C 0.68360 0.04715 0.68632 0.05400 0.68815 0.06086 L 0.68816 0.06086 C 0.69007 0.06802 0.69116 0.07574 0.69117 0.08384 V 0.09653 L 0.90676 0.02098 L 0.90677 0.02098 C 0.91006 0.01983 0.91473 0.01848 0.92044 0.01780 L 0.92160 0.01767 L 0.92163 0.01767 C 0.92622 0.01721 0.93113 0.01723 0.93628 0.01792 C 0.93630 0.01792 0.93632 0.01792 0.93633 0.01792 C 0.94208 0.01870 0.94697 0.02015 0.95083 0.02163 C 0.95087 0.02164 0.95090 0.02166 0.95094 0.02167 C 0.95529 0.02335 0.96021 0.02577 0.96531 0.02931 C 0.96533 0.02932 0.96535 0.02933 0.96536 0.02934 C 0.97017 0.03268 0.97461 0.03664 0.97861 0.04115 L 0.97862 0.04117 C 0.98231 0.04535 0.98619 0.05064 0.98965 0.05720 L 0.98966 0.05721 C 0.99305 0.06364 0.99555 0.07036 0.99723 0.07711 L 0.99723 0.07711 C 0.99899 0.08413 1.00000 0.09171 1.00000 0.09966 V 0.69350 C 1.00000 0.69513 0.99995 0.69672 0.99987 0.69829 H 0.99988 L 0.99988 0.69829 L 0.99987 0.69829 C 0.99987 0.69846 0.99986 0.69863 0.99985 0.69880 C 0.99984 0.69902 0.99982 0.69925 0.99981 0.69947 C 0.99979 0.69971 0.99977 0.69996 0.99976 0.70020 L 0.99972 0.70067 C 0.99972 0.70069 0.99972 0.70072 0.99972 0.70074 C 0.99916 0.70810 0.99773 0.71534 0.99547 0.72227 C 0.99239 0.73168 0.98813 0.73947 0.98368 0.74567 C 0.98200 0.74802 0.98020 0.75027 0.97829 0.75240 L 0.97820 0.75249 C 0.97130 0.76018 0.96312 0.76620 0.95414 0.77020 L 0.95395 0.77028 L 0.95387 0.77032 L 0.95374 0.77038 C 0.95377 0.77037 0.95379 0.77035 0.95382 0.77034 C 0.95352 0.77047 0.95322 0.77060 0.95292 0.77073 C 0.95287 0.77075 0.95282 0.77077 0.95277 0.77079 C 0.95171 0.77124 0.95047 0.77173 0.94906 0.77222 L 0.94905 0.77222 L 0.45861 0.94409 L 0.45860 0.94409 C 0.45506 0.94533 0.44999 0.94677 0.44378 0.94740 H 0.44377 C 0.43915 0.94786 0.43422 0.94784 0.42910 0.94716 C 0.42908 0.94716 0.42906 0.94715 0.42904 0.94715 C 0.42331 0.94638 0.41842 0.94493 0.41453 0.94344 L 0.41443 0.94340 C 0.41009 0.94173 0.40517 0.93931 0.40006 0.93576 L 0.40001 0.93573 C 0.39519 0.93238 0.39078 0.92843 0.38682 0.92398 L 0.38675 0.92390 C 0.38302 0.91968 0.37917 0.91441 0.37576 0.90794 L 0.37571 0.90786 C 0.37230 0.90139 0.36981 0.89466 0.36814 0.88797 L 0.36813 0.88796 C 0.36640 0.88100 0.36537 0.87341 0.36537 0.86537 V 0.85755 L 0.10155 0.94402 L 0.10153 0.94403 C 0.09769 0.94529 0.09216 0.94676 0.08539 0.94739 H 0.08539 C 0.08035 0.94786 0.07499 0.94784 0.06941 0.94715 C 0.06939 0.94714 0.06937 0.94714 0.06934 0.94714 C 0.06311 0.94635 0.05778 0.94488 0.05354 0.94336 L 0.05343 0.94332 C 0.04870 0.94162 0.04335 0.93915 0.03778 0.93554 L 0.03773 0.93551 C 0.03248 0.93210 0.02767 0.92808 0.02337 0.92354 L 0.02329 0.92346 C 0.01923 0.91916 0.01503 0.91379 0.01131 0.90720 L 0.01126 0.90712 C 0.00754 0.90053 0.00484 0.89367 0.00301 0.88685 L 0.00301 0.88684 C 0.00112 0.87975 0.00000 0.87202 0.00000 0.86383 V 0.25892 C -0.00001 0.24913 0.00159 0.23923 0.00494 0.22965 C 0.00810 0.22060 0.01239 0.21308 0.01684 0.20704 L 0.01773 0.20586 L 0.01778 0.20579 C 0.02255 0.19958 0.02780 0.19454 0.03307 0.19054 L 0.03413 0.18975 L 0.03572 0.18862 C 0.03945 0.18602 0.04339 0.18377 0.04749 0.18190 L 0.04751 0.18189 L 0.04891 0.18126 C 0.04938 0.18106 0.04985 0.18086 0.05032 0.18067 C 0.05163 0.18013 0.05292 0.17964 0.05420 0.17920 L 0.05548 0.17877 L 0.05548 0.17876 L 0.58962 0.00369 L 0.58963 0.00369 C 0.59321 0.00252 0.59830 0.00114 0.60452 0.00045 L 0.60578 0.00032 L 0.60582 0.00032 Z"/></clipPath>
+          <clipPath id="hcm2" clipPathUnits="objectBoundingBox"><path d="M 0.78307 0.00000 C 0.90288 0.00000 1.00000 0.11585 1.00000 0.25876 C 1.00000 0.34000 0.96861 0.41249 0.91952 0.45993 L 0.99102 0.72243 C 1.00509 0.77407 0.99910 0.83144 0.97495 0.87625 C 0.95081 0.92106 0.91153 0.94771 0.86964 0.94771 H 0.17534 C 0.07850 0.94771 0.00000 0.85407 0.00000 0.73856 V 0.17157 C 0.00000 0.17111 0.00000 0.17066 0.00001 0.17021 C -0.00024 0.13533 0.00779 0.10072 0.02355 0.07146 C 0.04769 0.02665 0.08697 0.00000 0.12887 0.00000 H 0.78307 Z"/></clipPath>
+          <clipPath id="hcm3" clipPathUnits="objectBoundingBox"><path d="M 0.82392 0.00000 C 0.92075 0.00000 0.99926 0.09364 0.99926 0.20915 L 0.99926 0.33919 L 1.00000 0.33919 L 1.00000 0.73856 C 1.00000 0.85407 0.92150 0.94771 0.82466 0.94771 L 0.25508 0.94771 C 0.11420 0.94771 0.00000 0.81149 0.00000 0.64345 C 0.00000 0.51636 0.06533 0.40747 0.15812 0.36195 C 0.17794 0.15818 0.32312 0.00000 0.49927 0.00000 L 0.82392 0.00000 Z"/></clipPath>
+          <clipPath id="heroClipMobile" clipPathUnits="objectBoundingBox"><path id="heroClipShapeMobile" d=""/></clipPath>
+        </defs>
+      </svg>
+      <img class="hero__slide is-active" src="../assets/hero001.png" alt="이동 — 공항·항만" />
+      <img class="hero__slide" src="../assets/hero002.png" alt="여행 — 레저·테마파크" />
+      <img class="hero__slide" src="../assets/hero003.png" alt="이벤트 — 콘서트·페스티벌" />
+    </div>
+  </div>
+</section>
+
+<!-- ========================================================
+     S2. Categories — 3 Hubs (사용자 Figma 디자인 기반)
+     ======================================================== -->
+<section class="section section--soft" id="categories">
+  <div class="container">
+    <div class="cats__head" data-reveal>
+      <h2 data-lang="ko">지금 <span class="accent-word">어디로</span> 이동하시나요?</h2>
+      <h2 data-lang="en" hidden>Where are you <span class="accent-word">headed</span>?</h2>
+      <p class="lead-lg"><span data-lang="ko">목적지에 맞는 이동 방식을 선택하세요. 라이더스는 모든 여정의 목적에 최적화된 차량과 서비스를 제공합니다.</span><span data-lang="en" hidden>Choose the right way to move. RIDEUS offers vehicles and services optimized for every journey.</span></p>
+    </div>
+
+    <div class="cats__grid" data-reveal-group>
+      <a class="cat-card is-disabled" aria-disabled="true">
+        <img class="cat-card__bg" src="../assets/krideus_cat_airport_demo.jpg" alt="공항" />
+        <div class="cat-card__overlay"></div>
+        <div class="cat-card__body">
+          <div class="cat-card__title"><span data-lang="ko">공항</span><span data-lang="en" hidden>Airport</span></div>
+          <p class="cat-card__sub"><span data-lang="ko">공항·항만 픽업·샌딩, 비즈니스 트립</span><span data-lang="en" hidden>Airport/port pickup &amp; drop-off, business trips</span></p>
+        </div>
+      </a>
+
+      <a href="/city" class="cat-card">
+        <img class="cat-card__bg" src="../assets/krideus_cat_intercity_demo.jpg" alt="시외 이동" />
+        <div class="cat-card__overlay"></div>
+        <div class="cat-card__body">
+          <div class="cat-card__title"><span data-lang="ko">시외 이동</span><span data-lang="en" hidden>City to City</span></div>
+          <p class="cat-card__sub"><span data-lang="ko">도시 간 셔틀·프라이빗 이동</span><span data-lang="en" hidden>City-to-city shuttle &amp; private transfers</span></p>
+        </div>
+      </a>
+
+      <a href="travel/index.html" class="cat-card">
+        <img class="cat-card__bg" src="/assets/Leisure Hero Image.webp" alt="여행" />
+        <div class="cat-card__overlay"></div>
+        <div class="cat-card__body">
+          <div class="cat-card__title"><span data-lang="ko">여행</span><span data-lang="en" hidden>Travel</span></div>
+          <p class="cat-card__sub"><span data-lang="ko">레저, 테마파크에서 쇼핑까지</span><span data-lang="en" hidden>Leisure, theme parks to shopping</span></p>
+        </div>
+      </a>
+
+      <a href="event/index.html" class="cat-card">
+        <img class="cat-card__bg" src="/assets/ev_hero_03.webp" alt="이벤트" />
+        <div class="cat-card__overlay"></div>
+        <div class="cat-card__body">
+          <div class="cat-card__title"><span data-lang="ko">이벤트</span><span data-lang="en" hidden>Events</span></div>
+          <p class="cat-card__sub"><span data-lang="ko">콘서트, 페스티벌, 경기장까지</span><span data-lang="en" hidden>Concerts, festivals to stadiums</span></p>
+        </div>
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- ========================================================
+     S3. Brand Film
+     ======================================================== -->
+<section class="brand-film" id="brand-film">
+  <div class="brand__inner" data-reveal-group>
+    <div class="brand__video">
+      <iframe
+        src="https://www.youtube.com/embed/nnXqPZdG7kg?autoplay=1&amp;mute=1&amp;start=6&amp;playsinline=1&amp;rel=0&amp;modestbranding=1"
+        title="RIDEUS brand film"
+        style="position:absolute;inset:0;width:100%;height:100%;border:0"
+        allow="autoplay; encrypted-media; picture-in-picture; fullscreen"
+        allowfullscreen
+        referrerpolicy="strict-origin-when-cross-origin"
+      ></iframe>
+    </div>
+    <div class="brand__copy">
+      <h2 data-lang="ko"><span class="accent-word">라이더스</span>가 꿈꾸는<br>스마트한 이동</h2>
+      <h2 data-lang="en" hidden>The smart way to move,<br>by <span class="accent-word">RIDEUS</span></h2>
+      <p><span data-lang="ko">공항, 콘서트, 테마파크까지.<br>예약부터 탑승까지 1분이면 충분합니다.</span><span data-lang="en" hidden>Airports, concerts, theme parks.<br>From booking to boarding in one minute.</span></p>
+    </div>
+  </div>
+</section>
+
+<!-- ========================================================
+     S4. Why Us — 무한 루핑 캐러셀 (가운데 활성 강조)
+     ======================================================== -->
+<section class="whyus" id="why">
+  <div class="container">
+    <div class="whyus__head" data-reveal>
+      <h2 data-lang="ko">라이더스가 <span class="accent-word">선택받는 이유</span></h2>
+      <h2 data-lang="en" hidden>Why people <span class="accent-word">choose RIDEUS</span></h2>
+      <p class="lead-md"><span data-lang="ko">가장 합리적이고 편리한 목적지 도달,<br>라이더스가 제공하는 차별화된 이동 경험을 만나보세요.</span><span data-lang="en" hidden>The smartest, most convenient way to reach your destination —<br>discover the mobility experience only RIDEUS offers.</span></p>
+    </div>
+  </div>
+
+  <div class="whyus__stage" data-coverflow>
+      <!-- 4 카드 (Coverflow — JS가 data-pos로 위치 회전 / 3:4 세로 일러스트 카드) -->
+      <article class="why-card">
+        <img class="why-card__img" src="../assets/why01_2.webp" alt="목적지 중심 설계" draggable="false">
+        <div class="why-card__overlay"></div>
+        <div class="why-card__body">
+          <span class="why-card__overline">Destination-First</span>
+          <h3 class="why-card__title"><span data-lang="ko">목적지 중심 설계</span><span data-lang="en" hidden>Destination-first design</span></h3>
+          <p class="why-card__desc"><span data-lang="ko">당신의 목적지에 딱 맞는<br>이동 옵션을 제안합니다.</span><span data-lang="en" hidden>We suggest the mobility option<br>that fits your destination.</span></p>
+        </div>
+      </article>
+      <article class="why-card">
+        <img class="why-card__img" src="../assets/why02.webp" alt="하이브리드 플릿" draggable="false">
+        <div class="why-card__overlay"></div>
+        <div class="why-card__body">
+          <span class="why-card__overline">Hybrid Fleet</span>
+          <h3 class="why-card__title"><span data-lang="ko">하이브리드 플릿</span><span data-lang="en" hidden>Hybrid fleet</span></h3>
+          <p class="why-card__desc"><span data-lang="ko">셔틀과 프라이빗 밴의<br>장점만을 결합했습니다.</span><span data-lang="en" hidden>Combining the best of<br>shuttles and private vans.</span></p>
+        </div>
+      </article>
+      <article class="why-card">
+        <img class="why-card__img" src="../assets/why03.webp" alt="실시간 지원" draggable="false">
+        <div class="why-card__overlay"></div>
+        <div class="why-card__body">
+          <span class="why-card__overline">Real-Time Support</span>
+          <h3 class="why-card__title"><span data-lang="ko">실시간 지원</span><span data-lang="en" hidden>Real-time support</span></h3>
+          <p class="why-card__desc"><span data-lang="ko">즉각적인 문제 해결을 위한<br>전담 채널을 운영합니다.</span><span data-lang="en" hidden>A dedicated channel for<br>instant problem-solving.</span></p>
+        </div>
+      </article>
+      <article class="why-card">
+        <img class="why-card__img" src="../assets/why04.webp" alt="검증된 파트너" draggable="false">
+        <div class="why-card__overlay"></div>
+        <div class="why-card__body">
+          <span class="why-card__overline">Verified Partners</span>
+          <h3 class="why-card__title"><span data-lang="ko">검증된 파트너</span><span data-lang="en" hidden>Verified partners</span></h3>
+          <p class="why-card__desc"><span data-lang="ko">엄격한 기준을 통과한 프리미엄<br>운송 파트너와 함께합니다.</span><span data-lang="en" hidden>Premium transport partners<br>who meet strict standards.</span></p>
+        </div>
+      </article>
+  </div>
+</section>
+
+<!-- ========================================================
+     S5. Destinations — Mosaic (사용자 Figma v2 디자인)
+     ======================================================== -->
+<section class="section section--soft" id="destinations">
+  <div class="container">
+    <div class="dest__head" data-reveal>
+      <h2 data-lang="ko"><span class="accent-word">인기</span> 목적지</h2>
+      <h2 data-lang="en" hidden><span class="accent-word">Popular</span> destinations</h2>
+      <p class="lead-md"><span data-lang="ko">라이더스에서 자주 가는 목적지를 확인해보세요.</span><span data-lang="en" hidden>Explore the destinations RIDEUS travelers visit most.</span></p>
+    </div>
+
+    <div class="dest__grid" data-reveal-group>
+      <a href="#" class="dest-card dest-card--big" aria-label="인천국제공항 자세히 보기">
+        <img class="dest-card__bg" src="/assets/airport_icn_hero.webp" alt="인천국제공항" />
+        <div class="dest-card__overlay"></div>
+        <div class="dest-card__featured">FEATURED</div>
+        <div class="dest-card__body">
+          <div class="dest-card__tags">
+            <span class="pill pill--private"><span data-lang="ko">프라이빗</span><span data-lang="en" hidden>Private</span></span>
+            <span class="pill pill--shuttle"><span data-lang="ko">셔틀</span><span data-lang="en" hidden>Shuttle</span></span>
+          </div>
+          <div class="dest-card__title"><span data-lang="ko">인천국제공항</span><span data-lang="en" hidden>Incheon Int'l Airport</span></div>
+          <p class="dest-card__desc"><span data-lang="ko">항공편 연착 실시간 모니터링, 정확하게 대기합니다.</span><span data-lang="en" hidden>Real-time flight-delay monitoring — we wait, right on time.</span></p>
+        </div>
+        <span class="dest-card__arrow" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+        </span>
+      </a>
+
+      <div class="dest__small-grid">
+      <a href="#" class="dest-card dest-card--sm">
+        <div class="dest-card__media">
+          <img src="/assets/shuttle_everland 1.webp" alt="에버랜드 리조트" />
+        </div>
+        <div class="dest-card__body">
+          <div class="dest-card__tags">
+            <span class="pill pill--private"><span data-lang="ko">프라이빗</span><span data-lang="en" hidden>Private</span></span>
+            <span class="pill pill--shuttle"><span data-lang="ko">셔틀</span><span data-lang="en" hidden>Shuttle</span></span>
+          </div>
+          <div class="dest-card__title"><span data-lang="ko">에버랜드 리조트</span><span data-lang="en" hidden>Everland Resort</span></div>
+          <p class="dest-card__desc"><span data-lang="ko">서울 주요 거점에서 에버랜드까지<br>편안하게 이동하세요.</span><span data-lang="en" hidden>A comfortable ride to Everland<br>from major Seoul hubs.</span></p>
+        </div>
+      </a>
+
+      <a href="#" class="dest-card dest-card--sm">
+        <div class="dest-card__media">
+          <img src="/assets/high1.webp" alt="하이원 스키 리조트" />
+        </div>
+        <div class="dest-card__body">
+          <div class="dest-card__tags">
+            <span class="pill pill--private"><span data-lang="ko">프라이빗</span><span data-lang="en" hidden>Private</span></span>
+            <span class="pill pill--shuttle"><span data-lang="ko">셔틀</span><span data-lang="en" hidden>Shuttle</span></span>
+          </div>
+          <div class="dest-card__title"><span data-lang="ko">하이원 스키 리조트</span><span data-lang="en" hidden>High1 Ski Resort</span></div>
+          <p class="dest-card__desc"><span data-lang="ko">강원도 정선, 스키 장비<br>그대로 편안하게 현장까지.</span><span data-lang="en" hidden>Jeongseon, Gangwon — your ski gear<br>and you, straight to the slopes.</span></p>
+        </div>
+      </a>
+
+      <a href="#" class="dest-card dest-card--sm">
+        <div class="dest-card__media">
+          <img src="/assets/ev_venue_inspire.webp" alt="인스파이어 아레나" />
+        </div>
+        <div class="dest-card__body">
+          <div class="dest-card__tags">
+            <span class="pill pill--private"><span data-lang="ko">프라이빗</span><span data-lang="en" hidden>Private</span></span>
+            <span class="pill pill--shuttle"><span data-lang="ko">셔틀</span><span data-lang="en" hidden>Shuttle</span></span>
+          </div>
+          <div class="dest-card__title"><span data-lang="ko">인스파이어 아레나</span><span data-lang="en" hidden>Inspire Arena</span></div>
+          <p class="dest-card__desc"><span data-lang="ko">영종도 K-pop 전용 아레나,<br>심야 이동까지 올인원 셔틀.</span><span data-lang="en" hidden>K-pop arena in Yeongjong —<br>all-in-one shuttle, even late nights.</span></p>
+        </div>
+      </a>
+
+      <a href="#" class="dest-card dest-card--sm">
+        <div class="dest-card__media">
+          <img src="/sports-shuttle/images/venue_jamsil.webp" alt="잠실야구장" />
+        </div>
+        <div class="dest-card__body">
+          <div class="dest-card__tags">
+            <span class="pill pill--private"><span data-lang="ko">프라이빗</span><span data-lang="en" hidden>Private</span></span>
+            <span class="pill pill--shuttle"><span data-lang="ko">셔틀</span><span data-lang="en" hidden>Shuttle</span></span>
+          </div>
+          <div class="dest-card__title"><span data-lang="ko">잠실야구장</span><span data-lang="en" hidden>Jamsil Baseball Stadium</span></div>
+          <p class="dest-card__desc"><span data-lang="ko">KBO 시즌 직행, 경기 종료 후<br>귀가까지 편안하게.</span><span data-lang="en" hidden>Direct through the KBO season —<br>an easy ride home after the game.</span></p>
+        </div>
+      </a>
+      </div><!-- /dest__small-grid -->
+
+      <div class="dest__dots" aria-hidden="true">
+        <span class="dest__dot is-active"></span>
+        <span class="dest__dot"></span>
+        <span class="dest__dot"></span>
+        <span class="dest__dot"></span>
+      </div>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<!-- ========================================================
+     Footer
+     ======================================================== -->
+<div data-include="footer"></div>
+
+<script src="../assets/flubber.min.js"></script>
+<script>
+/* Hero — flubber path morph 슬라이더
+   이미지 cross-fade + 마스크 형태가 hc1→hc2→hc3로 실제 변형(morph) */
+(function () {
+  const slider = document.querySelector('[data-hero-slider]');
+  const shape = document.getElementById('heroClipShape');
+  if (!slider || !shape) return;
+  const slides = [...slider.querySelectorAll('.hero__slide')];
+  const paths = ['hc1','hc2','hc3'].map(id => {
+    const p = document.querySelector('#'+id+' path');
+    return p ? p.getAttribute('d') : null;
+  });
+  if (slides.length < 2 || paths.some(p => !p)) return;
+  shape.setAttribute('d', paths[0]);   // 초기 모양
+
+  // 모바일 마스크 morph (objectBoundingBox 정규화 3종 — 데스크톱과 동시 전환)
+  const shapeM = document.getElementById('heroClipShapeMobile');
+  const pathsM = ['hcm1','hcm2','hcm3'].map(id => { const p = document.querySelector('#'+id+' path'); return p ? p.getAttribute('d') : null; });
+  const hasMobileMask = !!(shapeM && pathsM.every(Boolean));
+  if (hasMobileMask) shapeM.setAttribute('d', pathsM[0]);
+
+  // 슬라이드별 타이틀 첫 단어 (이동→목적지 / 여행→여행지 / 이벤트→이벤트)
+  const WORDS = ['목적지', '여행지', '이벤트'];
+  const wordEl = document.querySelector('[data-hero-word]');
+  function setWord(str){ if(wordEl) wordEl.innerHTML = [...str].map(c => '<span class="hero__char">'+c+'</span>').join(''); }
+  function animateWord(idx){
+    if(!wordEl) return;
+    const target = WORDS[idx] || WORDS[0];
+    const chars = [...wordEl.querySelectorAll('.hero__char')];
+    chars.forEach((ch, i) => {
+      setTimeout(() => {
+        ch.classList.add('is-out');
+        setTimeout(() => { ch.textContent = target[i] || ''; ch.classList.remove('is-out'); }, 280);
+      }, i * 140);   // 글자별 순차(stagger)
+    });
+  }
+  setWord(WORDS[0]);
+
+  const INTERVAL = 4500, DUR = 900;
+  let cur = 0, timer = null, animating = false;
+
+  // flubber 미로드 시: 단순 fade + 즉시 모양 교체 (graceful fallback)
+  const hasFlubber = (typeof flubber !== 'undefined' && flubber.interpolate);
+
+  function morph(next) {
+    if (animating || next === cur) return;
+    animating = true;
+    slides[cur].classList.remove('is-active');
+    slides[next].classList.add('is-active');
+    animateWord(next);   // 타이틀 단어 글자별 전환
+
+    if (!hasFlubber) {
+      shape.setAttribute('d', paths[next]);
+      if (hasMobileMask) shapeM.setAttribute('d', pathsM[next]);
+      cur = next; animating = false; return;
+    }
+
+    let interp, interpM = null;
+    try { interp = flubber.interpolate(paths[cur], paths[next], { maxSegmentLength: 6 }); }
+    catch (e) { shape.setAttribute('d', paths[next]); if (hasMobileMask) shapeM.setAttribute('d', pathsM[next]); cur = next; animating = false; return; }
+    if (hasMobileMask) {
+      try { interpM = flubber.interpolate(pathsM[cur], pathsM[next], { maxSegmentLength: 0.03 }); }
+      catch (e) { interpM = null; shapeM.setAttribute('d', pathsM[next]); }
+    }
+
+    let t0 = null;
+    function frame(now) {
+      if (t0 === null) t0 = now;
+      const p = Math.min((now - t0) / DUR, 1);
+      const e = p < 0.5 ? 2*p*p : 1 - Math.pow(-2*p + 2, 2)/2;   // easeInOutQuad
+      shape.setAttribute('d', interp(e));
+      if (interpM) shapeM.setAttribute('d', interpM(e));
+      if (p < 1) requestAnimationFrame(frame);
+      else { cur = next; animating = false; }
+    }
+    requestAnimationFrame(frame);
+  }
+
+  const advance = () => morph((cur + 1) % slides.length);
+  const start = () => { if (!timer) timer = setInterval(advance, INTERVAL); };
+  const stop = () => { if (timer) { clearInterval(timer); timer = null; } };
+
+  if ('IntersectionObserver' in window) {
+    new IntersectionObserver((es) => es.forEach(e => e.isIntersecting ? start() : stop()), { threshold: 0.1 }).observe(slider);
+  } else start();
+})();
+
+/* Why Us — 앨범 차트 Coverflow 캐러셀
+   - 카드 N개, 매 N초마다 active 인덱스 +1
+   - 각 카드: 활성 기준 상대 위치(-1/0/1) → data-pos 부여
+   - CSS transform이 부드럽게 슬라이드 + 스케일 적용
+   - hover 시 정지, 화면 밖이면 정지 (IntersectionObserver) */
+(function () {
+  const stage = document.querySelector('[data-coverflow]');
+  if (!stage) return;
+  const cards = [...stage.querySelectorAll('.why-card')];
+  const N = cards.length;
+  let active = 0;
+  let timer = null;
+  let paused = false;
+  const INTERVAL = 3500;
+  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;   // 모션 최소화 선호 시 자동회전 정지
+
+  function setPositions() {
+    cards.forEach((card, i) => {
+      // 활성 기준 상대 위치 (양수: 우측, 음수: 좌측, 순환 처리)
+      let rel = ((i - active) % N + N) % N;
+      if (rel > N / 2) rel -= N;   // -N/2 ~ +N/2 범위로 정규화
+      let pos;
+      if (rel === 0) pos = '0';
+      else if (rel === -1) pos = '-1';
+      else if (rel === 1) pos = '1';
+      else if (rel < -1) pos = '-2';
+      else pos = '2';
+      card.dataset.pos = pos;
+    });
+  }
+
+  function next() {
+    active = (active + 1) % N;
+    setPositions();
+  }
+  function prev() {
+    active = (active - 1 + N) % N;
+    setPositions();
+  }
+
+  function start() {
+    if (timer || reduceMotion) return;   // 모션 최소화 선호 시 자동회전 안 함
+    timer = setInterval(() => { if (!paused) next(); }, INTERVAL);
+  }
+  function stop() {
+    if (!timer) return;
+    clearInterval(timer); timer = null;
+  }
+
+  // Hover pause
+  stage.addEventListener('mouseenter', () => { paused = true; });
+  stage.addEventListener('mouseleave', () => { paused = false; });
+
+  // 드래그 / 스와이프로 카드 전환 (터치·마우스 통합)
+  let dragX = null;
+  stage.addEventListener('pointerdown', (e) => {
+    dragX = e.clientX; paused = true; stage.classList.add('is-dragging');
+  });
+  const endDrag = (e) => {
+    if (dragX === null) return;
+    const dx = (e.clientX ?? dragX) - dragX;
+    if (dx < -40) next();        // 왼쪽으로 끌면 다음
+    else if (dx > 40) prev();    // 오른쪽으로 끌면 이전
+    dragX = null; paused = false; stage.classList.remove('is-dragging');
+  };
+  stage.addEventListener('pointerup', endDrag);
+  stage.addEventListener('pointercancel', endDrag);
+  stage.addEventListener('pointerleave', endDrag);
+
+  // 화면 안일 때만 동작
+  const io = new IntersectionObserver((entries) => {
+    entries.forEach(e => e.isIntersecting ? start() : stop());
+  }, { threshold: 0.2 });
+  io.observe(stage);
+
+  // 초기 배치
+  setPositions();
+})();
+
+/* Scroll Reveal — subtle (1회만, 첫 스크롤 이후 발동) */
+(function () {
+  if (!('IntersectionObserver' in window)) return;
+  const io = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      if (e.isIntersecting) { e.target.classList.add('is-in'); io.unobserve(e.target); }
+    });
+  }, { threshold: 0.15, rootMargin: '0px 0px -12% 0px' });
+  const targets = [...document.querySelectorAll('[data-reveal],[data-reveal-group]')];
+  targets.forEach(el => {
+    if (el.hasAttribute('data-reveal-group')) {
+      [...el.children].forEach((c, i) => { c.style.transitionDelay = (i * 0.1) + 's'; });
+    }
+  });
+  // 첫 화면에 걸친 섹션이 로드 즉시 튀어나오지 않도록 — 스크롤 시작 후 관찰
+  let armed = false;
+  function arm() {
+    if (armed) return; armed = true;
+    targets.forEach(el => io.observe(el));
+  }
+  // 첫 화면에 걸친 reveal 요소를 즉시 노출 — fold 경계라 observer threshold를 못 넘어도 표시
+  function revealAbove() {
+    targets.forEach(el => {
+      if (el.getBoundingClientRect().top < window.innerHeight) {
+        el.classList.add('is-in'); io.unobserve(el);
+      }
+    });
+  }
+  if (window.scrollY > 4) arm();   // 새로고침 시 이미 스크롤돼 있으면 즉시
+  else {
+    window.addEventListener('scroll', arm, { once: true, passive: true });
+    setTimeout(() => { arm(); revealAbove(); }, 1600);   // 안전장치: 1.6초간 스크롤 없으면 첫 화면 콘텐츠 강제 노출
+  }
+})();
+
+/* ↑ 구 navbar(.navbar__*) CSS·JS는 마크업이 .nav__로 교체돼 미발동(방어코드 early-return). 프로토타입 통일 nav는 아래 .nav__ 참조 */
+/* 모바일 navbar 햄버거 토글 */
+(function () {
+  const nav = document.getElementById('navbar');
+  if (!nav) return;
+  const burger = nav.querySelector('.navbar__burger');
+  if (!burger) return;
+  burger.addEventListener('click', () => {
+    const open = nav.classList.toggle('is-open');
+    burger.setAttribute('aria-expanded', open ? 'true' : 'false');
+    burger.setAttribute('aria-label', open ? '메뉴 닫기' : '메뉴 열기');
+  });
+  nav.querySelectorAll('.navbar__drawer a').forEach(a => {
+    a.addEventListener('click', () => {
+      nav.classList.remove('is-open');
+      burger.setAttribute('aria-expanded', 'false');
+      burger.setAttribute('aria-label', '메뉴 열기');
+    });
+  });
+})();
+
+/* 인기목적지 가로 스크롤 — 도트 인디케이터 동기화 (모바일) */
+(function () {
+  const grid = document.querySelector('.dest__small-grid');
+  const dots = [...document.querySelectorAll('.dest__dot')];
+  if (!grid || !dots.length) return;
+  const cards = [...grid.querySelectorAll('.dest-card--sm')];
+  let raf = null;
+  grid.addEventListener('scroll', () => {
+    if (raf) return;
+    raf = requestAnimationFrame(() => {
+      raf = null;
+      const gridLeft = grid.getBoundingClientRect().left;
+      let closest = 0, min = Infinity;
+      cards.forEach((c, i) => {
+        const d = Math.abs(c.getBoundingClientRect().left - gridLeft);
+        if (d < min) { min = d; closest = i; }
+      });
+      dots.forEach((d, i) => d.classList.toggle('is-active', i === closest));
+    });
+  }, { passive: true });
+})();
+</script>
+<script>
+/* 모바일 nav 토글 (4페이지 공통) */
+/* nav 토글·언어 → js/includes.js 공통 처리 */
+</script>
+  <script src="js/includes.js"></script>
+</body>
+</html>

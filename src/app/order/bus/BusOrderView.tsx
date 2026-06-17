@@ -540,7 +540,7 @@ function SubHeader({ title }: { title: string }) {
         <h1 className="flex-1 text-center text-base font-semibold tracking-tight text-ink">
           {title}
         </h1>
-        <Link href="/" aria-label={t("home")} className="h-10 w-10 grid place-items-center text-ink -mr-1">
+        <Link href="/city" aria-label={t("home")} className="h-10 w-10 grid place-items-center text-ink -mr-1">
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M3 11l9-8 9 8" /><path d="M5 9v12h14V9" /><path d="M10 21v-7h4v7" /></svg>
         </Link>
       </div>

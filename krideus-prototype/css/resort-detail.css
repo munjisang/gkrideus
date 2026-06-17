@@ -1,0 +1,480 @@
+/* ============================================================
+   RESORT DETAIL — Individual resort sub-pages
+   ============================================================ */
+
+/* ── Detail Hero (distinct from parent editorial hero) ── */
+.detail-hero {
+  position: relative;
+  height: 36vh;
+  min-height: 260px;
+  overflow: hidden;
+}
+
+.detail-hero-bg {
+  position: absolute;
+  inset: 0;
+}
+.detail-hero-bg img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transform: scale(1.05);
+  animation: detailHeroZoom 12s ease-out forwards;
+}
+.detail-hero-bg::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(180deg, rgba(0,0,0,0.3) 0%, transparent 40%),
+    linear-gradient(0deg, var(--color-bg) 0%, rgba(0,0,0,0.4) 50%, transparent 100%);
+}
+@keyframes detailHeroZoom {
+  to { transform: scale(1); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .detail-hero-bg img { animation: none; transform: none; }
+}
+
+/* Breadcrumb floating top-left */
+.detail-hero-crumb {
+  position: absolute;
+  top: 5rem;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100%;
+  max-width: var(--container-max);
+  padding: 0 var(--container-px);
+  z-index: 5;
+  font-size: var(--text-overline);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.5);
+}
+@media (min-width: 768px) {
+  .detail-hero-crumb { padding: 0 var(--container-px-md); }
+}
+@media (min-width: 1024px) {
+  .detail-hero-crumb { padding: 0 var(--container-px-lg); }
+}
+.detail-hero-crumb a {
+  color: rgba(255,255,255,0.5);
+  text-decoration: none;
+  transition: color 0.3s;
+}
+.detail-hero-crumb a:hover {
+  color: rgba(255,255,255,0.8);
+}
+.detail-hero-crumb span {
+  color: rgba(255,255,255,0.25);
+  margin: 0 0.4rem;
+}
+
+/* ── Overlap Info Card ── */
+.detail-info-card {
+  position: relative;
+  z-index: 10;
+  max-width: var(--container-max);
+  margin: -5rem auto 0;
+  padding: 0 var(--container-px);
+}
+@media (min-width: 768px) {
+  .detail-info-card { padding: 0 var(--container-px-md); }
+}
+@media (min-width: 1024px) {
+  .detail-info-card { padding: 0 var(--container-px-lg); }
+}
+
+.detail-info-inner {
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.08);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-radius: var(--radius-lg);
+  padding: 2.5rem 2rem;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 2rem;
+}
+@media (min-width: 768px) {
+  .detail-info-inner {
+    grid-template-columns: 1fr auto;
+    align-items: center;
+    padding: 2.5rem 3rem;
+  }
+}
+
+.detail-info-text {}
+
+.detail-info-category {
+  font-size: var(--text-overline);
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+  color: var(--color-cool-accent-light);
+  margin-bottom: 0.75rem;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+.detail-info-category::before {
+  content: '';
+  width: 16px;
+  height: 1px;
+  background: var(--color-cool-accent);
+}
+
+.detail-info-title {
+  font-family: var(--font-display);
+  font-size: var(--text-h1);
+  font-weight: 700;
+  color: #fff;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+  margin-bottom: 0.75rem;
+}
+
+.detail-info-desc {
+  font-family: var(--font-body);
+  font-size: 0.95rem;
+  /* Bumped weight 300 → 400 for readability — 300 felt washed out on the
+     translucent backdrop-blur card, especially on light-hero variants. */
+  font-weight: 400;
+  color: rgba(255, 255, 255, 0.8);
+  line-height: 1.7;
+  max-width: 520px;
+}
+
+/* Right side: meta chips */
+.detail-info-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+@media (min-width: 768px) {
+  .detail-info-meta {
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 0.6rem;
+  }
+}
+
+.detail-meta-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-family: var(--font-body);
+  font-size: 0.8rem;
+  font-weight: 400;
+  color: rgba(255,255,255,0.6);
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.06);
+  padding: 0.4rem 0.85rem;
+  border-radius: var(--radius-full);
+  white-space: nowrap;
+}
+.detail-meta-chip svg {
+  width: 14px;
+  height: 14px;
+  opacity: 0.4;
+}
+
+
+/* ── Transport Options ── */
+.rd-transport {
+  padding: 3rem 0 4rem;
+}
+
+.rd-transport-header {
+  margin-bottom: 3.5rem;
+}
+
+.rd-transport-overline {
+  font-size: var(--text-overline);
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+  color: var(--color-cool-accent-light);
+  margin-bottom: 0.75rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+.rd-transport-overline::before {
+  content: '';
+  width: 24px;
+  height: 1px;
+  background: var(--color-cool-accent);
+}
+
+.rd-transport-title {
+  font-family: var(--font-display);
+  font-size: var(--text-h2);
+  font-weight: 700;
+  color: #fff;
+  letter-spacing: -0.02em;
+  margin-bottom: 1rem;
+}
+
+.rd-transport-desc {
+  font-family: var(--font-body);
+  font-size: 1rem;
+  font-weight: 300;
+  color: rgba(255,255,255,0.45);
+  line-height: 1.7;
+}
+
+/* ── Transport Cards Grid ── */
+.rd-cards {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.5rem;
+}
+@media (min-width: 768px) {
+  .rd-cards { grid-template-columns: 1fr 1fr; gap: 2rem; }
+}
+
+.rd-card {
+  border: 1px solid var(--color-border-glass);
+  border-radius: var(--radius-lg);
+  padding: 2rem;
+  display: flex;
+  flex-direction: column;
+  transition: border-color 0.4s, background 0.4s;
+  position: relative;
+  overflow: hidden;
+}
+.rd-card:hover {
+  border-color: rgba(255,255,255,0.15);
+  background: rgba(255,255,255,0.02);
+}
+
+.rd-card-badge {
+  display: inline-flex;
+  font-size: var(--text-overline);
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  padding: 0.35rem 0.75rem;
+  border-radius: var(--radius-full);
+  width: fit-content;
+  margin-bottom: 1.5rem;
+}
+.rd-card-badge--shuttle {
+  background: rgba(46,92,255,0.15);
+  color: var(--color-accent-light);
+}
+.rd-card-badge--private {
+  background: rgba(255,255,255,0.08);
+  color: rgba(255,255,255,0.7);
+}
+
+.rd-card-title {
+  font-family: var(--font-display);
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #fff;
+  margin-bottom: 0.5rem;
+}
+
+.rd-card-desc {
+  font-family: var(--font-body);
+  font-size: 0.95rem;
+  font-weight: 300;
+  color: rgba(255,255,255,0.45);
+  line-height: 1.6;
+  margin-bottom: 1.5rem;
+}
+
+/* Check list */
+.rd-card-list {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 2rem;
+  flex-grow: 1;
+}
+.rd-card-list li {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  padding: 0.5rem 0;
+  font-family: var(--font-body);
+  font-size: 0.9rem;
+  font-weight: 400;
+  color: rgba(255,255,255,0.7);
+}
+.rd-card-list li .rd-check {
+  flex-shrink: 0;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 1px;
+}
+.rd-check--shuttle {
+  background: rgba(46,92,255,0.15);
+  color: var(--color-accent-light);
+}
+.rd-check--private {
+  background: rgba(255,255,255,0.08);
+  color: rgba(255,255,255,0.5);
+}
+
+.rd-card-btn {
+  display: block;
+  width: 100%;
+  text-align: center;
+  font-family: var(--font-body);
+  font-size: 0.95rem;
+  font-weight: 600;
+  padding: 1rem;
+  border-radius: 0.75rem;
+  text-decoration: none;
+  transition: background 0.3s, color 0.3s, border-color 0.3s, box-shadow 0.3s;
+}
+.rd-card-btn--shuttle {
+  background: var(--color-accent);
+  color: #fff;
+}
+.rd-card-btn--shuttle:hover {
+  background: var(--color-accent-hover);
+  box-shadow: 0 8px 24px rgba(46,92,255,0.32);
+}
+.rd-card-btn--private {
+  background: rgba(255,255,255,0.08);
+  color: #fff;
+  border: 1px solid rgba(255,255,255,0.12);
+}
+.rd-card-btn--private:hover {
+  background: rgba(255,255,255,0.16);
+  border-color: rgba(255,255,255,0.24);
+}
+
+
+/* ── Footer Info ── */
+.rd-info {
+  padding: 4rem 0;
+}
+
+.rd-info-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 2rem;
+}
+@media (min-width: 768px) {
+  .rd-info-grid { grid-template-columns: repeat(3, 1fr); }
+}
+
+.rd-info-label {
+  font-size: var(--text-overline);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.4);
+  font-weight: 700;
+  margin-bottom: 0.75rem;
+}
+
+.rd-info-value {
+  font-family: var(--font-body);
+  font-size: 0.9rem;
+  font-weight: 300;
+  color: rgba(255,255,255,0.55);
+  line-height: 1.7;
+}
+
+
+/* ── Other Resorts Recommendation ── */
+.rd-recommend {
+  padding: 5rem 0;
+}
+
+.rd-recommend .ap-route-card {
+  background: rgba(255,255,255,0.03);
+  border-color: rgba(255,255,255,0.08);
+}
+.rd-recommend .ap-route-card:hover {
+  border-color: rgba(255,255,255,0.15);
+  box-shadow: 0 12px 40px rgba(0,0,0,0.3);
+}
+.rd-recommend .ap-route-name,
+.rd-recommend .ap-route-desc,
+.rd-recommend .ap-route-price {
+  color: rgba(255,255,255,0.7);
+}
+.rd-recommend .ap-route-name {
+  color: rgba(255,255,255,0.9);
+}
+.rd-recommend .ap-route-price {
+  color: var(--color-cool-accent-light);
+}
+
+.rd-recommend-title {
+  font-family: var(--font-display);
+  font-size: var(--text-h2);
+  font-weight: 700;
+  color: #fff;
+  letter-spacing: -0.02em;
+  margin-bottom: 2.5rem;
+}
+
+
+/* ── Location Map ── */
+.rd-map {
+  padding: 4rem 0;
+}
+
+.rd-map-wrap {
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+}
+
+.rd-map-canvas {
+  width: 100%;
+  height: 320px;
+}
+@media (min-width: 768px) {
+  .rd-map-canvas { height: 400px; }
+}
+
+.rd-map-address {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 1rem 1.25rem;
+  font-family: var(--font-body);
+  font-size: 0.9rem;
+  font-weight: 400;
+  color: rgba(255,255,255,0.55);
+  background: rgba(255,255,255,0.03);
+}
+.rd-map-address svg {
+  flex-shrink: 0;
+  opacity: 0.4;
+}
+
+/* ── Map Ctrl+Scroll overlay ── */
+.map-scroll-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0,0,0,0.45);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s;
+  z-index: 10;
+  border-radius: inherit;
+}
+.map-scroll-overlay.active {
+  opacity: 1;
+}
+.map-scroll-msg {
+  padding: 0.625rem 1.25rem;
+  background: rgba(0,0,0,0.75);
+  color: #fff;
+  font-size: 0.875rem;
+  border-radius: 2rem;
+  backdrop-filter: blur(4px);
+  letter-spacing: 0.02em;
+}
