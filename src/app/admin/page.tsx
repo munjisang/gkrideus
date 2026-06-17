@@ -542,7 +542,7 @@ export default function AdminPage() {
   return (
     <div className="mx-auto max-w-5xl px-4 py-6 pb-10">
       {/* Top tab nav + logout */}
-      <div className="flex items-end justify-between gap-3 mb-5 border-b border-slate-200">
+      <div className="flex items-end justify-between gap-3 mb-5 border-b border-hairline">
         <nav className="flex gap-1">
           {TABS.map((tb) => {
             const active = tab === tb.id;
@@ -552,13 +552,13 @@ export default function AdminPage() {
                 onClick={() => setTab(tb.id)}
                 className={`relative h-10 px-4 text-sm font-semibold transition ${
                   active
-                    ? "text-slate-900"
-                    : "text-slate-400 hover:text-slate-700"
+                    ? "text-action"
+                    : "text-ink-soft hover:text-ink"
                 }`}
               >
                 {tb.label}
                 {active && (
-                  <span className="absolute left-2 right-2 -bottom-px h-0.5 bg-slate-900 rounded-full" />
+                  <span className="absolute left-2 right-2 -bottom-px h-0.5 bg-action rounded-full" />
                 )}
               </button>
             );
@@ -569,7 +569,7 @@ export default function AdminPage() {
             await fetch("/api/admin/auth", { method: "DELETE" });
             window.location.reload();
           }}
-          className="mb-2 text-xs text-slate-500 hover:text-slate-900"
+          className="mb-2 text-xs text-ink-soft hover:text-ink"
         >
           로그아웃
         </button>
@@ -581,19 +581,19 @@ export default function AdminPage() {
       {tab === "bookings" && (
         <>
           <div className="flex items-center justify-between mb-4 gap-3 flex-wrap">
-            <p className="text-sm text-slate-500">
+            <p className="text-sm text-ink-soft">
               주문{" "}
-              <span className="font-semibold text-slate-700">
+              <span className="font-semibold text-ink">
                 {shownOrders?.length ?? 0}
               </span>
               건
               {filterActive && orders && (
-                <span className="ml-1 text-xs text-slate-400">
+                <span className="ml-1 text-xs text-ink-faint">
                   (전체 {orders.length})
                 </span>
               )}
               {lastSyncAt && (
-                <span className="ml-2 text-xs text-slate-400">
+                <span className="ml-2 text-xs text-ink-faint">
                   · 최근 동기화 {fmtTime(toPlandTime(lastSyncAt))}
                 </span>
               )}
@@ -605,13 +605,13 @@ export default function AdminPage() {
               <button
                 onClick={() => syncReservations()}
                 disabled={syncing}
-                className="text-xs text-slate-500 hover:text-slate-900 disabled:opacity-50"
+                className="text-xs text-ink-soft hover:text-ink disabled:opacity-50"
               >
                 {syncing ? "동기화 중…" : "예매 동기화"}
               </button>
               <button
                 onClick={refresh}
-                className="text-xs text-slate-500 hover:text-slate-900"
+                className="text-xs text-ink-soft hover:text-ink"
               >
                 새로고침
               </button>
@@ -627,15 +627,15 @@ export default function AdminPage() {
           )}
 
           {orders === null && (
-            <div className="py-16 text-center text-slate-500 text-sm">불러오는 중…</div>
+            <div className="py-16 text-center text-ink-soft text-sm">불러오는 중…</div>
           )}
 
           {orders && orders.length === 0 && (
-            <div className="bg-white border border-dashed border-slate-200 rounded-2xl py-12 text-center">
-              <p className="text-sm text-slate-500 mb-4">아직 주문 내역이 없습니다.</p>
+            <div className="bg-white border border-dashed border-hairline rounded-card py-12 text-center">
+              <p className="text-sm text-ink-soft mb-4">아직 주문 내역이 없습니다.</p>
               <Link
                 href="/"
-                className="inline-block h-10 px-4 rounded-lg bg-slate-900 text-white text-sm leading-10"
+                className="btn-action inline-flex"
               >
                 예매 페이지로 이동
               </Link>
@@ -643,8 +643,8 @@ export default function AdminPage() {
           )}
 
           {orders && orders.length > 0 && shownOrders?.length === 0 && (
-            <div className="bg-white border border-dashed border-slate-200 rounded-2xl py-12 text-center">
-              <p className="text-sm text-slate-500">
+            <div className="bg-white border border-dashed border-hairline rounded-card py-12 text-center">
+              <p className="text-sm text-ink-soft">
                 조건에 맞는 예매내역이 없습니다.
               </p>
             </div>
@@ -738,17 +738,17 @@ function DetailModal({
         onClick={onClose}
         className="absolute inset-0 bg-black/40"
       />
-      <div className="relative bg-white w-full sm:max-w-2xl sm:rounded-2xl shadow-2xl flex flex-col max-h-[90vh] sm:max-h-[85vh] rounded-t-2xl sm:rounded-t-2xl overflow-hidden">
-        <div className="flex items-center justify-between px-5 py-3 border-b border-slate-100">
+      <div className="relative bg-white w-full sm:max-w-2xl sm:rounded-card shadow-xl flex flex-col max-h-[90vh] sm:max-h-[85vh] rounded-t-card sm:rounded-t-card overflow-hidden">
+        <div className="flex items-center justify-between px-5 py-3 border-b border-divider">
           <div>
-            <div className="text-[11px] text-slate-400 font-mono">{order.id}</div>
-            <h2 className="text-base font-bold text-slate-900">주문 상세</h2>
+            <div className="text-[11px] text-ink-faint font-mono">{order.id}</div>
+            <h2 className="text-base font-semibold tracking-tight text-ink">주문 상세</h2>
           </div>
           <button
             type="button"
             onClick={onClose}
             aria-label="닫기"
-            className="w-9 h-9 grid place-items-center text-slate-500 hover:text-slate-900 -mr-1"
+            className="w-9 h-9 grid place-items-center text-ink-soft hover:text-ink -mr-1"
           >
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M18 6L6 18" />
@@ -811,48 +811,48 @@ function OrderCard({
     !hasAnyReservation && order.outbound.depPlandTime.slice(0, 8) < todayYmd;
   const showFailure = !!result && result.ok === false;
   return (
-    <li className="bg-white border border-slate-200 rounded-2xl overflow-hidden">
+    <li className="card-apple overflow-hidden">
       {/* Top row */}
       <div className="p-4">
         <div className="flex items-center justify-between mb-2">
           <div className="flex items-center gap-2">
             <span
-              className={`text-[10px] px-1.5 py-0.5 rounded-full font-semibold ${
+              className={`text-[12px] px-2.5 py-1 rounded-pill font-semibold ${
                 order.tripType === "roundtrip"
-                  ? "bg-violet-50 text-violet-700 border border-violet-100"
-                  : "bg-sky-50 text-sky-700 border border-sky-100"
+                  ? "bg-action/10 text-action"
+                  : "bg-action/10 text-action"
               }`}
             >
               {order.tripType === "roundtrip" ? "왕복" : "편도"}
             </span>
-            <span className="text-[10px] text-slate-400 font-mono">{order.id}</span>
+            <span className="text-[10px] text-ink-faint font-mono">{order.id}</span>
           </div>
           <ReservationBadge order={order} result={result} expired={isExpired} />
         </div>
 
-        <div className="flex items-center gap-2 text-base font-bold text-slate-900">
+        <div className="flex items-center gap-2 text-base font-semibold tracking-tight text-ink">
           <span>{order.outbound.depPlaceName}</span>
-          <span className="text-slate-300">→</span>
+          <span className="text-ink-faint">→</span>
           <span>{order.outbound.arrPlaceName}</span>
         </div>
-        <div className="text-xs text-slate-500 mt-1">
+        <div className="text-xs text-ink-soft mt-1">
           {fmtDate(order.outbound.depPlandTime.slice(0, 8))}{" "}
           {fmtTime(order.outbound.depPlandTime)} →{" "}
           {fmtTime(order.outbound.arrPlandTime)} · #{order.outbound.trainNo}
         </div>
 
         <div className="flex items-center justify-between mt-3 text-sm">
-          <div className="text-slate-500">
+          <div className="text-ink-soft">
             {order.passengers[0]?.name ?? "-"}
             {order.passengerCount > 1 && ` 외 ${order.passengerCount - 1}명`}
-            <span className="mx-1.5 text-slate-300">·</span>
+            <span className="mx-1.5 text-ink-faint">·</span>
             {order.tripType === "roundtrip" && order.inboundSeatType
               ? `가 ${order.seatType === "first" ? "특실" : "일반실"} · 오 ${order.inboundSeatType === "first" ? "특실" : "일반실"}`
               : order.seatType === "first"
                 ? "특실"
                 : "일반실"}
           </div>
-          <div className="font-bold text-slate-900 tabular-nums">
+          <div className="font-semibold text-ink tabular-nums">
             {fmtKRW(order.totalPrice)}
           </div>
         </div>
@@ -860,7 +860,7 @@ function OrderCard({
 
       {/* Failure banner — visible until the user takes another action */}
       {showFailure && (
-        <div className="mx-4 mb-4 -mt-1 border border-red-200 bg-red-50 rounded-lg px-3 py-2">
+        <div className="mx-4 mb-4 -mt-1 border border-red-200 bg-red-50 rounded-xl px-3 py-2">
           <div className="flex items-center justify-between gap-2">
             <span className="text-[11px] font-semibold text-red-700 uppercase tracking-wide">
               예매 실패 · {result?.stage ?? "오류"}
@@ -883,19 +883,19 @@ function OrderCard({
         <button
           onClick={onConfirm}
           disabled={busy}
-          className="w-full h-10 border-t border-slate-100 text-sm font-semibold text-emerald-700 bg-emerald-50 hover:bg-emerald-100 disabled:opacity-50 transition"
+          className="w-full h-10 border-t border-divider text-sm font-semibold text-action bg-action/5 hover:bg-action/10 disabled:opacity-50 transition"
         >
           확정
         </button>
       )}
 
       {/* Action row */}
-      <div className="grid grid-cols-3 border-t border-slate-100">
+      <div className="grid grid-cols-3 border-t border-divider">
         {hasLiveReservation ? (
           <button
             disabled={busy}
             onClick={onCancel}
-            className="h-11 text-sm font-medium text-red-700 bg-red-50 hover:bg-red-100 border-r border-slate-100 transition disabled:opacity-60 flex items-center justify-center gap-1.5"
+            className="h-11 text-sm font-medium text-red-700 bg-red-50 hover:bg-red-100 border-r border-divider transition disabled:opacity-60 flex items-center justify-center gap-1.5"
           >
             {busy && <Spinner />}
             {busy ? "처리중…" : "예매취소"}
@@ -903,7 +903,7 @@ function OrderCard({
         ) : isExpired ? (
           <button
             disabled
-            className="h-11 text-sm font-medium text-slate-400 bg-slate-50 border-r border-slate-100 cursor-not-allowed"
+            className="h-11 text-sm font-medium text-ink-faint bg-parchment border-r border-divider cursor-not-allowed"
           >
             기한만료
           </button>
@@ -911,7 +911,7 @@ function OrderCard({
           <button
             disabled={busy}
             onClick={onBook}
-            className="h-11 text-sm font-medium text-red-700 bg-red-50 hover:bg-red-100 border-r border-slate-100 transition disabled:opacity-60 flex items-center justify-center gap-1.5"
+            className="h-11 text-sm font-medium text-action bg-action/5 hover:bg-action/10 border-r border-divider transition disabled:opacity-60 flex items-center justify-center gap-1.5"
           >
             {busy && <Spinner />}
             {busy ? "예매중…" : "예매하기"}
@@ -919,7 +919,7 @@ function OrderCard({
         )}
         <button
           onClick={onToggle}
-          className="h-11 text-sm text-slate-600 border-r border-slate-100 hover:bg-slate-50"
+          className="h-11 text-sm text-ink-soft border-r border-divider hover:bg-parchment"
         >
           상세
         </button>
@@ -971,7 +971,7 @@ function ReservationBadge({
 
   if (expired && !out && !inb) {
     return (
-      <span className="inline-flex text-[10px] font-medium text-slate-500 bg-slate-100 border border-slate-200 rounded-full px-2 py-0.5">
+      <span className="inline-flex text-[12px] font-semibold text-ink-soft bg-parchment rounded-pill px-2.5 py-1">
         기한만료
       </span>
     );
@@ -983,10 +983,10 @@ function ReservationBadge({
     return (
       <div className="text-right space-y-0.5">
         <span
-          className={`inline-flex items-center gap-1 text-[10px] font-semibold rounded-full px-2 py-0.5 ${
+          className={`inline-flex items-center gap-1 text-[12px] font-semibold rounded-pill px-2.5 py-1 ${
             bothLive || (!isRT && outLive)
-              ? "text-emerald-700 bg-emerald-50 border border-emerald-200"
-              : "text-amber-700 bg-amber-50 border border-amber-200"
+              ? "text-emerald-700 bg-emerald-50"
+              : "text-amber-700 bg-amber-50"
           }`}
         >
           {bothLive
@@ -1014,7 +1014,7 @@ function ReservationBadge({
 
   if (out?.mode === "dry" || inb?.mode === "dry") {
     return (
-      <span className="inline-flex text-[10px] font-medium text-slate-600 bg-slate-100 border border-slate-200 rounded-full px-2 py-0.5">
+      <span className="inline-flex text-[12px] font-semibold text-ink-soft bg-parchment rounded-pill px-2.5 py-1">
         ◌ dry-run
       </span>
     );
@@ -1024,7 +1024,7 @@ function ReservationBadge({
     return (
       <span
         title={result.error}
-        className="inline-flex text-[10px] font-medium text-red-700 bg-red-50 border border-red-200 rounded-full px-2 py-0.5"
+        className="inline-flex text-[12px] font-semibold text-red-700 bg-red-50 rounded-pill px-2.5 py-1"
       >
         ✗ {result.stage ?? "오류"}
       </span>
@@ -1041,14 +1041,14 @@ function OrderDetail({
   result?: BookingResult;
 }) {
   return (
-    <div className="bg-slate-50/70 border-t border-slate-100 p-4 space-y-3">
-      <div className="bg-white border border-slate-200 rounded-xl p-3">
+    <div className="bg-parchment/70 border-t border-divider p-4 space-y-3">
+      <div className="card-apple p-3">
         <div className="flex items-center justify-between mb-2">
-          <div className="text-[11px] font-semibold text-slate-500">여정 상세</div>
-          <div className="text-[11px] font-semibold text-slate-700">
+          <div className="text-[11px] font-semibold text-ink-faint">여정 상세</div>
+          <div className="text-[11px] font-semibold text-ink-soft">
             예약 인원 {order.passengerCount}명
             {order.paxBreakdown && (
-              <span className="ml-1 font-normal text-slate-400">
+              <span className="ml-1 font-normal text-ink-faint">
                 (
                 {[
                   order.paxBreakdown.adults ? `어른 ${order.paxBreakdown.adults}` : "",
@@ -1072,19 +1072,19 @@ function OrderDetail({
         <Leg label="가는 편" t={order.outbound} />
         {order.inbound && (
           <>
-            <div className="my-2 border-t border-dashed border-slate-200" />
+            <div className="my-2 border-t border-dashed border-hairline" />
             <Leg label="오는 편" t={order.inbound} />
           </>
         )}
       </div>
 
-      <div className="bg-white border border-slate-200 rounded-xl p-3">
-        <div className="text-[11px] font-semibold text-slate-500 mb-2">탑승객</div>
-        <ul className="divide-y divide-slate-100">
+      <div className="card-apple p-3">
+        <div className="text-[11px] font-semibold text-ink-faint mb-2">탑승객</div>
+        <ul className="divide-y divide-divider">
           {order.passengers.map((p, i) => (
             <li key={i} className="py-2 text-sm">
               <div className="font-medium">{p.name}</div>
-              <div className="text-xs text-slate-500 mt-0.5 break-all">
+              <div className="text-xs text-ink-soft mt-0.5 break-all">
                 {p.email}
                 {(p.countryCode || p.phone) && (
                   <>
@@ -1098,13 +1098,13 @@ function OrderDetail({
         </ul>
       </div>
 
-      <div className="text-[10px] text-slate-400">
+      <div className="text-[10px] text-ink-faint">
         주문 시각: {fmtDateTime(toPlandTime(order.createdAt))}
       </div>
 
       {(order.reservation || order.inboundReservation) && (
-        <div className="bg-white border border-slate-200 rounded-xl p-3 space-y-2">
-          <div className="text-[11px] font-semibold text-slate-500 mb-1">예약 현황</div>
+        <div className="card-apple p-3 space-y-2">
+          <div className="text-[11px] font-semibold text-ink-faint mb-1">예약 현황</div>
           {order.reservation && (
             <ResRow label="가는 편" r={order.reservation} />
           )}
@@ -1115,7 +1115,7 @@ function OrderDetail({
       )}
 
       {result && !result.ok && (
-        <div className="bg-red-50 border border-red-200 rounded-xl p-3">
+        <div className="bg-red-50 border border-red-200 rounded-card p-3">
           <div className="text-[11px] font-semibold text-red-700 mb-1">
             마지막 실행 실패 · {result.stage ?? "오류"}
           </div>
@@ -1126,11 +1126,11 @@ function OrderDetail({
       )}
 
       {(order.reservation || order.inboundReservation || result) && (
-        <details className="bg-white border border-slate-200 rounded-xl p-3">
-          <summary className="text-[11px] font-semibold text-slate-500 cursor-pointer">
+        <details className="card-apple p-3">
+          <summary className="text-[11px] font-semibold text-ink-faint cursor-pointer">
             raw JSON
           </summary>
-          <pre className="text-[10px] font-mono bg-slate-50 border border-slate-100 rounded p-2 overflow-auto max-h-48 mt-2">
+          <pre className="text-[10px] font-mono bg-parchment border border-divider rounded-lg p-2 overflow-auto max-h-48 mt-2">
 {JSON.stringify(
   {
     reservation: order.reservation,
@@ -1151,15 +1151,15 @@ function ResRow({ label, r }: { label: string; r: Reservation }) {
   return (
     <div className="flex items-start justify-between gap-3 text-xs">
       <div>
-        <div className="text-slate-500">{label}</div>
-        <div className="font-mono text-slate-800 mt-0.5">{r.rsvId || "(없음)"}</div>
+        <div className="text-ink-soft">{label}</div>
+        <div className="font-mono text-ink mt-0.5">{r.rsvId || "(없음)"}</div>
       </div>
       <div className="text-right">
         <div
-          className={`inline-block text-[10px] font-semibold rounded-full px-2 py-0.5 ${
+          className={`inline-block text-[12px] font-semibold rounded-pill px-2.5 py-1 ${
             r.mode === "live"
-              ? "bg-emerald-50 text-emerald-700 border border-emerald-200"
-              : "bg-slate-100 text-slate-600 border border-slate-200"
+              ? "bg-emerald-50 text-emerald-700"
+              : "bg-parchment text-ink-soft"
           }`}
         >
           {r.mode === "live" ? "● 예약 완료" : "◌ dry-run"}
@@ -1175,23 +1175,23 @@ function ResRow({ label, r }: { label: string; r: Reservation }) {
 function Leg({ label, t }: { label: string; t: TrainSchedule }) {
   return (
     <div className="text-sm">
-      <div className="text-[11px] text-slate-400 mb-1">{label}</div>
+      <div className="text-[11px] text-ink-faint mb-1">{label}</div>
       <div className="flex items-center justify-between gap-2">
         <div>
           <div className="font-semibold tabular-nums">{fmtTime(t.depPlandTime)}</div>
-          <div className="text-[11px] text-slate-500">{t.depPlaceName}</div>
+          <div className="text-[11px] text-ink-soft">{t.depPlaceName}</div>
         </div>
-        <div className="text-[11px] text-slate-400 text-center">
+        <div className="text-[11px] text-ink-faint text-center">
           {t.trainGradeName}
           <br />
           #{t.trainNo}
         </div>
         <div className="text-right">
           <div className="font-semibold tabular-nums">{fmtTime(t.arrPlandTime)}</div>
-          <div className="text-[11px] text-slate-500">{t.arrPlaceName}</div>
+          <div className="text-[11px] text-ink-soft">{t.arrPlaceName}</div>
         </div>
       </div>
-      <div className="text-[11px] text-slate-400 mt-1">{fmtDate(t.depPlandTime.slice(0, 8))}</div>
+      <div className="text-[11px] text-ink-faint mt-1">{fmtDate(t.depPlandTime.slice(0, 8))}</div>
     </div>
   );
 }

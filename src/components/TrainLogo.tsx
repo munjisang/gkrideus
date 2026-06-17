@@ -21,7 +21,7 @@ export function TrainLogo({ name, dim }: { name: string; dim?: boolean }) {
     return (
       <span
         className={`text-sm font-bold ${
-          dim ? "text-slate-400" : "text-slate-900"
+          dim ? "text-ink-faint" : "text-ink"
         }`}
       >
         {name}

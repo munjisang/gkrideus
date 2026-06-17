@@ -61,7 +61,7 @@ export default function CountryPicker({ open, value, onPick, onClose }: Props) {
       <div className="px-5 pt-1 pb-3 sticky top-0 bg-white z-10">
         <div className="relative">
           <svg
-            className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
+            className="absolute left-4 top-1/2 -translate-y-1/2 text-ink-faint"
             width="16"
             height="16"
             viewBox="0 0 24 24"
@@ -80,7 +80,7 @@ export default function CountryPicker({ open, value, onPick, onClose }: Props) {
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder={t("ord.country.searchPh")}
-            className="w-full h-11 pl-9 pr-3 rounded-lg border border-slate-200 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-sky-300"
+            className="field-pill w-full h-11 pl-10 pr-4 text-sm"
             aria-label={t("ord.country.searchPh")}
           />
         </div>
@@ -89,7 +89,7 @@ export default function CountryPicker({ open, value, onPick, onClose }: Props) {
       {/* List */}
       <ul className="px-2 pb-4">
         {filtered.length === 0 ? (
-          <li className="px-3 py-10 text-center text-sm text-slate-400">
+          <li className="px-3 py-10 text-center text-sm text-ink-faint">
             {t("sp.noResult", { q: query })}
           </li>
         ) : (
@@ -100,10 +100,10 @@ export default function CountryPicker({ open, value, onPick, onClose }: Props) {
                 <button
                   type="button"
                   onClick={() => onPick(c.iso)}
-                  className={`w-full flex items-center justify-between px-3 py-3 rounded-lg text-left transition ${
+                  className={`w-full flex items-center justify-between px-3 py-3 rounded-lg text-left transition active:scale-95 ${
                     active
-                      ? "bg-sky-50 text-sky-700"
-                      : "text-slate-800 hover:bg-slate-50"
+                      ? "bg-action/5 text-action"
+                      : "text-ink hover:bg-parchment"
                   }`}
                 >
                   <span className="text-sm font-medium">

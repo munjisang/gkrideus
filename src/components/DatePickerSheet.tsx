@@ -23,6 +23,7 @@ type Props = {
   title: string;
   onPick: (v: DateHour) => void;
   onClose: () => void;
+  anchorRef?: React.RefObject<HTMLElement | null>;
 };
 
 function todayLocal(): { y: number; m: number; d: number } {
@@ -55,6 +56,7 @@ export default function DatePickerSheet({
   title,
   onPick,
   onClose,
+  anchorRef,
 }: Props) {
   const { t, lang } = useI18n();
   const weekdays =
@@ -150,45 +152,28 @@ export default function DatePickerSheet({
       open={open}
       onClose={onClose}
       title={title}
-      footer={
-        <div className="flex gap-2">
-          <button
-            type="button"
-            onClick={onClose}
-            className="flex-1 h-12 rounded-xl border border-slate-200 bg-white text-slate-700 font-semibold"
-          >
-            {t("common.cancel")}
-          </button>
-          <button
-            type="button"
-            disabled={!picked}
-            onClick={() => picked && onPick({ date: picked, hour })}
-            className="flex-1 h-12 rounded-xl bg-sky-600 text-white font-semibold disabled:opacity-40 disabled:cursor-not-allowed"
-          >
-            {t("common.select")}
-          </button>
-        </div>
-      }
+      anchorRef={anchorRef}
+      desktopWidth={360}
     >
       {/* Month switcher */}
       <div className="flex items-center justify-center gap-4 px-5 pt-3 pb-2">
         <button
           type="button"
           onClick={prevMonth}
-          className="w-9 h-9 grid place-items-center rounded-full border border-slate-200 text-slate-500 hover:text-slate-900"
+          className="w-9 h-9 grid place-items-center rounded-full border border-hairline text-ink-faint hover:text-action hover:border-action transition active:scale-95"
           aria-label="이전 달"
         >
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <path d="M15 18l-6-6 6-6" />
           </svg>
         </button>
-        <span className="text-xl font-bold tabular-nums">
+        <span className="text-xl font-semibold tabular-nums text-ink">
           {viewY}.{pad2(viewM)}
         </span>
         <button
           type="button"
           onClick={nextMonth}
-          className="w-9 h-9 grid place-items-center rounded-full border border-slate-200 text-slate-500 hover:text-slate-900"
+          className="w-9 h-9 grid place-items-center rounded-full border border-hairline text-ink-faint hover:text-action hover:border-action transition active:scale-95"
           aria-label="다음 달"
         >
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -198,7 +183,7 @@ export default function DatePickerSheet({
       </div>
 
       {/* Weekday header */}
-      <div className="grid grid-cols-7 px-2 text-center text-sm font-medium text-slate-500">
+      <div className="grid grid-cols-7 px-2 text-center text-sm font-medium text-ink-faint">
         {weekdays.map((w, i) => (
           <div
             key={w}
@@ -225,23 +210,23 @@ export default function DatePickerSheet({
               key={iso}
               type="button"
               disabled={disabledCell}
-              onClick={() => setPicked(iso)}
+              onClick={() => onPick({ date: iso, hour: 0 })}
               className={`aspect-square flex flex-col items-center justify-center text-base tabular-nums transition ${
                 disabledCell
-                  ? "text-slate-300 cursor-not-allowed"
+                  ? "text-ink-faint/50 cursor-not-allowed"
                   : isSelected
                     ? ""
                     : isSunday
                       ? "text-red-500"
-                      : "text-slate-900"
+                      : "text-ink"
               }`}
             >
               <span
                 className={`inline-flex items-center justify-center w-9 h-9 rounded-full ${
                   isSelected
-                    ? "bg-sky-600 text-white font-bold"
+                    ? "bg-action text-white font-semibold"
                     : isToday
-                      ? "border border-slate-300"
+                      ? "border border-hairline"
                       : ""
                 }`}
               >
@@ -250,9 +235,9 @@ export default function DatePickerSheet({
               <span
                 className={`text-[10px] mt-0.5 leading-none ${
                   isSelected
-                    ? "text-sky-600 font-semibold"
+                    ? "text-action font-semibold"
                     : isToday
-                      ? "text-slate-500"
+                      ? "text-ink-faint"
                       : "text-transparent"
                 }`}
               >
@@ -261,36 +246,6 @@ export default function DatePickerSheet({
             </button>
           );
         })}
-      </div>
-
-      {/* Hour selector */}
-      <div className="mt-2 pt-3 border-t border-slate-100 px-5">
-        <div className="text-sm font-semibold text-slate-900 mb-2">
-          {t("dp.afterDepart", { h: pad2(hour) })}
-        </div>
-        <div className="flex gap-2 overflow-x-auto no-scrollbar pb-2 -mx-1 px-1">
-          {Array.from({ length: 24 }).map((_, h) => {
-            const active = hour === h;
-            const disabled = h < hourFloor;
-            return (
-              <button
-                key={h}
-                type="button"
-                disabled={disabled}
-                onClick={() => setHour(h)}
-                className={`shrink-0 h-10 px-3 min-w-[58px] rounded-lg border text-sm font-medium transition ${
-                  disabled
-                    ? "border-slate-100 bg-slate-50 text-slate-300 cursor-not-allowed"
-                    : active
-                      ? "border-sky-600 text-sky-700 bg-sky-50"
-                      : "border-slate-200 bg-white text-slate-600 hover:border-slate-300"
-                }`}
-              >
-                {t("dp.hourPill", { h: pad2(h) })}
-              </button>
-            );
-          })}
-        </div>
       </div>
     </BottomSheet>
   );

@@ -37,10 +37,10 @@ export default function AdminLogin() {
     <div className="min-h-[60vh] flex items-center justify-center px-6">
       <form
         onSubmit={onSubmit}
-        className="w-full max-w-sm bg-white border border-slate-200 rounded-2xl p-6 shadow-sm"
+        className="w-full max-w-sm card-apple p-6"
       >
-        <h1 className="text-lg font-bold text-slate-900 mb-1">관리자 로그인</h1>
-        <p className="text-xs text-slate-500 mb-4">
+        <h1 className="text-lg font-semibold tracking-tight text-ink mb-1">관리자 로그인</h1>
+        <p className="text-xs text-ink-faint mb-4">
           관리자 페이지 접속을 위해 비밀번호를 입력해주세요.
         </p>
         <input
@@ -50,21 +50,17 @@ export default function AdminLogin() {
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           placeholder="Admin password"
-          className="h-11 px-3 rounded-lg border border-slate-200 bg-white w-full focus:outline-none focus:ring-2 focus:ring-sky-300"
+          className="h-11 px-4 rounded-xl border border-hairline bg-white w-full text-ink placeholder:text-ink-faint focus:outline-none focus:border-action"
         />
         {error && (
-          <div className="mt-3 text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg px-3 py-2">
+          <div className="mt-3 text-sm text-red-700 bg-red-50 border border-red-200 rounded-xl px-3 py-2">
             {error}
           </div>
         )}
         <button
           type="submit"
           disabled={!password || submitting}
-          className={`mt-4 w-full h-11 rounded-xl font-semibold transition ${
-            !password || submitting
-              ? "bg-slate-200 text-slate-400 cursor-not-allowed"
-              : "bg-slate-900 hover:bg-slate-800 text-white"
-          }`}
+          className="btn-action btn-lg w-full mt-4"
         >
           {submitting ? "확인 중…" : "로그인"}
         </button>

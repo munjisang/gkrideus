@@ -117,32 +117,32 @@ export default function SettingsTab() {
       Number(cancelFeePct) / 100 !== settings.cancelFeeRate);
 
   return (
-    <section className="bg-white border border-slate-200 rounded-xl p-5 space-y-6">
+    <section className="card-apple p-5 space-y-6">
       <div className="flex items-center justify-between gap-2 flex-wrap">
-        <h2 className="font-semibold text-slate-800">서비스 설정</h2>
+        <h2 className="font-semibold tracking-tight text-ink">서비스 설정</h2>
         {updatedAt && (
-          <span className="text-[11px] text-slate-400 tabular-nums">
+          <span className="text-[11px] text-ink-faint tabular-nums">
             마지막 저장 {new Date(updatedAt).toLocaleString("ko-KR")}
           </span>
         )}
       </div>
 
       {loadErr && (
-        <div className="text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg px-3 py-2">
+        <div className="text-sm text-red-700 bg-red-50 border border-red-200 rounded-xl px-3 py-2">
           {loadErr}
         </div>
       )}
 
       {settings == null && !loadErr ? (
-        <div className="py-6 text-center text-sm text-slate-400">불러오는 중…</div>
+        <div className="py-6 text-center text-sm text-ink-faint">불러오는 중…</div>
       ) : (
         <>
           {/* 발권수수료 */}
           <div className="space-y-3">
-            <h3 className="text-sm font-semibold text-slate-900">발권수수료</h3>
+            <h3 className="text-sm font-semibold text-ink">발권수수료</h3>
             <div>
               <label className="block">
-                <span className="text-xs font-medium text-slate-500 mb-1 block">
+                <span className="text-xs font-medium text-ink-faint mb-1 block">
                   수수료율
                 </span>
                 <div className="flex items-center gap-2">
@@ -154,14 +154,14 @@ export default function SettingsTab() {
                     step={1}
                     value={bookingFeePct}
                     onChange={(e) => setBookingFeePct(e.target.value)}
-                    className="h-11 w-24 px-3 rounded-lg border border-slate-200 bg-white text-sm tabular-nums focus:outline-none focus:ring-2 focus:ring-sky-300"
+                    className="h-11 w-24 px-3 rounded-xl border border-hairline bg-white text-sm tabular-nums focus:outline-none focus:border-action"
                   />
-                  <span className="text-sm text-slate-500">%</span>
+                  <span className="text-sm text-ink-soft">%</span>
                 </div>
               </label>
             </div>
             <div>
-              <span className="text-xs font-medium text-slate-500 mb-1 block">
+              <span className="text-xs font-medium text-ink-faint mb-1 block">
                 적용 기준
               </span>
               <div className="grid grid-cols-2 gap-2">
@@ -172,20 +172,20 @@ export default function SettingsTab() {
                       key={opt.key}
                       type="button"
                       onClick={() => setBookingFeeBasis(opt.key)}
-                      className={`px-3 py-2 rounded-lg border text-left transition ${
+                      className={`px-3 py-2 rounded-xl border text-left transition ${
                         active
-                          ? "border-sky-600 bg-sky-50 ring-1 ring-sky-200"
-                          : "border-slate-200 bg-white hover:border-slate-300"
+                          ? "border-action bg-action/5 ring-1 ring-action/20"
+                          : "border-hairline bg-white hover:border-ink-faint"
                       }`}
                     >
                       <div
                         className={`text-sm font-semibold ${
-                          active ? "text-sky-700" : "text-slate-700"
+                          active ? "text-action" : "text-ink-soft"
                         }`}
                       >
                         {opt.label}
                       </div>
-                      <div className="text-[11px] text-slate-500 mt-0.5">
+                      <div className="text-[11px] text-ink-faint mt-0.5">
                         {opt.sub}
                       </div>
                     </button>
@@ -197,9 +197,9 @@ export default function SettingsTab() {
 
           {/* 취소수수료 */}
           <div className="space-y-3">
-            <h3 className="text-sm font-semibold text-slate-900">취소수수료</h3>
+            <h3 className="text-sm font-semibold text-ink">취소수수료</h3>
             <label className="block">
-              <span className="text-xs font-medium text-slate-500 mb-1 block">
+              <span className="text-xs font-medium text-ink-faint mb-1 block">
                 수수료율 (총 결제금액 기준)
               </span>
               <div className="flex items-center gap-2">
@@ -211,15 +211,15 @@ export default function SettingsTab() {
                   step={1}
                   value={cancelFeePct}
                   onChange={(e) => setCancelFeePct(e.target.value)}
-                  className="h-11 w-24 px-3 rounded-lg border border-slate-200 bg-white text-sm tabular-nums focus:outline-none focus:ring-2 focus:ring-sky-300"
+                  className="h-11 w-24 px-3 rounded-xl border border-hairline bg-white text-sm tabular-nums focus:outline-none focus:border-action"
                 />
-                <span className="text-sm text-slate-500">%</span>
+                <span className="text-sm text-ink-soft">%</span>
               </div>
             </label>
           </div>
 
           {saveErr && (
-            <div className="text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg px-3 py-2">
+            <div className="text-sm text-red-700 bg-red-50 border border-red-200 rounded-xl px-3 py-2">
               {saveErr}
             </div>
           )}
@@ -228,18 +228,14 @@ export default function SettingsTab() {
             <button
               onClick={save}
               disabled={!dirty || saving}
-              className={`h-10 px-4 rounded-lg font-semibold text-sm transition ${
-                dirty && !saving
-                  ? "bg-slate-900 hover:bg-slate-800 text-white"
-                  : "bg-slate-200 text-slate-400 cursor-not-allowed"
-              }`}
+              className="btn-dark disabled:opacity-50 disabled:pointer-events-none"
             >
               {saving ? "저장 중…" : "변경 저장"}
             </button>
             {savedAt && !dirty && (
               <span className="text-xs text-emerald-600">저장됨</span>
             )}
-            <span className="ml-auto text-[11px] text-slate-400">
+            <span className="ml-auto text-[11px] text-ink-faint">
               저장 시점 이후 신규 예매부터 새 수수료가 적용됩니다.
             </span>
           </div>

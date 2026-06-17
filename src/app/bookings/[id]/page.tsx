@@ -200,19 +200,19 @@ export default function BookingDetailPage({
   }
 
   const header = (
-    <div className="sticky top-0 z-10 bg-white border-b border-slate-200">
-      <div className="mx-4 sm:mx-6 lg:mx-[470px] flex items-center py-3">
+    <div className="sticky top-0 z-10 bg-white/90 backdrop-blur-xl backdrop-saturate-150 border-b border-hairline">
+      <div className="mx-auto max-w-[1280px] px-4 sm:px-8 lg:px-12 flex items-center py-3">
         <button
           type="button"
           onClick={() => router.back()}
           aria-label={t("back")}
-          className="h-10 w-10 grid place-items-center text-slate-800 -ml-1"
+          className="h-10 w-10 grid place-items-center text-ink -ml-1 active:scale-95 transition"
         >
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <path d="M15 18l-6-6 6-6" />
           </svg>
         </button>
-        <h1 className="flex-1 text-center text-base font-bold text-slate-900">
+        <h1 className="flex-1 text-center text-base font-bold tracking-tight text-ink">
           {t("bk.detail.title")}
         </h1>
         <span className="w-10" />
@@ -222,9 +222,9 @@ export default function BookingDetailPage({
 
   if (order === undefined) {
     return (
-      <div className="bg-slate-50 min-h-full">
+      <div className="bg-white min-h-full">
         {header}
-        <div className="mx-4 sm:mx-6 lg:mx-[470px] py-16 text-center text-sm text-slate-400">
+        <div className="mx-auto max-w-[1280px] px-4 sm:px-8 lg:px-12 py-16 text-center text-sm text-ink-faint">
           {t("common.loading")}
         </div>
       </div>
@@ -232,13 +232,13 @@ export default function BookingDetailPage({
   }
   if (order === null) {
     return (
-      <div className="bg-slate-50 min-h-full">
+      <div className="bg-white min-h-full">
         {header}
-        <div className="mx-4 sm:mx-6 lg:mx-[470px] py-8">
-          <div className="bg-red-50 border border-red-200 text-red-700 rounded-xl px-4 py-3 text-sm">
+        <div className="mx-auto max-w-2xl px-4 sm:px-8 lg:px-12 py-8">
+          <div className="bg-red-50 border border-red-200 text-red-700 rounded-card px-4 py-3 text-sm">
             {t("bk.notFound", { id })}
           </div>
-          <Link href="/bookings" className="inline-block mt-4 text-sky-700 text-sm">
+          <Link href="/bookings" className="link-action inline-block mt-4 text-sm">
             ← {t("bk.title")}
           </Link>
         </div>
@@ -270,15 +270,17 @@ export default function BookingDetailPage({
   const bookingFeePctLabel = `${Math.round(feeSettings.bookingFeeRate * 100)}%`;
 
   return (
-    <div className="bg-slate-50 min-h-full">
+    <div className="bg-white min-h-full">
       {header}
-      <div className="mx-4 sm:mx-6 lg:mx-[470px] py-4 pb-10 space-y-2">
+      <div className="mx-auto max-w-[1280px] px-4 sm:px-8 lg:px-12 py-6 pb-10 lg:grid lg:grid-cols-[1fr_380px] lg:gap-6 lg:items-start">
         {/* Per-passenger labels used by the seat-assignment rows inside
             each leg block. Toddlers carry isSeated=false. */}
         {(() => null)()}
+        {/* ── Left column: 여정 · 인원정보 · 예약자 정보 */}
+        <div className="space-y-3">
         {/* ── 1. 여정 (Itinerary) — list-style LegBlocks. */}
-        <section className="bg-white border border-slate-200 rounded-xl overflow-hidden">
-          <h2 className="font-semibold px-5 pt-4 text-slate-800">
+        <section className="card-apple overflow-hidden">
+          <h2 className="font-semibold tracking-tight px-5 pt-4 text-ink">
             {t("bk.section.itinerary")}
           </h2>
           <LegBlock
@@ -296,7 +298,7 @@ export default function BookingDetailPage({
           />
           {order.tripType === "roundtrip" && order.inbound && inStatus !== null && (
             <>
-              <div className="mx-5 border-t border-dashed border-slate-200" />
+              <div className="mx-5 border-t border-dashed border-hairline" />
               <LegBlock
                 leg="in"
                 label={t("ord.legIn")}
@@ -315,24 +317,24 @@ export default function BookingDetailPage({
         </section>
 
         {/* ── 2. 인원정보 */}
-        <section className="bg-white border border-slate-200 rounded-xl p-5">
-          <h2 className="font-semibold mb-3 text-slate-800">{t("ord.paxInfo")}</h2>
-          <ul className="divide-y divide-slate-100">
+        <section className="card-apple p-5">
+          <h2 className="font-semibold tracking-tight mb-3 text-ink">{t("ord.paxInfo")}</h2>
+          <ul className="divide-y divide-divider">
             {paxRowsFor(order, t).map((r) => (
               <li
                 key={r.label}
                 className="flex items-center justify-between py-2.5 text-sm"
               >
-                <span className="text-slate-600">{r.label}</span>
-                <span className="font-semibold text-slate-900 tabular-nums">
+                <span className="text-ink-soft">{r.label}</span>
+                <span className="font-semibold text-ink tabular-nums">
                   {t("pax.count", { n: r.count })}
                 </span>
               </li>
             ))}
             {order.seatPref && (
               <li className="flex items-center justify-between py-2.5 text-sm">
-                <span className="text-slate-600">{t("ord.seatPref")}</span>
-                <span className="font-semibold text-slate-900">
+                <span className="text-ink-soft">{t("ord.seatPref")}</span>
+                <span className="font-semibold text-ink">
                   {t(SEAT_PREF_KEY[order.seatPref])}
                 </span>
               </li>
@@ -342,9 +344,9 @@ export default function BookingDetailPage({
 
         {/* ── 3. 예약자 정보 */}
         {booker && (
-          <section className="bg-white border border-slate-200 rounded-xl p-5">
-            <h2 className="font-semibold mb-3 text-slate-800">{t("ord.booker")}</h2>
-            <ul className="divide-y divide-slate-100">
+          <section className="card-apple p-5">
+            <h2 className="font-semibold tracking-tight mb-3 text-ink">{t("ord.booker")}</h2>
+            <ul className="divide-y divide-divider">
               <KvRow label={t("ord.name")} value={booker.name} />
               <KvRow label={t("ord.email")} value={booker.email} />
               {booker.countryCode && (
@@ -356,10 +358,13 @@ export default function BookingDetailPage({
             </ul>
           </section>
         )}
+        </div>
 
+        {/* ── Right column: 결제정보 · 취소내역 (sticky on desktop) */}
+        <div className="space-y-3 mt-3 lg:mt-0 lg:sticky lg:top-[76px]">
         {/* ── 4. 결제정보 */}
-        <section className="bg-white border border-slate-200 rounded-xl p-5">
-          <h2 className="font-semibold mb-3 text-slate-800">{t("ord.payInfo")}</h2>
+        <section className="card-apple p-5">
+          <h2 className="font-semibold tracking-tight mb-3 text-ink">{t("ord.payInfo")}</h2>
           <div className="space-y-1.5 text-sm">
             <KvLine
               label={t("bk.pay.method")}
@@ -373,7 +378,7 @@ export default function BookingDetailPage({
               label={t("bk.pay.at")}
               value={fmtAt(order.createdAt) ?? "—"}
             />
-            <div className="pt-1 mt-1 border-t border-slate-100" />
+            <div className="pt-1 mt-1 border-t border-divider" />
             <KvLine
               label={t("ord.fare.regular")}
               value={krwL(totalRegular, lang)}
@@ -394,11 +399,11 @@ export default function BookingDetailPage({
               label={t("ord.fare.fee", { p: bookingFeePctLabel })}
               value={krwL(totalFee, lang)}
             />
-            <div className="pt-2 mt-1 border-t border-slate-100 flex items-center justify-between">
-              <span className="text-sm font-semibold text-slate-800">
+            <div className="pt-2 mt-1 border-t border-divider flex items-center justify-between">
+              <span className="text-sm font-semibold text-ink">
                 {t("ord.total")}
               </span>
-              <span className="text-base font-bold text-sky-700 tabular-nums">
+              <span className="text-base font-semibold text-action tabular-nums">
                 {krwL(grandTotal, lang)}
               </span>
             </div>
@@ -407,8 +412,8 @@ export default function BookingDetailPage({
 
         {/* ── 5. 취소내역 (only when the whole order is cancelled) */}
         {ostatus === "cancelled" && (
-          <section className="bg-white border border-slate-200 rounded-xl p-5">
-            <h2 className="font-semibold mb-3 text-slate-800">
+          <section className="card-apple p-5">
+            <h2 className="font-semibold tracking-tight mb-3 text-ink">
               {t("bk.section.cancellation")}
             </h2>
             <div className="space-y-1.5 text-sm">
@@ -429,7 +434,7 @@ export default function BookingDetailPage({
                   ) ?? "—"
                 }
               />
-              <div className="pt-1 mt-1 border-t border-slate-100" />
+              <div className="pt-1 mt-1 border-t border-divider" />
               <KvLine
                 label={t("ord.fare.regular")}
                 value={krwL(totalRegular, lang)}
@@ -456,17 +461,18 @@ export default function BookingDetailPage({
                 value={`-${krwL(cancelFee, lang)}`}
               />
               {/* 환불 합계 — mirrors the 결제정보 section's bold sky line. */}
-              <div className="pt-2 mt-1 border-t border-slate-100 flex items-center justify-between">
-                <span className="text-sm font-semibold text-slate-800">
+              <div className="pt-2 mt-1 border-t border-divider flex items-center justify-between">
+                <span className="text-sm font-semibold text-ink">
                   {t("bk.cancelAmount")}
                 </span>
-                <span className="text-base font-bold text-sky-700 tabular-nums">
+                <span className="text-base font-semibold text-action tabular-nums">
                   {krwL(Math.max(0, grandTotal - cancelFee), lang)}
                 </span>
               </div>
             </div>
           </section>
         )}
+        </div>
       </div>
     </div>
   );
@@ -497,8 +503,8 @@ function paxRowsFor(
 function KvRow({ label, value }: { label: string; value: string }) {
   return (
     <li className="flex items-center justify-between py-2.5 text-sm gap-3">
-      <span className="text-slate-600 shrink-0">{label}</span>
-      <span className="font-semibold text-slate-900 break-all text-right">
+      <span className="text-ink-soft shrink-0">{label}</span>
+      <span className="font-semibold text-ink break-all text-right">
         {value}
       </span>
     </li>
@@ -508,8 +514,8 @@ function KvRow({ label, value }: { label: string; value: string }) {
 function KvLine({ label, value }: { label: string; value: string }) {
   return (
     <div className="flex items-center justify-between">
-      <span className="text-slate-600">{label}</span>
-      <span className="font-semibold text-slate-800 tabular-nums">{value}</span>
+      <span className="text-ink-soft">{label}</span>
+      <span className="font-semibold text-ink tabular-nums">{value}</span>
     </div>
   );
 }
@@ -528,12 +534,12 @@ function StatusText({
   //   ticketed  → violet (unchanged — not in spec)
   const cls =
     status === "ticketed"
-      ? "text-violet-700"
+      ? "bg-emerald-50 text-emerald-700"
       : status === "confirmed"
-        ? "text-sky-600"
+        ? "bg-action/10 text-action"
         : status === "pending"
-          ? "text-emerald-600"
-          : "text-red-600";
+          ? "bg-amber-50 text-amber-700"
+          : "bg-red-50 text-red-700";
   const label =
     status === "ticketed"
       ? t("bk.status.ticketed")
@@ -542,7 +548,11 @@ function StatusText({
         : status === "pending"
           ? t("bk.status.pending")
           : t("bk.status.cancelled");
-  return <span className={`text-xs font-semibold ${cls}`}>{label}</span>;
+  return (
+    <span className={`rounded-pill text-[12px] font-semibold px-2.5 py-1 ${cls}`}>
+      {label}
+    </span>
+  );
 }
 
 /** Same layout as the list card's LegBlock, with an optional in-block
@@ -578,7 +588,7 @@ function LegBlock({
 }) {
   const mins = durationMinutes(train.depPlandTime, train.arrPlandTime);
   const dim = status === "cancelled";
-  const muted = (cls: string) => (dim ? "text-slate-400" : cls);
+  const muted = (cls: string) => (dim ? "text-ink-faint" : cls);
   // After ticketing the seat is locked in on Korail's side; cancellation
   // must go through their refund flow rather than our in-app cancel API.
   const showCancel =
@@ -592,20 +602,20 @@ function LegBlock({
     <div className="px-5 py-4" data-leg={leg}>
       <div className="flex items-center gap-2 flex-wrap">
         <span
-          className={`text-xs font-bold rounded px-2 py-0.5 leading-tight border ${
+          className={`rounded-pill text-[12px] font-semibold px-2.5 py-1 leading-tight ${
             dim
-              ? "text-slate-400 bg-slate-100 border-slate-200"
-              : "text-sky-700 bg-sky-50 border-sky-100"
+              ? "text-ink-faint bg-parchment"
+              : "text-action bg-action/10"
           }`}
         >
           {label}
         </span>
-        <span className="text-slate-300">·</span>
+        <span className="text-hairline">·</span>
         <StatusText status={status} t={t} />
         {rsv?.rsvId && (
           <>
-            <span className="text-slate-300">·</span>
-            <span className={`text-xs font-semibold tabular-nums ${muted("text-slate-600")}`}>
+            <span className="text-hairline">·</span>
+            <span className={`text-xs font-semibold tabular-nums ${muted("text-ink-soft")}`}>
               {rsv.rsvId}
             </span>
           </>
@@ -615,42 +625,42 @@ function LegBlock({
       <div className="flex items-baseline justify-between gap-2 pt-3">
         <div className="flex items-baseline gap-2 min-w-0">
           <TrainLogo name={train.trainGradeName} dim={dim} />
-          <span className={`text-sm font-semibold ${muted("text-slate-500")}`}>
+          <span className={`text-sm font-semibold ${muted("text-ink-soft")}`}>
             {Number(train.trainNo) || train.trainNo}
           </span>
           <span
-            className={`self-center inline-flex items-center h-5 px-2 text-[11px] font-bold rounded-full border ${
+            className={`self-center inline-flex items-center h-5 px-2.5 text-[11px] font-semibold rounded-pill ${
               dim
-                ? "bg-slate-100 text-slate-400 border-slate-200"
+                ? "bg-parchment text-ink-faint"
                 : seatType === "first"
-                  ? "bg-amber-50 text-amber-700 border-amber-200"
-                  : "bg-slate-50 text-slate-700 border-slate-200"
+                  ? "bg-amber-50 text-amber-700"
+                  : "bg-parchment text-ink-soft"
             }`}
           >
             {seatType === "first" ? t("sr.first") : t("sr.standard")}
           </span>
         </div>
-        <span className={`text-sm tabular-nums shrink-0 ${muted("text-slate-500")}`}>
+        <span className={`text-sm tabular-nums shrink-0 ${muted("text-ink-soft")}`}>
           {fmtDateDots(train.depPlandTime)}
         </span>
       </div>
 
       <div className="flex items-center gap-3 pt-3">
         <span
-          className={`text-base font-bold tabular-nums leading-none whitespace-nowrap ${muted(
-            "text-slate-900",
+          className={`text-base font-semibold tabular-nums leading-none whitespace-nowrap ${muted(
+            "text-ink",
           )}`}
         >
           {fmtTime(train.depPlandTime)}
         </span>
-        <span className="h-px flex-1 bg-slate-200" aria-hidden />
-        <span className={`text-xs whitespace-nowrap ${muted("text-slate-400")}`}>
+        <span className="h-px flex-1 bg-hairline" aria-hidden />
+        <span className={`text-xs whitespace-nowrap ${muted("text-ink-faint")}`}>
           {durationL(mins, lang)}
         </span>
-        <span className="h-px flex-1 bg-slate-200" aria-hidden />
+        <span className="h-px flex-1 bg-hairline" aria-hidden />
         <span
-          className={`text-base font-bold tabular-nums leading-none whitespace-nowrap ${muted(
-            "text-slate-900",
+          className={`text-base font-semibold tabular-nums leading-none whitespace-nowrap ${muted(
+            "text-ink",
           )}`}
         >
           {fmtTime(train.arrPlandTime)}
@@ -658,10 +668,10 @@ function LegBlock({
       </div>
 
       <div className="flex items-center justify-between pt-1">
-        <span className={`text-sm whitespace-nowrap ${muted("text-slate-600")}`}>
+        <span className={`text-sm whitespace-nowrap ${muted("text-ink-soft")}`}>
           {stationLabel(train.depPlaceName, lang)}
         </span>
-        <span className={`text-sm whitespace-nowrap ${muted("text-slate-600")}`}>
+        <span className={`text-sm whitespace-nowrap ${muted("text-ink-soft")}`}>
           {stationLabel(train.arrPlaceName, lang)}
         </span>
       </div>
@@ -673,7 +683,7 @@ function LegBlock({
        * to expanding a `seatNo`..`seatNoEnd` range for legacy rows that
        * predate the seats-array migration. */}
       {status === "ticketed" && (rsv?.seats?.length || (rsv?.carNo && rsv?.seatNo)) && (
-        <ul className="mt-3 pt-3 border-t border-slate-100 space-y-1.5">
+        <ul className="mt-3 pt-3 border-t border-divider space-y-1.5">
           {(() => {
             const seatedCount = paxLabels.filter((p) => p.isSeated).length;
             const seatList: { carNo: string; seatNo: string }[] =
@@ -694,8 +704,8 @@ function LegBlock({
                   key={p.label}
                   className="flex items-center justify-between text-sm"
                 >
-                  <span className="text-slate-600">{p.label}</span>
-                  <span className="font-semibold text-violet-700 tabular-nums">
+                  <span className="text-ink-soft">{p.label}</span>
+                  <span className="font-semibold text-action tabular-nums">
                     {seat ? `${fmtCar(seat.carNo)} ${seat.seatNo}` : "—"}
                   </span>
                 </li>
@@ -711,7 +721,7 @@ function LegBlock({
             type="button"
             onClick={onCancel}
             disabled={cancelling}
-            className="h-9 px-4 rounded-lg border border-red-200 bg-white text-red-600 text-sm font-semibold hover:bg-red-50 disabled:opacity-50 transition"
+            className="rounded-pill bg-red-600 text-white px-5 py-2 text-sm font-semibold active:scale-95 disabled:opacity-50 transition"
           >
             {cancelling ? t("bk.cancelling") : t("bk.cancel")}
           </button>

@@ -176,42 +176,46 @@ export default function BookingsListPage() {
   }, []);
 
   return (
-    <div className="bg-slate-50 min-h-full">
-      <div className="sticky top-0 z-10 bg-white border-b border-slate-200">
-        <div className="mx-4 sm:mx-6 lg:mx-[470px] flex items-center py-3">
+    <div className="bg-white min-h-full">
+      {/* Sticky header — back + title (matches the search header) */}
+      <div className="sticky top-0 z-10 bg-white/90 backdrop-blur-xl backdrop-saturate-150 border-b border-hairline">
+        <div className="mx-auto max-w-[1280px] px-4 sm:px-8 lg:px-12 flex items-center py-3">
           <Link
             href="/"
-            className="h-10 w-10 grid place-items-center text-slate-800 -ml-1"
+            className="h-10 w-10 grid place-items-center text-ink -ml-1 active:scale-95 transition"
             aria-label={t("back")}
           >
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M15 18l-6-6 6-6" />
             </svg>
           </Link>
-          <h1 className="flex-1 text-center text-base font-bold text-slate-900">
+          <h1 className="flex-1 text-center text-base font-bold tracking-tight text-ink">
             {t("bk.title")}
-            {syncing && (
-              <span className="ml-2 text-[11px] font-normal text-slate-400">
-                {t("common.loading")}
-              </span>
-            )}
           </h1>
           <span className="w-10" />
         </div>
       </div>
 
-      <div className="mx-4 sm:mx-6 lg:mx-[470px] py-4 pb-10 space-y-2">
-        {orders == null ? (
-          <div className="py-16 text-center text-sm text-slate-400">
-            {t("common.loading")}
-          </div>
-        ) : orders.length === 0 ? (
-          <EmptyState t={t} />
-        ) : (
-          orders.map((o) => (
-            <BookingCard key={o.id} order={o} lang={lang} t={t} />
-          ))
+      <div className="mx-auto max-w-[1280px] px-4 sm:px-8 lg:px-12 py-6 pb-10">
+        {syncing && (
+          <div className="mb-3 text-[12px] text-ink-faint">{t("common.loading")}</div>
         )}
+
+        <div className="lg:grid lg:grid-cols-2 lg:gap-4 space-y-3 lg:space-y-0">
+          {orders == null ? (
+            <div className="lg:col-span-2 py-16 text-center text-sm text-ink-faint">
+              {t("common.loading")}
+            </div>
+          ) : orders.length === 0 ? (
+            <div className="lg:col-span-2">
+              <EmptyState t={t} />
+            </div>
+          ) : (
+            orders.map((o) => (
+              <BookingCard key={o.id} order={o} lang={lang} t={t} />
+            ))
+          )}
+        </div>
       </div>
     </div>
   );
@@ -219,9 +223,9 @@ export default function BookingsListPage() {
 
 function EmptyState({ t }: { t: (k: string) => string }) {
   return (
-    <div className="py-16 flex flex-col items-center text-center">
+    <div className="py-24 flex flex-col items-center text-center">
       <svg
-        className="w-20 h-20 text-slate-300"
+        className="w-20 h-20 text-ink-faint/50"
         viewBox="0 0 64 64"
         fill="none"
         stroke="currentColor"
@@ -237,11 +241,8 @@ function EmptyState({ t }: { t: (k: string) => string }) {
         <circle cx="32" cy="38" r="1.5" fill="currentColor" />
         <circle cx="42" cy="38" r="1.5" fill="currentColor" />
       </svg>
-      <p className="mt-4 text-sm text-slate-500">{t("bk.empty")}</p>
-      <Link
-        href="/"
-        className="mt-4 inline-flex items-center h-10 px-4 rounded-lg bg-slate-900 hover:bg-slate-800 text-white text-sm font-semibold transition"
-      >
+      <p className="mt-5 text-ink-faint">{t("bk.empty")}</p>
+      <Link href="/" className="btn-action mt-6">
         {t("bk.empty.cta")}
       </Link>
     </div>

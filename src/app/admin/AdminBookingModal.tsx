@@ -88,18 +88,18 @@ export default function AdminBookingModal({
         onClick={onClose}
         className="absolute inset-0 bg-black/40"
       />
-      <div className="relative bg-white w-full sm:max-w-lg sm:rounded-2xl shadow-2xl flex flex-col max-h-[90vh] rounded-t-2xl overflow-hidden">
+      <div className="relative bg-white w-full sm:max-w-lg sm:rounded-card shadow-xl flex flex-col max-h-[90vh] rounded-t-card overflow-hidden">
         {/* Header */}
-        <div className="flex items-center justify-between px-5 py-3 border-b border-slate-100">
+        <div className="flex items-center justify-between px-5 py-3 border-b border-divider">
           <div>
-            <div className="text-[11px] text-slate-400 font-mono break-all">{order.id}</div>
-            <h2 className="text-base font-bold text-slate-900">{t("bk.detail.title")}</h2>
+            <div className="text-[11px] text-ink-faint font-mono break-all">{order.id}</div>
+            <h2 className="text-base font-semibold tracking-tight text-ink">{t("bk.detail.title")}</h2>
           </div>
           <button
             type="button"
             onClick={onClose}
             aria-label="닫기"
-            className="w-9 h-9 grid place-items-center text-slate-500 hover:text-slate-900 -mr-1"
+            className="w-9 h-9 grid place-items-center text-ink-soft hover:text-ink -mr-1"
           >
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M18 6L6 18" />
@@ -109,9 +109,9 @@ export default function AdminBookingModal({
         </div>
 
         {/* Body */}
-        <div className="flex-1 overflow-y-auto bg-slate-50 p-4 space-y-3">
+        <div className="flex-1 overflow-y-auto bg-parchment p-4 space-y-3">
           {flags.failureMessage && (
-            <div className="rounded-lg border border-red-200 bg-red-50 text-red-700 text-sm px-3 py-2 break-words whitespace-pre-line">
+            <div className="rounded-xl border border-red-200 bg-red-50 text-red-700 text-sm px-3 py-2 break-words whitespace-pre-line">
               {flags.failureMessage}
             </div>
           )}
@@ -120,24 +120,24 @@ export default function AdminBookingModal({
           <BookingCard order={order} lang={lang} t={t} onClick={null} />
 
           {/* 인원 + 선호좌석 */}
-          <section className="bg-white border border-slate-200 rounded-xl p-4">
-            <h3 className="text-sm font-semibold text-slate-800 mb-2">{t("ord.paxInfo")}</h3>
-            <ul className="divide-y divide-slate-100">
+          <section className="card-apple p-4">
+            <h3 className="text-sm font-semibold text-ink mb-2">{t("ord.paxInfo")}</h3>
+            <ul className="divide-y divide-divider">
               {paxRowsFor(order, t).map((r) => (
                 <li
                   key={r.label}
                   className="flex items-center justify-between py-2 text-sm"
                 >
-                  <span className="text-slate-600">{r.label}</span>
-                  <span className="font-semibold text-slate-900 tabular-nums">
+                  <span className="text-ink-soft">{r.label}</span>
+                  <span className="font-semibold text-ink tabular-nums">
                     {t("pax.count", { n: r.count })}
                   </span>
                 </li>
               ))}
               {order.seatPref && (
                 <li className="flex items-center justify-between py-2 text-sm">
-                  <span className="text-slate-600">{t("ord.seatPref")}</span>
-                  <span className="font-semibold text-slate-900">
+                  <span className="text-ink-soft">{t("ord.seatPref")}</span>
+                  <span className="font-semibold text-ink">
                     {t(SEAT_PREF_KEY[order.seatPref])}
                   </span>
                 </li>
@@ -147,9 +147,9 @@ export default function AdminBookingModal({
 
           {/* 예약자 */}
           {booker && (
-            <section className="bg-white border border-slate-200 rounded-xl p-4">
-              <h3 className="text-sm font-semibold text-slate-800 mb-2">{t("ord.booker")}</h3>
-              <ul className="divide-y divide-slate-100">
+            <section className="card-apple p-4">
+              <h3 className="text-sm font-semibold text-ink mb-2">{t("ord.booker")}</h3>
+              <ul className="divide-y divide-divider">
                 <Kv label={t("ord.name")} value={booker.name} />
                 <Kv label={t("ord.email")} value={booker.email} />
                 {booker.countryCode && (
@@ -164,8 +164,8 @@ export default function AdminBookingModal({
 
           {/* 결제 요약 */}
           {fareSummary && (
-            <section className="bg-white border border-slate-200 rounded-xl p-4">
-              <h3 className="text-sm font-semibold text-slate-800 mb-2">{t("ord.payInfo")}</h3>
+            <section className="card-apple p-4">
+              <h3 className="text-sm font-semibold text-ink mb-2">{t("ord.payInfo")}</h3>
               <div className="space-y-1.5 text-sm">
                 {order.payMethod && (
                   <KvLine
@@ -206,11 +206,11 @@ export default function AdminBookingModal({
                     lang,
                   )}
                 />
-                <div className="pt-2 mt-1 border-t border-slate-100 flex items-center justify-between">
-                  <span className="text-sm font-semibold text-slate-800">
+                <div className="pt-2 mt-1 border-t border-divider flex items-center justify-between">
+                  <span className="text-sm font-semibold text-ink">
                     {t("ord.total")}
                   </span>
-                  <span className="text-base font-bold text-sky-700 tabular-nums">
+                  <span className="text-base font-bold text-action tabular-nums">
                     {krwL(fareSummary.total, lang)}
                   </span>
                 </div>
@@ -221,13 +221,13 @@ export default function AdminBookingModal({
         </div>
 
         {/* Admin actions footer */}
-        <div className="border-t border-slate-200 px-3 py-3 flex flex-wrap gap-2 justify-end bg-white">
+        <div className="border-t border-hairline px-3 py-3 flex flex-wrap gap-2 justify-end bg-white">
           {flags.hasUnconfirmedLeg && (
             <button
               type="button"
               onClick={onConfirm}
               disabled={flags.busy}
-              className="h-10 px-4 rounded-lg text-sm font-semibold text-emerald-700 bg-emerald-50 hover:bg-emerald-100 disabled:opacity-50 transition"
+              className="btn-action h-10 text-sm"
             >
               확정
             </button>
@@ -237,7 +237,7 @@ export default function AdminBookingModal({
               type="button"
               onClick={onCancel}
               disabled={flags.busy}
-              className="h-10 px-4 rounded-lg text-sm font-semibold text-red-700 border border-red-200 bg-white hover:bg-red-50 disabled:opacity-50 transition"
+              className="h-10 px-[22px] rounded-pill text-sm font-semibold bg-red-600 text-white active:scale-95 transition-transform disabled:opacity-50"
             >
               {flags.busy ? "처리중…" : "예매 취소"}
             </button>
@@ -246,14 +246,14 @@ export default function AdminBookingModal({
             type="button"
             onClick={onDelete}
             disabled={flags.busy}
-            className="h-10 px-3 rounded-lg text-sm text-slate-500 hover:text-red-600 hover:bg-red-50 disabled:opacity-50 transition"
+            className="h-10 px-3 rounded-pill text-sm text-ink-faint hover:text-red-600 hover:bg-red-50 disabled:opacity-50 transition"
           >
             삭제
           </button>
           <button
             type="button"
             onClick={onClose}
-            className="h-10 px-4 rounded-lg text-sm font-medium text-slate-700 border border-slate-200 bg-white hover:border-slate-300 transition"
+            className="btn-ghost h-10 text-sm"
           >
             닫기
           </button>
@@ -287,8 +287,8 @@ function paxRowsFor(
 function Kv({ label, value }: { label: string; value: string }) {
   return (
     <li className="flex items-center justify-between py-2 text-sm gap-3">
-      <span className="text-slate-600 shrink-0">{label}</span>
-      <span className="font-semibold text-slate-900 break-all text-right">{value}</span>
+      <span className="text-ink-soft shrink-0">{label}</span>
+      <span className="font-semibold text-ink break-all text-right">{value}</span>
     </li>
   );
 }
@@ -296,8 +296,8 @@ function Kv({ label, value }: { label: string; value: string }) {
 function KvLine({ label, value }: { label: string; value: string }) {
   return (
     <div className="flex items-center justify-between">
-      <span className="text-slate-600">{label}</span>
-      <span className="font-semibold text-slate-800 tabular-nums">{value}</span>
+      <span className="text-ink-soft">{label}</span>
+      <span className="font-semibold text-ink tabular-nums">{value}</span>
     </div>
   );
 }

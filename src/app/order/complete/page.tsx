@@ -7,7 +7,7 @@ export default function CompletePage() {
   return (
     <Suspense
       fallback={
-        <div className="mx-auto max-w-3xl px-4 py-10 text-slate-500">불러오는 중…</div>
+        <div className="mx-auto max-w-2xl px-4 sm:px-8 lg:px-12 py-10 text-ink-faint">불러오는 중…</div>
       }
     >
       <CompleteView />

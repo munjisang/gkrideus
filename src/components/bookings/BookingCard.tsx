@@ -49,13 +49,13 @@ export default function BookingCard({ order, lang, t, onClick }: Props) {
     outStatus === "cancelled" &&
     (inStatus === null || inStatus === "cancelled");
 
-  const baseClass = `block w-full text-left rounded-xl border transition ${
+  const baseClass = `card-apple block w-full h-full text-left transition active:scale-[0.99] ${
     wholeCancelled
-      ? "bg-slate-100 border-slate-200"
-      : "bg-white border-slate-200 hover:border-slate-400"
+      ? "bg-parchment border-hairline"
+      : "hover:border-action"
   }`;
-  const inertClass = `block w-full rounded-xl border ${
-    wholeCancelled ? "bg-slate-100 border-slate-200" : "bg-white border-slate-200"
+  const inertClass = `card-apple block w-full ${
+    wholeCancelled ? "bg-parchment border-hairline" : ""
   }`;
 
   const Inner = (
@@ -71,7 +71,7 @@ export default function BookingCard({ order, lang, t, onClick }: Props) {
       />
       {order.tripType === "roundtrip" && order.inbound && inStatus !== null && (
         <>
-          <div className="mx-5 border-t border-dashed border-slate-200" />
+          <div className="mx-5 border-t border-dashed border-hairline" />
           <LegBlock
             leg="in"
             label={t("ord.legIn")}
@@ -84,18 +84,18 @@ export default function BookingCard({ order, lang, t, onClick }: Props) {
         </>
       )}
 
-      <div className="border-t border-slate-200" />
+      <div className="border-t border-divider" />
       <div className="px-5 py-3 flex items-center justify-between">
         <span
           className={`text-xs ${
-            wholeCancelled ? "text-slate-400" : "text-slate-500"
+            wholeCancelled ? "text-ink-faint" : "text-ink-soft"
           }`}
         >
           {t("bk.legPax", { n: order.passengerCount })}
         </span>
         <span
-          className={`text-sm font-bold tabular-nums ${
-            wholeCancelled ? "text-slate-400 line-through" : "text-slate-900"
+          className={`text-sm font-semibold tabular-nums ${
+            wholeCancelled ? "text-ink-faint line-through" : "text-ink"
           }`}
         >
           {krwL(order.totalPrice, lang)}
@@ -145,30 +145,30 @@ function LegBlock({
 }) {
   const mins = durationMinutes(train.depPlandTime, train.arrPlandTime);
   const dim = status === "cancelled";
-  const muted = (cls: string) => (dim ? "text-slate-400" : cls);
+  const muted = (cls: string) => (dim ? "text-ink-faint" : cls);
   return (
     <div
-      className={`px-5 py-4 ${dim ? "bg-slate-100/60" : ""}`}
+      className={`px-5 py-4 ${dim ? "bg-parchment/60" : ""}`}
       data-leg={leg}
     >
       <div className="flex items-center gap-2 flex-wrap">
         <span
-          className={`text-xs font-bold rounded px-2 py-0.5 leading-tight border ${
+          className={`rounded-pill text-[12px] font-semibold px-2.5 py-1 leading-tight ${
             dim
-              ? "text-slate-400 bg-slate-100 border-slate-200"
-              : "text-sky-700 bg-sky-50 border-sky-100"
+              ? "text-ink-faint bg-parchment"
+              : "text-action bg-action/10"
           }`}
         >
           {label}
         </span>
-        <span className="text-slate-300">·</span>
+        <span className="text-hairline">·</span>
         <StatusText status={status} t={t} />
         {rsv?.rsvId && (
           <>
-            <span className="text-slate-300">·</span>
+            <span className="text-hairline">·</span>
             <span
               className={`text-xs font-semibold tabular-nums ${muted(
-                "text-slate-600",
+                "text-ink-soft",
               )}`}
             >
               {rsv.rsvId}
@@ -180,12 +180,12 @@ function LegBlock({
       <div className="flex items-baseline justify-between gap-2 pt-3">
         <div className="flex items-baseline gap-2 min-w-0">
           <TrainLogo name={train.trainGradeName} dim={dim} />
-          <span className={`text-sm font-semibold ${muted("text-slate-500")}`}>
+          <span className={`text-sm font-semibold ${muted("text-ink-soft")}`}>
             {Number(train.trainNo) || train.trainNo}
           </span>
         </div>
         <span
-          className={`text-sm tabular-nums shrink-0 ${muted("text-slate-500")}`}
+          className={`text-sm tabular-nums shrink-0 ${muted("text-ink-soft")}`}
         >
           {fmtDateDots(train.depPlandTime)}
         </span>
@@ -193,22 +193,22 @@ function LegBlock({
 
       <div className="flex items-center gap-3 pt-3">
         <span
-          className={`text-base font-bold tabular-nums leading-none whitespace-nowrap ${muted(
-            "text-slate-900",
+          className={`text-base font-semibold tabular-nums leading-none whitespace-nowrap ${muted(
+            "text-ink",
           )}`}
         >
           {fmtTime(train.depPlandTime)}
         </span>
-        <span className="h-px flex-1 bg-slate-200" aria-hidden />
+        <span className="h-px flex-1 bg-hairline" aria-hidden />
         <span
-          className={`text-xs whitespace-nowrap ${muted("text-slate-400")}`}
+          className={`text-xs whitespace-nowrap ${muted("text-ink-faint")}`}
         >
           {durationL(mins, lang)}
         </span>
-        <span className="h-px flex-1 bg-slate-200" aria-hidden />
+        <span className="h-px flex-1 bg-hairline" aria-hidden />
         <span
-          className={`text-base font-bold tabular-nums leading-none whitespace-nowrap ${muted(
-            "text-slate-900",
+          className={`text-base font-semibold tabular-nums leading-none whitespace-nowrap ${muted(
+            "text-ink",
           )}`}
         >
           {fmtTime(train.arrPlandTime)}
@@ -217,12 +217,12 @@ function LegBlock({
 
       <div className="flex items-center justify-between pt-1">
         <span
-          className={`text-sm whitespace-nowrap ${muted("text-slate-600")}`}
+          className={`text-sm whitespace-nowrap ${muted("text-ink-soft")}`}
         >
           {stationLabel(train.depPlaceName, lang)}
         </span>
         <span
-          className={`text-sm whitespace-nowrap ${muted("text-slate-600")}`}
+          className={`text-sm whitespace-nowrap ${muted("text-ink-soft")}`}
         >
           {stationLabel(train.arrPlaceName, lang)}
         </span>
@@ -240,12 +240,12 @@ function StatusText({
 }) {
   const cls =
     status === "ticketed"
-      ? "text-violet-700"
+      ? "bg-emerald-50 text-emerald-700"
       : status === "confirmed"
-        ? "text-sky-600"
+        ? "bg-action/10 text-action"
         : status === "pending"
-          ? "text-emerald-600"
-          : "text-red-600";
+          ? "bg-amber-50 text-amber-700"
+          : "bg-red-50 text-red-700";
   const label =
     status === "ticketed"
       ? t("bk.status.ticketed")
@@ -254,5 +254,9 @@ function StatusText({
         : status === "pending"
           ? t("bk.status.pending")
           : t("bk.status.cancelled");
-  return <span className={`text-xs font-semibold ${cls}`}>{label}</span>;
+  return (
+    <span className={`rounded-pill text-[12px] font-semibold px-2.5 py-1 ${cls}`}>
+      {label}
+    </span>
+  );
 }

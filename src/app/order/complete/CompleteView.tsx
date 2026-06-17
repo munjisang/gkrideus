@@ -28,20 +28,26 @@ export default function CompleteView() {
 
   if (order === undefined) {
     return (
-      <div className="mx-auto max-w-md px-4 py-8 text-slate-500">
-        {t("common.loading")}
+      <div className="min-h-screen bg-parchment">
+        <CompleteHeader title={t("cp.done")} />
+        <div className="mx-auto max-w-2xl px-4 sm:px-8 lg:px-12 py-8 text-ink-faint">
+          {t("common.loading")}
+        </div>
       </div>
     );
   }
   if (order === null) {
     return (
-      <div className="mx-auto max-w-md px-4 py-8">
-        <div className="bg-red-50 border border-red-200 text-red-700 rounded-xl px-4 py-3 text-sm">
-          {t("cp.notFound", { id: id || "-" })}
+      <div className="min-h-screen bg-parchment">
+        <CompleteHeader title={t("cp.done")} />
+        <div className="mx-auto max-w-2xl px-4 sm:px-8 lg:px-12 py-8">
+          <div className="bg-red-50 border border-red-200 text-red-700 rounded-xl px-4 py-3 text-sm">
+            {t("cp.notFound", { id: id || "-" })}
+          </div>
+          <Link href="/" className="link-action inline-block mt-4 text-sm">
+            ← {t("ord.toHome")}
+          </Link>
         </div>
-        <Link href="/" className="inline-block mt-4 text-sky-700 text-sm">
-          ← {t("ord.toHome")}
-        </Link>
       </div>
     );
   }
@@ -63,22 +69,25 @@ export default function CompleteView() {
     )} → ${fmtTime(leg.arrPlandTime)} ${stationLabel(leg.arrPlaceName, lang)} (#${leg.trainNo})`;
 
   return (
-    <div className="mx-auto max-w-md px-4 py-6">
-      <div className="text-center mb-6">
-        <div className="w-12 h-12 rounded-full bg-emerald-500 text-white grid place-items-center mx-auto text-xl">
+    <div className="min-h-screen bg-parchment">
+      <CompleteHeader title={t("cp.done")} />
+      <div className="mx-auto max-w-2xl px-4 sm:px-8 lg:px-12 py-8">
+      <div className="text-center mb-7">
+        <div className="w-14 h-14 rounded-full bg-emerald-500 text-white grid place-items-center mx-auto text-2xl">
           ✓
         </div>
-        <h1 className="text-lg font-bold mt-3">{t("cp.done")}</h1>
-        <p className="text-slate-500 text-xs mt-1">
-          {t("cp.bookingNo")} · {order.id}
+        <h1 className="text-xl font-bold tracking-tight text-ink mt-4">{t("cp.done")}</h1>
+        <p className="text-ink-soft text-sm mt-2">{t("cp.bookingNo")}</p>
+        <p className="text-2xl font-bold tracking-tight text-ink tabular-nums mt-1">
+          {order.id}
         </p>
       </div>
 
-      <div className="bg-white border border-slate-200 p-5 space-y-3">
+      <div className="card-apple p-5 space-y-3">
         <Row
           k={t("cp.amount")}
           v={
-            <span className="text-sky-700 font-bold">
+            <span className="text-ink font-semibold">
               {krwL(order.totalPrice, lang)}
             </span>
           }
@@ -111,15 +120,42 @@ export default function CompleteView() {
       <div className="mt-6 grid grid-cols-2 gap-2">
         <Link
           href="/"
-          className="h-12 border border-slate-200 bg-white grid place-items-center text-slate-700 hover:border-sky-300"
+          className="btn-ghost h-12 grid place-items-center"
         >
           {t("ord.toHome")}
         </Link>
         <Link
           href="/bookings"
-          className="h-12 bg-slate-900 hover:bg-slate-800 grid place-items-center text-white font-semibold transition"
+          className="btn-action h-12 grid place-items-center"
         >
           {t("ord.toBookings")}
+        </Link>
+      </div>
+      </div>
+    </div>
+  );
+}
+
+/** Frosted top header matching the rest of the app: title + home link. */
+function CompleteHeader({ title }: { title: string }) {
+  const { t } = useI18n();
+  return (
+    <div className="frosted sticky top-0 z-10 border-b border-hairline">
+      <div className="mx-auto max-w-[1280px] px-4 sm:px-8 lg:px-12 flex items-center py-3">
+        <span className="h-10 w-10 -ml-1" aria-hidden />
+        <h1 className="flex-1 text-center text-base font-semibold tracking-tight text-ink">
+          {title}
+        </h1>
+        <Link
+          href="/"
+          aria-label={t("home")}
+          className="h-10 w-10 grid place-items-center text-ink -mr-1"
+        >
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M3 11l9-8 9 8" />
+            <path d="M5 9v12h14V9" />
+            <path d="M10 21v-7h4v7" />
+          </svg>
         </Link>
       </div>
     </div>
@@ -129,8 +165,8 @@ export default function CompleteView() {
 function Row({ k, v }: { k: string; v: React.ReactNode }) {
   return (
     <div className="flex items-start gap-4">
-      <div className="w-24 text-sm text-slate-500 shrink-0">{k}</div>
-      <div className="flex-1 text-sm text-slate-800">{v}</div>
+      <div className="w-24 text-sm text-ink-soft shrink-0">{k}</div>
+      <div className="flex-1 text-sm text-ink">{v}</div>
     </div>
   );
 }

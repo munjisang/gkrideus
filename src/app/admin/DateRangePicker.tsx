@@ -164,10 +164,10 @@ export default function DateRangePicker({ value, onApply, onClose }: Props) {
         onClick={onClose}
         className="fixed inset-0 z-40 cursor-default"
       />
-      <div className="absolute left-0 top-full mt-2 z-50 w-[600px] max-w-[calc(100vw-2rem)] rounded-xl border border-slate-200 bg-white shadow-xl">
+      <div className="absolute left-0 top-full mt-2 z-50 w-[600px] max-w-[calc(100vw-2rem)] rounded-card border border-hairline bg-white shadow-xl">
         <div className="flex">
           {/* preset sidebar */}
-          <div className="w-28 shrink-0 border-r border-slate-100 p-2 space-y-0.5">
+          <div className="w-28 shrink-0 border-r border-divider p-2 space-y-0.5">
             {presets.map((p) => (
               <button
                 key={p.id}
@@ -175,8 +175,8 @@ export default function DateRangePicker({ value, onApply, onClose }: Props) {
                 onClick={() => applyPreset(p)}
                 className={`block w-full rounded-md px-2 py-1.5 text-left text-xs transition ${
                   activePreset === p.id
-                    ? "bg-violet-600 text-white font-semibold"
-                    : "text-slate-600 hover:bg-slate-100"
+                    ? "bg-action text-white font-semibold"
+                    : "text-ink-soft hover:bg-parchment"
                 }`}
               >
                 {p.label}
@@ -185,8 +185,8 @@ export default function DateRangePicker({ value, onApply, onClose }: Props) {
             <div
               className={`block w-full rounded-md px-2 py-1.5 text-left text-xs ${
                 activePreset === "custom"
-                  ? "bg-violet-600 text-white font-semibold"
-                  : "text-slate-400"
+                  ? "bg-action text-white font-semibold"
+                  : "text-ink-faint"
               }`}
             >
               Custom Range
@@ -200,11 +200,11 @@ export default function DateRangePicker({ value, onApply, onClose }: Props) {
                 type="button"
                 onClick={() => shiftMonth(-1)}
                 aria-label="이전 달"
-                className="w-7 h-7 grid place-items-center rounded-md text-slate-500 hover:bg-slate-100"
+                className="w-7 h-7 grid place-items-center rounded-md text-ink-soft hover:bg-parchment"
               >
                 ‹
               </button>
-              <div className="flex-1 flex justify-around text-sm font-semibold text-slate-800">
+              <div className="flex-1 flex justify-around text-sm font-semibold text-ink">
                 {months.map((mo) => (
                   <span key={`${mo.y}-${mo.m}`}>
                     {mo.m + 1}월 {mo.y}
@@ -215,7 +215,7 @@ export default function DateRangePicker({ value, onApply, onClose }: Props) {
                 type="button"
                 onClick={() => shiftMonth(1)}
                 aria-label="다음 달"
-                className="w-7 h-7 grid place-items-center rounded-md text-slate-500 hover:bg-slate-100"
+                className="w-7 h-7 grid place-items-center rounded-md text-ink-soft hover:bg-parchment"
               >
                 ›
               </button>
@@ -228,7 +228,7 @@ export default function DateRangePicker({ value, onApply, onClose }: Props) {
                     {WEEKDAYS.map((w) => (
                       <div
                         key={w}
-                        className="h-7 grid place-items-center text-[11px] text-slate-400"
+                        className="h-7 grid place-items-center text-[11px] text-ink-faint"
                       >
                         {w}
                       </div>
@@ -254,13 +254,13 @@ export default function DateRangePicker({ value, onApply, onClose }: Props) {
                           onClick={() => pick(cell)}
                           className={`h-9 text-sm tabular-nums transition ${
                             isEndpoint
-                              ? "bg-violet-600 text-white font-semibold rounded-lg"
+                              ? "bg-action text-white font-semibold rounded-lg"
                               : inRange
-                                ? "bg-violet-100 text-violet-800"
-                                : "text-slate-700 rounded-lg hover:bg-slate-100"
+                                ? "bg-action/10 text-action"
+                                : "text-ink-soft rounded-lg hover:bg-parchment"
                           } ${
                             isToday && !isEndpoint
-                              ? "ring-1 ring-inset ring-violet-400 rounded-lg"
+                              ? "ring-1 ring-inset ring-action/40 rounded-lg"
                               : ""
                           }`}
                         >
@@ -276,22 +276,22 @@ export default function DateRangePicker({ value, onApply, onClose }: Props) {
         </div>
 
         {/* footer */}
-        <div className="flex items-center justify-between border-t border-slate-100 px-4 py-3">
-          <span className="text-sm text-slate-600 tabular-nums">
+        <div className="flex items-center justify-between border-t border-divider px-4 py-3">
+          <span className="text-sm text-ink-soft tabular-nums">
             {rangeText}
           </span>
           <div className="flex items-center gap-2">
             <button
               type="button"
               onClick={onClose}
-              className="h-9 px-3 rounded-lg text-sm font-medium text-slate-600 border border-slate-200 hover:bg-slate-50"
+              className="h-9 px-4 rounded-pill text-sm font-medium text-ink-soft border border-hairline hover:bg-parchment active:scale-95 transition-transform"
             >
               취소
             </button>
             <button
               type="button"
               onClick={confirm}
-              className="h-9 px-4 rounded-lg text-sm font-semibold text-white bg-violet-600 hover:bg-violet-700"
+              className="btn-action h-9 text-sm"
             >
               확인
             </button>

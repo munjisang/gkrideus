@@ -30,7 +30,7 @@ const STATUS_OPTS: { id: BookingStatus; label: string }[] = [
 ];
 
 const SELECT_CLASS =
-  "h-9 rounded-lg border border-slate-200 bg-white px-2 text-sm text-slate-700 focus:border-slate-400 focus:outline-none";
+  "h-9 rounded-lg border border-hairline bg-white px-2 text-sm text-ink-soft focus:border-action focus:outline-none";
 
 type Props = {
   value: BookingFilterState;
@@ -54,10 +54,10 @@ export default function BookingFilters({ value, onChange, onReset }: Props) {
       : "전체 기간";
 
   return (
-    <div className="mb-4 rounded-xl border border-slate-200 bg-white p-3 flex flex-wrap items-center gap-x-4 gap-y-2">
+    <div className="mb-4 card-apple p-3 flex flex-wrap items-center gap-x-4 gap-y-2">
       {/* 기간 */}
       <div className="flex items-center gap-1.5">
-        <span className="text-xs font-medium text-slate-500">기간</span>
+        <span className="text-xs font-medium text-ink-faint">기간</span>
         <select
           value={value.periodField}
           onChange={(e) => set("periodField", e.target.value as PeriodField)}
@@ -73,7 +73,7 @@ export default function BookingFilters({ value, onChange, onReset }: Props) {
           <button
             type="button"
             onClick={() => setPickerOpen((o) => !o)}
-            className="h-9 flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-2.5 text-sm text-slate-700 hover:border-slate-400"
+            className="h-9 flex items-center gap-1.5 rounded-lg border border-hairline bg-white px-2.5 text-sm text-ink-soft hover:border-action"
           >
             <svg
               width="14"
@@ -83,7 +83,7 @@ export default function BookingFilters({ value, onChange, onReset }: Props) {
               stroke="currentColor"
               strokeWidth="2"
               strokeLinecap="round"
-              className="text-slate-400"
+              className="text-ink-faint"
             >
               <rect x="3" y="4" width="18" height="18" rx="2" />
               <path d="M16 2v4M8 2v4M3 10h18" />
@@ -109,7 +109,7 @@ export default function BookingFilters({ value, onChange, onReset }: Props) {
 
       {/* 종류 */}
       <div className="flex items-center gap-1.5">
-        <span className="text-xs font-medium text-slate-500">종류</span>
+        <span className="text-xs font-medium text-ink-faint">종류</span>
         <select
           value={value.kind}
           onChange={(e) => set("kind", e.target.value as TrainKind)}
@@ -125,7 +125,7 @@ export default function BookingFilters({ value, onChange, onReset }: Props) {
 
       {/* 예매 상태 */}
       <div className="flex items-center gap-1.5">
-        <span className="text-xs font-medium text-slate-500">예매상태</span>
+        <span className="text-xs font-medium text-ink-faint">예매상태</span>
         <select
           value={value.status}
           onChange={(e) => set("status", e.target.value as BookingStatus)}
@@ -141,7 +141,7 @@ export default function BookingFilters({ value, onChange, onReset }: Props) {
 
       {/* 검색어 */}
       <div className="flex items-center gap-1.5 flex-1 min-w-[180px]">
-        <span className="text-xs font-medium text-slate-500 shrink-0">
+        <span className="text-xs font-medium text-ink-faint shrink-0">
           검색어
         </span>
         <input
@@ -149,7 +149,7 @@ export default function BookingFilters({ value, onChange, onReset }: Props) {
           value={value.keyword}
           onChange={(e) => set("keyword", e.target.value)}
           placeholder="이름 · 이메일"
-          className="h-9 w-full rounded-lg border border-slate-200 bg-white px-2.5 text-sm text-slate-700 placeholder:text-slate-400 focus:border-slate-400 focus:outline-none"
+          className="h-9 w-full rounded-lg border border-hairline bg-white px-2.5 text-sm text-ink-soft placeholder:text-ink-faint focus:border-action focus:outline-none"
         />
       </div>
 
@@ -158,7 +158,7 @@ export default function BookingFilters({ value, onChange, onReset }: Props) {
         type="button"
         onClick={onReset}
         disabled={!hasActiveFilter(value)}
-        className="h-9 px-3 rounded-lg text-sm font-medium text-slate-500 border border-slate-200 hover:bg-slate-50 disabled:opacity-40"
+        className="h-9 px-3 rounded-pill text-sm font-medium text-ink-soft border border-hairline hover:bg-parchment active:scale-95 transition-transform disabled:opacity-40"
       >
         초기화
       </button>

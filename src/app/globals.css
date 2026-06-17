@@ -1,4 +1,50 @@
+/* Pretendard — Korean face engineered to mirror Apple SD Gothic Neo / SF Pro.
+   Dynamic subset only ships the glyph chunks a page actually uses.
+   Must precede the Tailwind import — @import rules come first. */
+@import url("https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.css");
 @import "tailwindcss";
+
+/* ──────────────────────────────────────────────────────────────────────────
+   Apple design language — tokens
+   Single Action Blue accent · near-black ink on white/parchment · pill CTAs ·
+   exactly one drop-shadow (reserved for imagery). Source: DESIGN-apple.md
+   ────────────────────────────────────────────────────────────────────────── */
+@theme {
+  /* Type — SF Pro on Apple devices, Pretendard for Korean everywhere */
+  --font-sans:
+    "Pretendard Variable", Pretendard, system-ui, -apple-system,
+    BlinkMacSystemFont, "Apple SD Gothic Neo", "Malgun Gothic", "Helvetica Neue",
+    Arial, sans-serif;
+
+  /* Accent — the one interactive color */
+  --color-action: #0066cc;
+  --color-action-focus: #0071e3;
+  --color-action-dark: #2997ff; /* in-copy links on dark tiles */
+
+  /* Ink */
+  --color-ink: #1d1d1f;
+  --color-ink-soft: #333333;
+  --color-ink-faint: #7a7a7a;
+
+  /* Surfaces */
+  --color-parchment: #f5f5f7;
+  --color-pearl: #fafafc;
+  --color-tile: #272729;
+  --color-tile-2: #2a2a2c;
+  --color-tile-3: #252527;
+
+  /* Hairlines */
+  --color-hairline: #e0e0e0;
+  --color-divider: #f0f0f0;
+  --color-chip: #d2d2d7;
+
+  /* Radii */
+  --radius-pill: 9999px;
+  --radius-card: 18px;
+
+  /* The single shadow in the system — for product/imagery only */
+  --shadow-product: 3px 5px 30px 0 rgba(0, 0, 0, 0.22);
+}
 
 :root {
   color-scheme: light;
@@ -6,9 +52,23 @@
 
 html,
 body {
-  font-family:
-    -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Pretendard",
-    "Malgun Gothic", "Helvetica Neue", Arial, sans-serif;
+  font-family: var(--font-sans);
+}
+
+body {
+  /* Apple reading pace: 17px body, tight tracking, near-black ink */
+  font-size: 17px;
+  line-height: 1.47;
+  letter-spacing: -0.011em;
+  color: var(--color-ink);
+  background: #ffffff;
+}
+
+/* "Apple tight" — display sizes carry negative tracking */
+h1,
+h2,
+h3 {
+  letter-spacing: -0.02em;
 }
 
 .no-scrollbar {
@@ -16,4 +76,64 @@ body {
 }
 .no-scrollbar::-webkit-scrollbar {
   display: none;
+}
+
+/* ──────────────────────────────────────────────────────────────────────────
+   Component grammar — single source of truth for the recurring patterns.
+   scale(0.95) press is the system-wide micro-interaction.
+   ────────────────────────────────────────────────────────────────────────── */
+@layer components {
+  /* Shared button chassis — scale(0.95) press is the system micro-interaction */
+  .btn-action,
+  .btn-ghost,
+  .btn-dark,
+  .btn-lg {
+    @apply inline-flex items-center justify-center gap-2 select-none
+      transition-transform duration-150 active:scale-95
+      disabled:opacity-50 disabled:pointer-events-none
+      focus-visible:outline-2 focus-visible:outline-offset-2
+      focus-visible:outline-action-focus;
+  }
+
+  /* Primary blue pill — the signature Apple action */
+  .btn-action {
+    @apply rounded-pill bg-action text-white font-normal px-[22px] py-[11px];
+  }
+
+  /* Ghost pill — the second CTA when two appear together */
+  .btn-ghost {
+    @apply rounded-pill border border-action text-action font-normal px-[22px] py-[11px];
+  }
+
+  /* Compact dark utility rect — nav actions */
+  .btn-dark {
+    @apply rounded-lg bg-ink text-white text-[14px] px-[15px] py-[8px];
+  }
+
+  /* Larger primary, used sparingly on hero surfaces */
+  .btn-lg {
+    @apply rounded-pill bg-action text-white text-[18px] font-light px-7 py-[14px];
+  }
+
+  /* Inline text link */
+  .link-action {
+    @apply text-action transition-opacity active:opacity-60;
+  }
+
+  /* Utility card — hairline, no shadow */
+  .card-apple {
+    @apply bg-white border border-hairline rounded-card;
+  }
+
+  /* Pill input / search field */
+  .field-pill {
+    @apply rounded-pill border border-black/[0.08] bg-white px-5
+      text-[17px] text-ink placeholder:text-ink-faint
+      focus:outline-none focus:border-action;
+  }
+
+  /* Frosted sticky bar / sub-nav */
+  .frosted {
+    @apply bg-parchment/80 backdrop-blur-xl backdrop-saturate-150;
+  }
 }

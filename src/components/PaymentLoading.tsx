@@ -50,14 +50,14 @@ export default function PaymentLoading() {
           />
         ) : (
           <div className="w-full h-full flex items-center justify-center">
-            <span className="w-16 h-16 rounded-full bg-sky-400/30 animate-ping" />
+            <span className="w-16 h-16 rounded-full bg-action/30 animate-ping" />
           </div>
         )}
       </div>
-      <p className="mt-4 text-lg font-bold text-slate-900">
+      <p className="mt-4 text-lg font-semibold tracking-tight text-ink">
         {t("ord.processing.title")}
       </p>
-      <p className="mt-1 text-sm text-slate-500 text-center max-w-xs">
+      <p className="mt-1 text-sm text-ink-soft text-center max-w-xs">
         {t("ord.processing.sub")}
       </p>
     </div>

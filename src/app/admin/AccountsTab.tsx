@@ -169,19 +169,19 @@ export default function AccountsTab() {
   }
 
   return (
-    <section className="bg-white border border-slate-200 rounded-xl p-5">
+    <section className="card-apple p-5">
       <div className="flex items-center justify-between mb-4 gap-2 flex-wrap">
-        <h2 className="font-semibold text-slate-800">계정 설정</h2>
+        <h2 className="font-semibold tracking-tight text-ink">계정 설정</h2>
         <button
           onClick={() => setAdding(true)}
-          className="h-9 px-4 rounded-lg bg-slate-900 hover:bg-slate-800 text-white text-sm font-semibold transition"
+          className="btn-dark"
         >
           + 계정 추가
         </button>
       </div>
 
       {/* Service sub-tabs */}
-      <nav className="flex gap-1 border-b border-slate-200 mb-3">
+      <nav className="flex gap-1 border-b border-hairline mb-3">
         {SERVICES.map((s) => {
           const active = s === subTab;
           const count = (accounts ?? []).filter((a) => a.service === s).length;
@@ -191,20 +191,20 @@ export default function AccountsTab() {
               onClick={() => setSubTab(s)}
               className={`relative h-9 px-3 text-sm font-semibold transition ${
                 active
-                  ? "text-slate-900"
-                  : "text-slate-400 hover:text-slate-700"
+                  ? "text-action"
+                  : "text-ink-soft hover:text-ink"
               }`}
             >
               {SERVICE_LABEL[s]}
               <span
                 className={`ml-1 inline-block text-[11px] font-medium tabular-nums ${
-                  active ? "text-slate-500" : "text-slate-400"
+                  active ? "text-action" : "text-ink-faint"
                 }`}
               >
                 {count}
               </span>
               {active && (
-                <span className="absolute left-2 right-2 -bottom-px h-0.5 bg-slate-900 rounded-full" />
+                <span className="absolute left-2 right-2 -bottom-px h-0.5 bg-action rounded-full" />
               )}
             </button>
           );
@@ -212,25 +212,25 @@ export default function AccountsTab() {
       </nav>
 
       {err && (
-        <div className="mb-3 text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg px-3 py-2">
+        <div className="mb-3 text-sm text-red-700 bg-red-50 border border-red-200 rounded-xl px-3 py-2">
           {err}
         </div>
       )}
 
       {accounts == null ? (
-        <div className="py-8 text-center text-sm text-slate-400">불러오는 중…</div>
+        <div className="py-8 text-center text-sm text-ink-faint">불러오는 중…</div>
       ) : tabAccounts.length === 0 ? (
-        <div className="py-10 text-center text-sm text-slate-400">
+        <div className="py-10 text-center text-sm text-ink-faint">
           {SERVICE_LABEL[subTab]} 계정이 없습니다.
           <br />
           <span className="text-xs">우측 상단 &ldquo;계정 추가&rdquo;를 눌러 등록하세요.</span>
         </div>
       ) : (
         <>
-          <p className="mb-2 text-[11px] text-slate-400">
+          <p className="mb-2 text-[11px] text-ink-faint">
             드래그해서 순서를 바꾸면 예매 시 위에서부터 차례로 시도합니다.
           </p>
-          <ul className="divide-y divide-slate-100">
+          <ul className="divide-y divide-divider">
             {tabAccounts.map((acct, idx) => {
               const isDragging = dragFrom === idx;
               const isDragOver = dragOver === idx && dragFrom !== idx;
@@ -243,17 +243,17 @@ export default function AccountsTab() {
                   onDragLeave={() => onDragLeaveIdx(idx)}
                   onDrop={(e) => onDrop(idx, e)}
                   onDragEnd={onDragEnd}
-                  className={`flex items-center gap-3 py-3 px-2 -mx-2 rounded transition flex-wrap sm:flex-nowrap ${
+                  className={`flex items-center gap-3 py-3 px-2 -mx-2 rounded-lg transition flex-wrap sm:flex-nowrap ${
                     isDragging ? "opacity-40" : ""
                   } ${
                     isDragOver
-                      ? "bg-sky-50 ring-2 ring-sky-200"
-                      : "hover:bg-slate-50"
+                      ? "bg-action/5 ring-2 ring-action/20"
+                      : "hover:bg-parchment"
                   }`}
                 >
                   {/* Drag handle */}
                   <span
-                    className="shrink-0 cursor-grab active:cursor-grabbing text-slate-300 hover:text-slate-500 select-none"
+                    className="shrink-0 cursor-grab active:cursor-grabbing text-ink-faint/60 hover:text-ink-faint select-none"
                     aria-label="순서 변경"
                     title="드래그해서 순서 변경"
                   >
@@ -266,10 +266,10 @@ export default function AccountsTab() {
                       <circle cx="10" cy="16" r="1.5" />
                     </svg>
                   </span>
-                  <span className="shrink-0 inline-flex items-center justify-center w-7 h-6 text-[11px] font-bold rounded bg-slate-100 text-slate-500 tabular-nums">
+                  <span className="shrink-0 inline-flex items-center justify-center w-7 h-6 text-[11px] font-bold rounded-lg bg-parchment text-ink-soft tabular-nums">
                     {idx + 1}
                   </span>
-                  <span className="flex-1 min-w-0 text-sm font-medium text-slate-900 truncate">
+                  <span className="flex-1 min-w-0 text-sm font-medium text-ink truncate">
                     {acct.account_id}
                   </span>
                   <Toggle
@@ -281,7 +281,7 @@ export default function AccountsTab() {
                   <button
                     onClick={() => removeAccount(acct)}
                     disabled={busyId === acct.id}
-                    className="h-9 w-9 grid place-items-center rounded-lg text-slate-400 hover:text-red-600 hover:bg-red-50 disabled:opacity-50 transition"
+                    className="h-9 w-9 grid place-items-center rounded-lg text-ink-faint hover:text-red-600 hover:bg-red-50 disabled:opacity-50 transition"
                     aria-label="삭제"
                     title="삭제"
                   >
@@ -332,7 +332,7 @@ function Toggle({
       onClick={onChange}
       disabled={disabled}
       className={`shrink-0 relative h-6 w-11 rounded-full transition ${
-        checked ? "bg-sky-600" : "bg-slate-300"
+        checked ? "bg-action" : "bg-chip"
       } ${disabled ? "opacity-50 cursor-not-allowed" : ""}`}
     >
       <span
@@ -363,13 +363,13 @@ function ModalShell({
         onClick={onClose}
         className="absolute inset-0 bg-black/40"
       />
-      <div className="relative w-full max-w-sm bg-white rounded-2xl shadow-2xl overflow-hidden">
+      <div className="relative w-full max-w-sm bg-white rounded-card shadow-xl overflow-hidden">
         <div className="px-5 pt-5 pb-2 flex items-center justify-between">
-          <h3 className="text-base font-bold text-slate-900">{title}</h3>
+          <h3 className="text-base font-semibold tracking-tight text-ink">{title}</h3>
           <button
             onClick={onClose}
             aria-label="닫기"
-            className="w-8 h-8 grid place-items-center text-slate-400 hover:text-slate-700"
+            className="w-8 h-8 grid place-items-center text-ink-faint hover:text-ink"
           >
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M18 6L6 18" />
@@ -432,7 +432,7 @@ function AddAccountModal({
     <ModalShell title="계정 추가" onClose={onClose}>
       <div className="px-5 py-3 space-y-3">
         <div>
-          <span className="text-xs font-medium text-slate-500 block mb-1">서비스</span>
+          <span className="text-xs font-medium text-ink-faint block mb-1">서비스</span>
           <div className="flex gap-2">
             {SERVICES.map((s) => {
               const active = service === s;
@@ -441,10 +441,10 @@ function AddAccountModal({
                   key={s}
                   type="button"
                   onClick={() => setService(s)}
-                  className={`flex-1 h-10 rounded-lg border text-sm font-medium transition ${
+                  className={`flex-1 h-10 rounded-xl border text-sm font-medium transition ${
                     active
-                      ? "border-sky-600 bg-sky-50 text-sky-700"
-                      : "border-slate-200 bg-white text-slate-700 hover:border-slate-300"
+                      ? "border-action bg-action/5 text-action"
+                      : "border-hairline bg-white text-ink-soft hover:border-ink-faint"
                   }`}
                 >
                   {SERVICE_LABEL[s]}
@@ -454,31 +454,31 @@ function AddAccountModal({
           </div>
         </div>
         <label className="block">
-          <span className="text-xs font-medium text-slate-500 mb-1 block">회원번호 / ID</span>
+          <span className="text-xs font-medium text-ink-faint mb-1 block">회원번호 / ID</span>
           <input
             value={accountId}
             onChange={(e) => setAccountId(e.target.value)}
             autoComplete="off"
             placeholder="0160346790"
-            className="h-11 px-3 rounded-lg border border-slate-200 bg-white w-full focus:outline-none focus:ring-2 focus:ring-sky-300"
+            className="h-11 px-3 rounded-xl border border-hairline bg-white w-full text-ink placeholder:text-ink-faint focus:outline-none focus:border-action"
           />
         </label>
         <label className="block">
-          <span className="text-xs font-medium text-slate-500 mb-1 block">비밀번호</span>
+          <span className="text-xs font-medium text-ink-faint mb-1 block">비밀번호</span>
           <input
             type="password"
             value={accountPassword}
             onChange={(e) => setAccountPassword(e.target.value)}
             autoComplete="off"
-            className="h-11 px-3 rounded-lg border border-slate-200 bg-white w-full focus:outline-none focus:ring-2 focus:ring-sky-300"
+            className="h-11 px-3 rounded-xl border border-hairline bg-white w-full text-ink focus:outline-none focus:border-action"
           />
         </label>
         <label className="flex items-center justify-between pt-1">
-          <span className="text-sm text-slate-700">사용 여부</span>
+          <span className="text-sm text-ink-soft">사용 여부</span>
           <Toggle checked={enabled} onChange={() => setEnabled((v) => !v)} label="사용 여부" />
         </label>
         {err && (
-          <div className="text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg px-3 py-2">
+          <div className="text-sm text-red-700 bg-red-50 border border-red-200 rounded-xl px-3 py-2">
             {err}
           </div>
         )}
@@ -486,18 +486,14 @@ function AddAccountModal({
       <div className="px-5 pt-2 pb-5 flex gap-2">
         <button
           onClick={onClose}
-          className="flex-1 h-11 rounded-xl border border-slate-200 bg-white text-slate-700 font-semibold"
+          className="btn-ghost flex-1"
         >
           취소
         </button>
         <button
           onClick={save}
           disabled={!canSave}
-          className={`flex-1 h-11 rounded-xl font-semibold transition ${
-            canSave
-              ? "bg-slate-900 hover:bg-slate-800 text-white"
-              : "bg-slate-200 text-slate-400 cursor-not-allowed"
-          }`}
+          className="btn-action flex-1"
         >
           {submitting ? "추가 중…" : "추가"}
         </button>

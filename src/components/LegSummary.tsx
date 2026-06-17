@@ -25,38 +25,38 @@ export default function LegSummary({
     <div>
       <div className="flex items-baseline justify-between gap-2">
         <div className="flex items-baseline gap-2 min-w-0">
-          <span className="text-xs font-bold text-sky-700 bg-sky-50 border border-sky-100 rounded px-2 py-0.5 leading-tight">
+          <span className="text-xs font-bold text-action bg-action/10 border border-action/15 rounded-lg px-2 py-0.5 leading-tight">
             {label}
           </span>
           <TrainLogo name={train.trainGradeName} />
-          <span className="text-sm font-semibold text-slate-500">
+          <span className="text-sm font-semibold text-ink-soft">
             {Number(train.trainNo) || train.trainNo}
           </span>
         </div>
-        <span className="text-sm text-slate-500 shrink-0 tabular-nums">
+        <span className="text-sm text-ink-soft shrink-0 tabular-nums">
           {fmtDateDots(train.depPlandTime)}
         </span>
       </div>
 
       <div className="flex items-center gap-3 pt-4">
         <div className="flex flex-col items-start min-w-0">
-          <span className="text-base font-bold tabular-nums leading-none whitespace-nowrap text-slate-900">
+          <span className="text-base font-semibold tabular-nums leading-none whitespace-nowrap text-ink">
             {fmtTime(train.depPlandTime)}
           </span>
-          <span className="text-sm mt-1 whitespace-nowrap text-slate-600">
+          <span className="text-sm mt-1 whitespace-nowrap text-ink-soft">
             {stationLabel(train.depPlaceName, lang)}
           </span>
         </div>
-        <span className="h-px flex-1 bg-slate-200 self-start mt-2.5" aria-hidden />
-        <span className="text-xs whitespace-nowrap self-start mt-1 text-slate-400">
+        <span className="h-px flex-1 bg-hairline self-start mt-2.5" aria-hidden />
+        <span className="text-xs whitespace-nowrap self-start mt-1 text-ink-faint">
           {durationL(min, lang)}
         </span>
-        <span className="h-px flex-1 bg-slate-200 self-start mt-2.5" aria-hidden />
+        <span className="h-px flex-1 bg-hairline self-start mt-2.5" aria-hidden />
         <div className="flex flex-col items-end min-w-0">
-          <span className="text-base font-bold tabular-nums leading-none whitespace-nowrap text-slate-900">
+          <span className="text-base font-semibold tabular-nums leading-none whitespace-nowrap text-ink">
             {fmtTime(train.arrPlandTime)}
           </span>
-          <span className="text-sm mt-1 whitespace-nowrap text-slate-600">
+          <span className="text-sm mt-1 whitespace-nowrap text-ink-soft">
             {stationLabel(train.arrPlaceName, lang)}
           </span>
         </div>

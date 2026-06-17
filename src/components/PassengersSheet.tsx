@@ -16,12 +16,19 @@ type Props = {
   value: Passengers;
   onPick: (v: Passengers) => void;
   onClose: () => void;
+  anchorRef?: React.RefObject<HTMLElement | null>;
 };
 
 const MIN_TOTAL = 1;
 const MAX_TOTAL = 9; // common rail limit
 
-export default function PassengersSheet({ open, value, onPick, onClose }: Props) {
+export default function PassengersSheet({
+  open,
+  value,
+  onPick,
+  onClose,
+  anchorRef,
+}: Props) {
   const { t } = useI18n();
   const [draft, setDraft] = useState<Passengers>(value);
 
@@ -45,19 +52,22 @@ export default function PassengersSheet({ open, value, onPick, onClose }: Props)
       open={open}
       onClose={onClose}
       title={t("pax.selectTitle")}
+      anchorRef={anchorRef}
+      desktopWidth={400}
+      align="right"
       footer={
         <div className="flex gap-2">
           <button
             type="button"
             onClick={onClose}
-            className="flex-1 h-12 rounded-xl border border-slate-200 bg-white text-slate-700 font-semibold"
+            className="btn-ghost flex-1 h-12"
           >
             {t("common.cancel")}
           </button>
           <button
             type="button"
             onClick={() => onPick(draft)}
-            className="flex-1 h-12 rounded-xl bg-sky-600 text-white font-semibold"
+            className="btn-action flex-1 h-12"
           >
             {t("common.select")}
           </button>
@@ -113,22 +123,22 @@ function Row({
     <div className="py-3">
       <div className="flex items-center justify-between gap-4">
         <div className="flex-1 min-w-0">
-          <div className="text-base font-semibold text-slate-900">{label}</div>
-          <div className="text-xs text-slate-500 mt-0.5">{sub}</div>
+          <div className="text-base font-semibold text-ink">{label}</div>
+          <div className="text-xs text-ink-faint mt-0.5">{sub}</div>
         </div>
-        <div className="flex items-center gap-3 border border-slate-200 rounded-xl px-2 py-1.5">
+        <div className="flex items-center gap-3 border border-hairline rounded-xl px-2 py-1.5">
           <button
             type="button"
             onClick={onMinus}
             disabled={minusDisabled}
             aria-label={`${label} 감소`}
-            className="w-8 h-8 grid place-items-center text-sky-600 disabled:text-slate-300"
+            className="w-8 h-8 grid place-items-center text-action disabled:text-ink-faint/50 active:scale-95 transition-transform"
           >
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
               <path d="M5 12h14" />
             </svg>
           </button>
-          <span className="min-w-[24px] text-center text-base font-semibold tabular-nums text-slate-900">
+          <span className="min-w-[24px] text-center text-base font-semibold tabular-nums text-ink">
             {value}
           </span>
           <button
@@ -136,7 +146,7 @@ function Row({
             onClick={onPlus}
             disabled={plusDisabled}
             aria-label={`${label} 증가`}
-            className="w-8 h-8 grid place-items-center text-sky-600 disabled:text-slate-300"
+            className="w-8 h-8 grid place-items-center text-action disabled:text-ink-faint/50 active:scale-95 transition-transform"
           >
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
               <path d="M12 5v14M5 12h14" />
@@ -145,7 +155,7 @@ function Row({
         </div>
       </div>
       {info && (
-        <div className="mt-1.5 text-[12px] text-slate-500 flex items-center gap-1.5">
+        <div className="mt-1.5 text-[12px] text-ink-faint flex items-center gap-1.5">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6">
             <circle cx="12" cy="12" r="9" />
             <path d="M12 8v.01M12 11v5" strokeLinecap="round" />

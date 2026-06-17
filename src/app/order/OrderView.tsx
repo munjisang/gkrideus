@@ -151,6 +151,8 @@ export default function OrderView() {
   const [inboundSeat, setInboundSeat] = useState<SeatType>(initialSeat);
   const [seatPref, setSeatPref] = useState<SeatPref>("none");
   const [reservant, setReservant] = useState<Passenger>(emptyPassenger);
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
   const [countrySheetOpen, setCountrySheetOpen] = useState(false);
 
   // Fee policy from the admin. Initial render uses defaults; we refresh
@@ -229,21 +231,20 @@ export default function OrderView() {
   const canSubmit =
     !!outbound &&
     (tripType === "oneway" || !!inbound) &&
-    !!reservant.name.trim() &&
+    !!firstName.trim() &&
+    !!lastName.trim() &&
     /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(reservant.email) &&
     !!reservant.countryCode &&
-    payMethod !== null &&
-    allAgreed;
+    payMethod !== null;
 
   function validate(): string | null {
     if (!outbound) return t("ord.err.legOut");
     if (tripType === "roundtrip" && !inbound) return t("ord.err.legIn");
-    if (!reservant.name.trim()) return t("ord.err.name");
+    if (!firstName.trim() || !lastName.trim()) return t("ord.err.name");
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(reservant.email))
       return t("ord.err.email");
     if (!reservant.countryCode) return t("ord.err.country");
     if (!payMethod) return t("ord.err.pay");
-    if (!allAgreed) return t("ord.err.agree");
     return null;
   }
 
@@ -347,7 +348,15 @@ export default function OrderView() {
         toddlers: paxToddlers,
         seniors: paxSeniors,
       },
-      passengers: [reservant],
+      passengers: [
+        {
+          ...reservant,
+          name:
+            lang === "ko"
+              ? `${lastName}${firstName}`
+              : `${firstName} ${lastName}`.trim(),
+        },
+      ],
       seatPref,
       payMethod: payMethod ?? undefined,
       // Freeze the policy that was in effect at checkout so the booking
@@ -380,13 +389,13 @@ export default function OrderView() {
 
   if (!outbound) {
     return (
-      <div>
+      <div className="min-h-screen bg-white">
         <SubHeader title={t("ord.title")} />
-        <div className="mx-4 sm:mx-6 lg:mx-[470px] py-6">
+        <div className="mx-auto max-w-[1280px] px-4 sm:px-8 lg:px-12 py-6">
           <div className="bg-red-50 border border-red-200 text-red-700 rounded-xl px-4 py-3 text-sm">
             {t("ord.noTrain")}
           </div>
-          <Link href="/" className="inline-block mt-4 text-sky-700 text-sm">
+          <Link href="/" className="link-action inline-block mt-4 text-sm">
             ← {t("ord.toHome")}
           </Link>
         </div>
@@ -395,12 +404,18 @@ export default function OrderView() {
   }
 
   return (
-    <div>
+    <div className="min-h-screen bg-white">
       <SubHeader title={t("ord.title")} />
-      <div className="mx-4 sm:mx-6 lg:mx-[470px] py-6 pb-32">
-        <form id="order-form" onSubmit={onSubmit} className="space-y-2">
-        <section className="bg-white border border-slate-200 p-5">
-          <h2 className="font-semibold mb-3 text-slate-800">{t("ord.selectedTrain")}</h2>
+      <div className="mx-auto max-w-[1280px] px-4 sm:px-8 lg:px-12 py-6 pb-10">
+        <form
+          id="order-form"
+          onSubmit={onSubmit}
+          className="lg:grid lg:grid-cols-[1fr_360px] lg:gap-8 lg:items-start"
+        >
+        {/* ── Left column: trip / seat / passenger / booker / payment method */}
+        <div className="space-y-3">
+        <section className="card-apple p-5">
+          <h2 className="font-semibold tracking-tight mb-3 text-ink">{t("ord.selectedTrain")}</h2>
           <LegSummary label={t("ord.legOut")} train={outbound} lang={lang} />
           <SeatPicker
             value={outboundSeat}
@@ -412,7 +427,7 @@ export default function OrderView() {
           />
           {tripType === "roundtrip" && inbound && (
             <>
-              <div className="my-4 border-t border-dashed border-slate-200" />
+              <div className="my-4 border-t border-dashed border-hairline" />
               <LegSummary label={t("ord.legIn")} train={inbound} lang={lang} />
               <SeatPicker
                 value={inboundSeat}
@@ -426,9 +441,9 @@ export default function OrderView() {
           )}
         </section>
 
-        <section className="bg-white border border-slate-200 p-5">
-          <h2 className="font-semibold mb-3 text-slate-800">{t("ord.seatPref")}</h2>
-          <div className="grid grid-cols-3 gap-2">
+        <section className="card-apple p-5">
+          <h2 className="font-semibold tracking-tight mb-3 text-ink">{t("ord.seatPref")}</h2>
+          <div className="flex flex-wrap gap-2">
             {(
               [
                 { id: "none", tkey: "ord.seatPref.none" },
@@ -442,10 +457,10 @@ export default function OrderView() {
                   key={opt.id}
                   type="button"
                   onClick={() => setSeatPref(opt.id)}
-                  className={`h-11 rounded-sm border text-sm font-medium transition ${
+                  className={`rounded-pill px-4 py-1.5 text-sm font-semibold transition-transform active:scale-95 ${
                     active
-                      ? "border-sky-600 bg-sky-50 text-sky-700 ring-1 ring-sky-200"
-                      : "border-slate-200 bg-white text-slate-700 hover:border-slate-400"
+                      ? "bg-action text-white"
+                      : "bg-parchment text-ink-soft hover:bg-pearl"
                   }`}
                 >
                   {t(opt.tkey)}
@@ -455,16 +470,16 @@ export default function OrderView() {
           </div>
         </section>
 
-        <section className="bg-white border border-slate-200 p-5">
-          <h2 className="font-semibold mb-3 text-slate-800">{t("ord.paxInfo")}</h2>
-          <ul className="divide-y divide-slate-100">
+        <section className="card-apple p-5">
+          <h2 className="font-semibold tracking-tight mb-3 text-ink">{t("ord.paxInfo")}</h2>
+          <ul className="divide-y divide-divider">
             {paxRows.map((r) => (
               <li
                 key={r.label}
                 className="flex items-center justify-between py-2.5 text-sm"
               >
-                <span className="text-slate-600">{r.label}</span>
-                <span className="font-semibold text-slate-900 tabular-nums">
+                <span className="text-ink-soft">{r.label}</span>
+                <span className="font-semibold text-ink tabular-nums">
                   {t("pax.count", { n: r.count })}
                 </span>
               </li>
@@ -472,44 +487,29 @@ export default function OrderView() {
           </ul>
         </section>
 
-        <section className="bg-white border border-slate-200 p-5">
-          <h2 className="font-semibold mb-3 text-slate-800">{t("ord.payInfo")}</h2>
-          <div className="divide-y divide-slate-100">
-            {breakdownRows.map((r, i) => (
-              <PaxFareBlock
-                key={`${r.label}-${i}`}
-                label={r.label}
-                regular={r.fare.regular}
-                discount={r.fare.discount}
-                netPay={r.fare.netPay}
-                fee={r.fare.fee}
-                legTotal={r.fare.legTotal}
-                feePctLabel={`${Math.round(feeSettings.bookingFeeRate * 100)}%`}
-                lang={lang}
-                tt={t}
-              />
-            ))}
-            <div className="flex items-center justify-between py-3 mt-1">
-              <span className="text-sm font-semibold text-slate-800">{t("ord.total")}</span>
-              <span className="text-base font-bold text-sky-700 tabular-nums">
-                {krwL(totalPrice, lang)}
-              </span>
-            </div>
-          </div>
-        </section>
-
-        <section className="bg-white border border-slate-200 p-5">
-          <h2 className="font-semibold mb-3 text-slate-800">{t("ord.booker")}</h2>
+        <section className="card-apple p-5">
+          <h2 className="font-semibold tracking-tight mb-3 text-ink">{t("ord.booker")}</h2>
           <div className="space-y-3">
-            <Field label={t("ord.name")}>
-              <input
-                value={reservant.name}
-                onChange={(e) => setReservant((p) => ({ ...p, name: e.target.value }))}
-                placeholder={t("ord.namePh")}
-                className={INPUT}
-                required
-              />
-            </Field>
+            <div className="grid grid-cols-2 gap-3">
+              <Field label={t("ord.lastName")}>
+                <input
+                  value={lastName}
+                  onChange={(e) => setLastName(e.target.value)}
+                  placeholder={t("ord.lastNamePh")}
+                  className={INPUT}
+                  required
+                />
+              </Field>
+              <Field label={t("ord.firstName")}>
+                <input
+                  value={firstName}
+                  onChange={(e) => setFirstName(e.target.value)}
+                  placeholder={t("ord.firstNamePh")}
+                  className={INPUT}
+                  required
+                />
+              </Field>
+            </div>
             <Field label={t("ord.email")}>
               <input
                 type="email"
@@ -528,7 +528,7 @@ export default function OrderView() {
               >
                 <span
                   className={
-                    reservant.countryCode ? "text-slate-900" : "text-slate-400"
+                    reservant.countryCode ? "text-ink" : "text-ink-faint"
                   }
                 >
                   {reservant.countryCode
@@ -536,7 +536,7 @@ export default function OrderView() {
                     : t("ord.countryPh")}
                 </span>
                 <svg
-                  className="text-slate-400"
+                  className="text-ink-faint"
                   width="14"
                   height="14"
                   viewBox="0 0 24 24"
@@ -554,90 +554,80 @@ export default function OrderView() {
           </div>
         </section>
 
-        <section className="bg-white border border-slate-200 p-5">
-          <h2 className="font-semibold mb-3 text-slate-800">{t("ord.payMethod")}</h2>
-          <div className="grid grid-cols-2 gap-2">
-            {PAY_METHODS.map((m) => {
-              const active = payMethod === m.id;
-              return (
-                <button
-                  key={m.id}
-                  type="button"
-                  onClick={() => setPayMethod(m.id)}
-                  className={`h-11 px-3 rounded-sm border text-sm font-medium inline-flex items-center justify-center gap-2 transition ${
-                    active
-                      ? "border-sky-600 bg-sky-50 text-sky-700 ring-1 ring-sky-200"
-                      : "border-slate-200 bg-white text-slate-700 hover:border-slate-400"
-                  }`}
-                >
-                  <PayMethodIcon id={m.id} />
-                  <span>{lang === "ko" ? m.ko : m.en}</span>
-                </button>
-              );
-            })}
-          </div>
-          <div className="mt-4 pt-4 border-t border-slate-100 space-y-2">
-            <label className="flex items-center justify-between cursor-pointer py-1">
-              <span className="text-sm font-semibold text-slate-800">{t("ord.agreeAll")}</span>
-              <input
-                type="checkbox"
-                checked={allAgreed}
-                onChange={(e) => {
-                  const next = e.target.checked;
-                  setAgreed({ fare: next, tos: next, privacy: next });
-                }}
-                className="w-5 h-5 accent-sky-600"
-              />
-            </label>
-            {AGREEMENTS.map((a) => (
-              <label
-                key={a.id}
-                className="flex items-center justify-between cursor-pointer py-1"
-              >
-                <span className="text-sm text-slate-600">{t(a.tkey)}</span>
-                <input
-                  type="checkbox"
-                  checked={agreed[a.id]}
-                  onChange={(e) =>
-                    setAgreed((cur) => ({ ...cur, [a.id]: e.target.checked }))
-                  }
-                  className="w-5 h-5 accent-sky-600"
-                />
-              </label>
-            ))}
-          </div>
-        </section>
-
         {error && (
           <div className="text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg px-3 py-2">
             {error}
           </div>
         )}
-        </form>
-      </div>
-
-      {/* Sticky bottom payment bar */}
-      <div className="fixed bottom-0 left-0 right-0 z-20 bg-white border-t border-slate-200">
-        <div className="mx-4 sm:mx-6 lg:mx-[470px] py-3 flex items-center justify-between gap-3">
-          <div>
-            <div className="text-xs text-slate-500">{t("ord.totalAmount")}</div>
-            <div className="text-lg font-bold text-sky-700 tabular-nums">
-              {krwL(totalPrice, lang)}
-            </div>
-          </div>
-          <button
-            type="submit"
-            form="order-form"
-            disabled={!canSubmit || submitting}
-            className={`h-12 px-8 rounded-xl font-semibold transition ${
-              canSubmit && !submitting
-                ? "bg-sky-600 hover:bg-sky-700 text-white"
-                : "bg-slate-200 text-slate-400 cursor-not-allowed"
-            }`}
-          >
-            {submitting ? t("ord.paying") : t("ord.pay")}
-          </button>
         </div>
+
+        {/* ── Right column: payment summary (sticky on desktop) */}
+        <aside className="mt-3 lg:mt-0 lg:sticky lg:top-[88px]">
+          <section className="card-apple p-5">
+            <h2 className="font-semibold tracking-tight mb-3 text-ink">{t("ord.payInfo")}</h2>
+            <div className="divide-y divide-divider">
+              {breakdownRows.map((r, i) => (
+                <PaxFareBlock
+                  key={`${r.label}-${i}`}
+                  label={r.label}
+                  regular={r.fare.regular}
+                  discount={r.fare.discount}
+                  netPay={r.fare.netPay}
+                  fee={r.fare.fee}
+                  legTotal={r.fare.legTotal}
+                  feePctLabel={`${Math.round(feeSettings.bookingFeeRate * 100)}%`}
+                  lang={lang}
+                  tt={t}
+                  defaultOpen={i === 0}
+                />
+              ))}
+              {/* Payment method — directly above the total */}
+              <div className="py-4">
+                <h3 className="mb-2 text-sm font-semibold text-ink">
+                  {t("ord.payMethod")}
+                </h3>
+                <div className="grid grid-cols-2 gap-2">
+                  {PAY_METHODS.map((m) => {
+                    const active = payMethod === m.id;
+                    return (
+                      <button
+                        key={m.id}
+                        type="button"
+                        onClick={() => setPayMethod(m.id)}
+                        className={`h-11 px-3 rounded-lg border text-sm font-medium inline-flex items-center justify-center gap-2 transition ${
+                          active
+                            ? "border-2 border-action text-action bg-white"
+                            : "border border-hairline bg-white text-ink-soft hover:border-ink-faint"
+                        }`}
+                      >
+                        <PayMethodIcon id={m.id} />
+                        <span>{lang === "ko" ? m.ko : m.en}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+              <div className="flex items-center justify-between py-3 mt-1">
+                <span className="text-sm font-semibold text-ink">{t("ord.total")}</span>
+                <span className="text-base font-semibold text-ink tabular-nums">
+                  {krwL(totalPrice, lang)}
+                </span>
+              </div>
+            </div>
+            <button
+              type="submit"
+              disabled={!canSubmit || submitting}
+              className={`btn-action mt-4 h-12 w-full ${
+                canSubmit && !submitting
+                  ? ""
+                  : "!bg-hairline !text-ink-faint cursor-not-allowed active:scale-100"
+              }`}
+            >
+              {submitting ? t("ord.paying") : t("ord.pay")}
+            </button>
+          </section>
+        </aside>
+        </form>
       </div>
 
       <CountryPicker
@@ -698,25 +688,25 @@ function SubHeader({ title }: { title: string }) {
   const router = useRouter();
   const { t } = useI18n();
   return (
-    <div className="sticky top-0 z-10 bg-white border-b border-slate-200">
-      <div className="mx-4 sm:mx-6 lg:mx-[470px] flex items-center py-3">
+    <div className="sticky top-0 z-10 bg-white/90 backdrop-blur-xl backdrop-saturate-150 border-b border-hairline">
+      <div className="mx-auto max-w-[1280px] px-4 sm:px-8 lg:px-12 flex items-center py-3">
         <button
           type="button"
           onClick={() => router.back()}
           aria-label={t("back")}
-          className="h-10 w-10 grid place-items-center text-slate-800 -ml-1"
+          className="h-10 w-10 grid place-items-center text-ink -ml-1"
         >
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <path d="M15 18l-6-6 6-6" />
           </svg>
         </button>
-        <h1 className="flex-1 text-center text-base font-bold text-slate-900">
+        <h1 className="flex-1 text-center text-base font-semibold tracking-tight text-ink">
           {title}
         </h1>
         <Link
           href="/"
           aria-label={t("home")}
-          className="h-10 w-10 grid place-items-center text-slate-800 -mr-1"
+          className="h-10 w-10 grid place-items-center text-ink -mr-1"
         >
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
             <path d="M3 11l9-8 9 8" />
@@ -785,31 +775,31 @@ function SeatChip({
     <button
       type="button"
       onClick={onClick}
-      className={`flex items-center justify-between px-3 h-12 rounded-sm border text-sm transition ${
+      className={`flex items-center justify-between px-3 h-12 rounded-lg border text-sm transition ${
         active
-          ? "border-sky-600 bg-sky-50 ring-1 ring-sky-200"
-          : "border-slate-200 bg-white hover:border-slate-400"
+          ? "border-2 border-action bg-white"
+          : "border border-hairline bg-white hover:border-ink-faint"
       }`}
     >
       <span className="flex items-center gap-2 min-w-0">
         <span
           className={`w-4 h-4 shrink-0 rounded-full border-2 grid place-items-center ${
-            active ? "border-sky-600" : "border-slate-300"
+            active ? "border-action" : "border-hairline"
           }`}
         >
-          {active && <span className="w-1.5 h-1.5 rounded-full bg-sky-600" />}
+          {active && <span className="w-1.5 h-1.5 rounded-full bg-action" />}
         </span>
         <span
           className={`font-semibold whitespace-nowrap ${
-            active ? "text-sky-700" : "text-slate-700"
+            active ? "text-action" : "text-ink-soft"
           }`}
         >
           {title}
         </span>
       </span>
-      <span className="text-xs font-semibold tabular-nums text-slate-700 whitespace-nowrap shrink-0">
+      <span className="text-xs font-semibold tabular-nums text-ink-soft whitespace-nowrap shrink-0">
         {krwL(price, lang)}
-        <span className="ml-1 font-normal text-slate-400">{perPerson}</span>
+        <span className="ml-1 font-normal text-ink-faint">{perPerson}</span>
       </span>
     </button>
   );
@@ -828,6 +818,7 @@ function PaxFareBlock({
   feePctLabel,
   lang,
   tt,
+  defaultOpen = false,
 }: {
   label: string;
   regular: number;
@@ -840,7 +831,9 @@ function PaxFareBlock({
   feePctLabel: string;
   lang: Lang;
   tt: (k: string, p?: Record<string, string | number>) => string;
+  defaultOpen?: boolean;
 }) {
+  const [open, setOpen] = useState(defaultOpen);
   const Row = ({
     name,
     value,
@@ -851,10 +844,10 @@ function PaxFareBlock({
     bold?: boolean;
   }) => (
     <div className="flex items-center justify-between py-1.5 text-sm">
-      <span className="text-slate-600">{name}</span>
+      <span className="text-ink-soft">{name}</span>
       <span
         className={`tabular-nums ${
-          bold ? "font-bold text-slate-900" : "font-semibold text-slate-800"
+          bold ? "font-semibold text-ink" : "font-semibold text-ink-soft"
         }`}
       >
         {value}
@@ -862,31 +855,61 @@ function PaxFareBlock({
     </div>
   );
   return (
-    <div className="py-3 first:pt-0">
-      <div className="text-sm font-semibold text-slate-900 mb-1">{label}</div>
-      <Row name={tt("ord.fare.regular")} value={krwL(regular, lang)} />
-      <Row
-        name={tt("ord.fare.discount")}
-        // Negative sign to make it obvious the amount is being deducted.
-        value={discount > 0 ? `-${krwL(discount, lang)}` : krwL(0, lang)}
-      />
-      <Row name={tt("ord.fare.netPay")} value={krwL(netPay, lang)} />
-      <Row
-        name={tt("ord.fare.fee", { p: feePctLabel })}
-        value={krwL(fee, lang)}
-      />
-      <Row name={tt("ord.fare.legTotal")} value={krwL(legTotal, lang)} bold />
+    <div className="py-1">
+      {/* Header: passenger label + subtotal + accordion toggle */}
+      <button
+        type="button"
+        onClick={() => setOpen((v) => !v)}
+        aria-expanded={open}
+        className="w-full flex items-center justify-between gap-2 py-2.5 text-left"
+      >
+        <span className="text-sm font-semibold text-ink">{label}</span>
+        <span className="flex items-center gap-1.5">
+          <span className="text-sm font-semibold text-ink tabular-nums">
+            {krwL(legTotal, lang)}
+          </span>
+          <svg
+            className={`text-ink-faint transition-transform ${open ? "rotate-180" : ""}`}
+            width="14"
+            height="14"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            aria-hidden
+          >
+            <path d="M6 9l6 6 6-6" />
+          </svg>
+        </span>
+      </button>
+      {open && (
+        <div className="pb-2.5">
+          <Row name={tt("ord.fare.regular")} value={krwL(regular, lang)} />
+          <Row
+            name={tt("ord.fare.discount")}
+            // Negative sign to make it obvious the amount is being deducted.
+            value={discount > 0 ? `-${krwL(discount, lang)}` : krwL(0, lang)}
+          />
+          <Row name={tt("ord.fare.netPay")} value={krwL(netPay, lang)} />
+          <Row
+            name={tt("ord.fare.fee", { p: feePctLabel })}
+            value={krwL(fee, lang)}
+          />
+        </div>
+      )}
     </div>
   );
 }
 
 const INPUT =
-  "h-11 px-3 rounded-lg border border-slate-200 bg-white w-full focus:outline-none focus:ring-2 focus:ring-sky-300";
+  "h-11 px-3 rounded-xl border border-hairline bg-white w-full placeholder:text-ink-faint focus:border-action focus:outline-none";
 
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <label className="block">
-      <span className="text-xs font-medium text-slate-500 mb-1 block">{label}</span>
+      <span className="text-xs font-medium text-ink-soft mb-1 block">{label}</span>
       {children}
     </label>
   );

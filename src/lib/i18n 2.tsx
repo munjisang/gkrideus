@@ -31,14 +31,14 @@ const DICT: Record<string, Entry> = {
   "home.roundtrip": { ko: "왕복", en: "Round-trip" },
   "home.dep": { ko: "출발", en: "From" },
   "home.arr": { ko: "도착", en: "To" },
-  "home.depStation": { ko: "출발역", en: "Departure station" },
-  "home.arrStation": { ko: "도착역", en: "Arrival station" },
+  "home.depStation": { ko: "출발역", en: "From" },
+  "home.arrStation": { ko: "도착역", en: "To" },
   "home.depDate": { ko: "가는 날", en: "Departure" },
   "home.retDate": { ko: "오는 날", en: "Return" },
   "home.pickDate": { ko: "탑승일", en: "Travel date" },
   "home.pax": { ko: "인원", en: "Passengers" },
   "home.swap": { ko: "역 바꾸기", en: "Swap stations" },
-  "home.search": { ko: "열차 조회", en: "Search trains" },
+  "home.search": { ko: "검색", en: "Search" },
   "home.err.sameStation": {
     ko: "출발역과 도착역이 같습니다.",
     en: "Departure and arrival stations are the same.",
@@ -76,7 +76,7 @@ const DICT: Record<string, Entry> = {
   // station picker
   "sp.searchPlaceholder": {
     ko: "역명 또는 지역명 검색",
-    en: "Search station or region",
+    en: "Search station",
   },
   "sp.tab.recent": { ko: "최근", en: "Recent" },
   "sp.tab.major": { ko: "주요역", en: "Major" },

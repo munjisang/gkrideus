@@ -43,6 +43,22 @@ const FILTER_TABS: { key: FilterKey; tkey: string }[] = [
   { key: "SRT", tkey: "sr.filter.srt" },
 ];
 
+const SEAT_CLASS_OPTS: { key: "all" | "standard" | "first"; tkey: string }[] = [
+  { key: "all", tkey: "sr.optAll" },
+  { key: "standard", tkey: "sr.standard" },
+  { key: "first", tkey: "sr.first" },
+];
+
+const DEP_PERIOD_OPTS: {
+  key: "all" | "morning" | "afternoon" | "evening";
+  tkey: string;
+}[] = [
+  { key: "all", tkey: "sr.optAll" },
+  { key: "morning", tkey: "sr.timeMorning" },
+  { key: "afternoon", tkey: "sr.timeAfternoon" },
+  { key: "evening", tkey: "sr.timeEvening" },
+];
+
 function encodeTrain(t: TrainSchedule): string {
   return encodeURIComponent(JSON.stringify(t));
 }
@@ -78,7 +94,15 @@ export default function SearchView() {
   const [data, setData] = useState<ApiResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<FilterKey>("all");
+  const [hideSoldOut, setHideSoldOut] = useState(false);
+  const [seatClass, setSeatClass] = useState<"all" | "standard" | "first">("all");
+  const [depPeriod, setDepPeriod] = useState<
+    "all" | "morning" | "afternoon" | "evening"
+  >("all");
+  const [sortBy] = useState<"earliest" | "fastest">("earliest");
   const tabsRef = useRef<HTMLDivElement>(null);
+  const dateChipRef = useRef<HTMLButtonElement>(null);
+  const paxChipRef = useRef<HTMLButtonElement>(null);
   const [dateSheetOpen, setDateSheetOpen] = useState(false);
   const [paxSheetOpen, setPaxSheetOpen] = useState(false);
 
@@ -227,13 +251,54 @@ export default function SearchView() {
 
   const filtered = useMemo(() => {
     if (!data?.ok) return [];
-    return data.trains.filter((t) => {
+    const list = data.trains.filter((t) => {
       if (!matchesFilter(t, filter)) return false;
       // depPlandTime is YYYYMMDDHHmm — slice 8-10 is the hour.
       const depHour = Number(t.depPlandTime.slice(8, 10));
-      return depHour >= startHour;
+      if (depHour < startHour) return false;
+      // Departure time-of-day band.
+      if (depPeriod !== "all") {
+        if (depPeriod === "morning" && !(depHour >= 0 && depHour <= 11)) return false;
+        if (depPeriod === "afternoon" && !(depHour >= 12 && depHour <= 17)) return false;
+        if (depPeriod === "evening" && !(depHour >= 18 && depHour <= 23)) return false;
+      }
+      // Seat class: "first" keeps only trains whose 특실 exists and isn't sold out.
+      if (seatClass === "first") {
+        const key = String(t.trainNo).replace(/^0+/, "") || "0";
+        const avail = availability.get(key);
+        // Only filter when we actually have availability data for this train.
+        if (avail) {
+          if (isClassUnavailable(avail.specialSeat)) return false;
+          if (isSoldOut(avail.specialSeat, avail.reservePossible)) return false;
+        }
+      }
+      // Hide sold-out: drop trains whose every class is sold out / unavailable.
+      if (hideSoldOut) {
+        const key = String(t.trainNo).replace(/^0+/, "") || "0";
+        const avail = availability.get(key);
+        if (avail) {
+          const stdSold = isSoldOut(avail.generalSeat, avail.reservePossible);
+          const fstSold =
+            isSoldOut(avail.specialSeat, avail.reservePossible) ||
+            isClassUnavailable(avail.specialSeat);
+          if (stdSold && fstSold) return false;
+        }
+      }
+      // "standard" / "all" — every train passes.
+      return true;
     });
-  }, [data, filter, startHour]);
+    list.sort((a, b) => {
+      if (sortBy === "fastest") {
+        return (
+          durationMinutes(a.depPlandTime, a.arrPlandTime) -
+          durationMinutes(b.depPlandTime, b.arrPlandTime)
+        );
+      }
+      // earliest: depPlandTime is YYYYMMDDHHmm — lexical compare works.
+      return a.depPlandTime.localeCompare(b.depPlandTime);
+    });
+    return list;
+  }, [data, filter, startHour, depPeriod, seatClass, hideSoldOut, availability, sortBy]);
 
   /** Merge the live Korail standard-class price (when known) into the
    *  schedule so the order page can show the discount breakdown. */
@@ -289,123 +354,234 @@ export default function SearchView() {
   }
 
   return (
-    <div className="bg-slate-50 min-h-full">
+    <div className="bg-white min-h-full">
       {/* Sticky top header (within main, below the global header) */}
-      <div className="sticky top-0 z-10 bg-white border-b border-slate-200">
-        <div className="mx-4 sm:mx-6 lg:mx-[470px] flex items-center py-3">
+      <div className="sticky top-0 z-10 bg-white/90 backdrop-blur-xl backdrop-saturate-150 border-b border-hairline">
+        <div className="mx-auto max-w-[1280px] px-4 sm:px-8 lg:px-12 flex items-center py-3">
           <Link
             href="/"
-            className="h-10 w-10 grid place-items-center text-slate-800 -ml-1"
+            className="h-10 w-10 grid place-items-center text-ink -ml-1 active:scale-95 transition"
             aria-label={t("back")}
           >
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M15 18l-6-6 6-6" />
             </svg>
           </Link>
-          <h1 className="flex-1 text-center text-base font-bold text-slate-900">
+          <h1 className="flex-1 text-center text-base font-bold tracking-tight text-ink">
             {fromLabel}
             {t("sp.stationSuffix")}
-            <span className="mx-0.5 text-slate-400">→</span>
+            <span className="mx-0.5 text-ink-faint">→</span>
             {toLabel}
             {t("sp.stationSuffix")}
           </h1>
           <span className="w-10" />
         </div>
-        {/* Filter tabs */}
-        <div
-          ref={tabsRef}
-          className="mx-4 sm:mx-6 lg:mx-[470px] flex gap-2 overflow-x-auto no-scrollbar pb-3 scroll-smooth"
-        >
-          {FILTER_TABS.map((tab) => {
-            const active = filter === tab.key;
-            return (
+        {/* Filter tabs (home-style pill chips) */}
+      </div>
+
+      {/* Filter sidebar (desktop) + results — two columns on lg */}
+      <div className="mx-auto max-w-[1280px] px-4 sm:px-8 lg:px-12 pt-8 pb-3 lg:grid lg:grid-cols-[240px_1fr] lg:gap-6 lg:items-start">
+        {/* Left filter panel (desktop only; mobile uses the top pill tabs) */}
+        <aside className="lg:sticky lg:top-[90px] space-y-4">
+          {/* Unified filter card */}
+          <div className="card-apple overflow-hidden">
+            {/* Header: title + reset */}
+            <div className="flex items-center justify-between border-b border-divider px-4 py-3">
+              <div className="flex items-center gap-1.5">
+                <svg
+                  width="18"
+                  height="18"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  className="text-action"
+                  aria-hidden
+                >
+                  <path d="M4 6h16M7 12h10M10 18h4" />
+                </svg>
+                <h3 className="text-sm font-bold tracking-tight text-ink">
+                  {t("sr.searchFilter")}
+                </h3>
+              </div>
               <button
-                key={tab.key}
-                data-active={active}
-                onClick={() => setFilter(tab.key)}
-                className={`shrink-0 text-[15px] px-4 pb-2 -mb-2 transition ${
-                  active
-                    ? "text-slate-900 font-bold border-b-2 border-slate-900"
-                    : "text-slate-400 font-medium border-b-2 border-transparent"
-                }`}
+                type="button"
+                onClick={() => {
+                  setFilter("all");
+                  setSeatClass("all");
+                  setDepPeriod("all");
+                  setHideSoldOut(false);
+                }}
+                className="text-xs font-semibold text-ink-faint transition-colors hover:text-action"
               >
-                {t(tab.tkey)}
+                {t("sr.reset")}
               </button>
-            );
-          })}
-        </div>
-      </div>
+            </div>
 
-      {/* Round-trip recap: show the picked outbound train above the
-          date/passenger pills when the user is on the inbound leg. */}
-      {tripType === "roundtrip" && leg === "inbound" && outboundParam && (
-        <div className="mx-4 sm:mx-6 lg:mx-[470px] pt-3">
-          <OutboundRecap
-            outboundJson={outboundParam}
-            onChange={() => {
-              const next = new URLSearchParams(sp.toString());
-              next.delete("leg");
-              next.delete("outbound");
-              router.push(`/search?${next.toString()}`);
-            }}
-          />
-        </div>
-      )}
+            {/* Section: date & passengers */}
+            <div className="border-b border-divider px-4 py-3 space-y-2">
+              <button
+                ref={dateChipRef}
+                type="button"
+                onClick={() => setDateSheetOpen(true)}
+                className="w-full inline-flex items-center justify-between gap-1.5 h-10 px-3.5 rounded-lg border border-hairline bg-white text-sm font-semibold text-ink-soft hover:border-action active:scale-[0.99] transition"
+              >
+                <span className="tabular-nums truncate">
+                  {currentDateHour ? fmtDateHourPill(currentDateHour, t) : t("home.pickDate")}
+                </span>
+                <svg className="text-ink-faint shrink-0" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+                  <path d="M6 9l6 6 6-6" />
+                </svg>
+              </button>
+              <button
+                ref={paxChipRef}
+                type="button"
+                onClick={() => setPaxSheetOpen(true)}
+                className="w-full inline-flex items-center justify-between gap-1.5 h-10 px-3.5 rounded-lg border border-hairline bg-white text-sm font-semibold text-ink-soft hover:border-action active:scale-[0.99] transition"
+              >
+                <span className="tabular-nums truncate">
+                  {t("sr.totalPax", { n: totalPax(currentPax) })}
+                </span>
+                <svg className="text-ink-faint shrink-0" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+                  <path d="M6 9l6 6 6-6" />
+                </svg>
+              </button>
+            </div>
 
-      {/* Filter pills: date+hour and passenger count */}
-      <div className="mx-4 sm:mx-6 lg:mx-[470px] pt-3 pb-1 flex flex-wrap gap-2">
-        <button
-          type="button"
-          onClick={() => setDateSheetOpen(true)}
-          className="inline-flex items-center gap-1.5 h-9 px-3.5 rounded-full bg-white border border-slate-200 text-sm font-medium text-slate-700 hover:border-slate-300 transition"
-        >
-          <span className="tabular-nums">
-            {currentDateHour ? fmtDateHourPill(currentDateHour, t) : t("home.pickDate")}
-          </span>
-          <svg
-            className="text-slate-400"
-            width="14"
-            height="14"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            aria-hidden
-          >
-            <path d="M6 9l6 6 6-6" />
-          </svg>
-        </button>
-        <button
-          type="button"
-          onClick={() => setPaxSheetOpen(true)}
-          className="inline-flex items-center gap-1.5 h-9 px-3.5 rounded-full bg-white border border-slate-200 text-sm font-medium text-slate-700 hover:border-slate-300 transition"
-        >
-          <span className="tabular-nums">
-            {t("sr.totalPax", { n: totalPax(currentPax) })}
-          </span>
-          <svg
-            className="text-slate-400"
-            width="14"
-            height="14"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            aria-hidden
-          >
-            <path d="M6 9l6 6 6-6" />
-          </svg>
-        </button>
-      </div>
+            {/* Section: hide sold-out toggle */}
+            <div className="border-b border-divider px-4 py-3">
+              <label className="flex cursor-pointer select-none items-center gap-2.5">
+                <input
+                  type="checkbox"
+                  checked={hideSoldOut}
+                  onChange={(e) => setHideSoldOut(e.target.checked)}
+                  className="h-4 w-4 rounded accent-action"
+                />
+                <span className="text-sm font-medium text-ink">
+                  {t("sr.hideSoldOut")}
+                </span>
+              </label>
+            </div>
 
-      {/* Content */}
-      <div className="mx-4 sm:mx-6 lg:mx-[470px] py-3 pb-10 space-y-2">
+            {/* Section: train type */}
+            <div className="border-b border-divider px-4 py-3">
+              <h4 className="mb-2 text-xs font-bold text-ink-soft">
+                {t("sr.filterTitle")}
+              </h4>
+              <div className="space-y-1">
+                {FILTER_TABS.map((tab) => {
+                  const active = filter === tab.key;
+                  return (
+                    <button
+                      key={tab.key}
+                      type="button"
+                      onClick={() => setFilter(tab.key)}
+                      className={`w-full rounded-lg px-3 py-2 text-left text-sm transition ${
+                        active
+                          ? "bg-action/10 font-semibold text-action"
+                          : "font-medium text-ink-soft hover:bg-parchment"
+                      }`}
+                    >
+                      {t(tab.tkey)}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Section: seat class */}
+            <div className="border-b border-divider px-4 py-3">
+              <h4 className="mb-2 text-xs font-bold text-ink-soft">
+                {t("sr.seatClassTitle")}
+              </h4>
+              <div className="space-y-1">
+                {SEAT_CLASS_OPTS.map((opt) => {
+                  const active = seatClass === opt.key;
+                  return (
+                    <button
+                      key={opt.key}
+                      type="button"
+                      onClick={() => setSeatClass(opt.key)}
+                      className={`w-full rounded-lg px-3 py-2 text-left text-sm transition ${
+                        active
+                          ? "bg-action/10 font-semibold text-action"
+                          : "font-medium text-ink-soft hover:bg-parchment"
+                      }`}
+                    >
+                      {t(opt.tkey)}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Section: departure time */}
+            <div className="px-4 py-3">
+              <h4 className="mb-2 text-xs font-bold text-ink-soft">
+                {t("sr.depTimeTitle")}
+              </h4>
+              <div className="space-y-1">
+                {DEP_PERIOD_OPTS.map((opt) => {
+                  const active = depPeriod === opt.key;
+                  return (
+                    <button
+                      key={opt.key}
+                      type="button"
+                      onClick={() => setDepPeriod(opt.key)}
+                      className={`w-full rounded-lg px-3 py-2 text-left text-sm transition ${
+                        active
+                          ? "bg-action/10 font-semibold text-action"
+                          : "font-medium text-ink-soft hover:bg-parchment"
+                      }`}
+                    >
+                      {t(opt.tkey)}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+        </aside>
+
+        {/* Right column: leg title + recap + results */}
+        <div className="min-w-0">
+          {/* Round-trip recap (picked outbound) — pinned to the top */}
+          {tripType === "roundtrip" && leg === "inbound" && outboundParam && (
+            <div className="pb-3">
+              <OutboundRecap
+                outboundJson={outboundParam}
+                onChange={() => {
+                  const next = new URLSearchParams(sp.toString());
+                  next.delete("leg");
+                  next.delete("outbound");
+                  router.push(`/search?${next.toString()}`);
+                }}
+              />
+            </div>
+          )}
+
+          {/* Leg heading (가는편 / 오는편) */}
+          <h2 className="text-2xl font-bold tracking-tight text-ink">
+            {leg === "inbound" ? t("sr.legInbound") : t("sr.legOutbound")}
+          </h2>
+          <div className="mt-3 border-t border-hairline" />
+
+          {/* Result count */}
+          {data?.ok && (
+            <div className="pt-3 text-sm font-semibold text-ink-soft">
+              {t("sr.resultLabel")}{" "}
+              <span className="text-action tabular-nums">
+                {t("sr.resultCount", { n: filtered.length })}
+              </span>
+            </div>
+          )}
+
+          {/* Content */}
+          <div className="pt-3 pb-10 space-y-2">
         {data && !data.ok && (
-          <div className="bg-red-50 border border-red-200 text-red-700 rounded-xl px-4 py-3 text-sm">
+          <div className="bg-red-50 border border-red-200 text-red-700 rounded-card px-4 py-3 text-sm">
             {data.error}
           </div>
         )}
@@ -420,7 +596,7 @@ export default function SearchView() {
         {data?.ok && filtered.length === 0 && (
           <div className="py-16 flex flex-col items-center text-center">
             <svg
-              className="w-20 h-20 text-slate-300"
+              className="w-20 h-20 text-ink-faint/50"
               viewBox="0 0 64 64"
               fill="none"
               stroke="currentColor"
@@ -436,7 +612,7 @@ export default function SearchView() {
               <circle cx="24" cy="38" r="1.6" fill="currentColor" />
               <circle cx="40" cy="38" r="1.6" fill="currentColor" />
             </svg>
-            <p className="mt-4 text-sm text-slate-500">{t("sr.none")}</p>
+            <p className="mt-4 text-sm text-ink-soft">{t("sr.none")}</p>
           </div>
         )}
 
@@ -457,12 +633,15 @@ export default function SearchView() {
             />
           );
         })}
+          </div>
+        </div>
       </div>
 
       <DatePickerSheet
         open={dateSheetOpen}
         title={leg === "inbound" ? t("dp.titleRet") : t("dp.titleDep")}
         value={currentDateHour}
+        anchorRef={dateChipRef}
         minDate={minBookDate}
         maxDate={maxBookDate}
         onClose={() => setDateSheetOpen(false)}
@@ -484,6 +663,7 @@ export default function SearchView() {
       <PassengersSheet
         open={paxSheetOpen}
         value={currentPax}
+        anchorRef={paxChipRef}
         onClose={() => setPaxSheetOpen(false)}
         onPick={(v) => {
           const next = new URLSearchParams(sp.toString());
@@ -513,7 +693,7 @@ function fmtDateHourPill(
   t: (k: string, p?: Record<string, string | number>) => string,
 ): string {
   const [y, m, d] = v.date.split("-");
-  return `${y}.${m}.${d} · ${t("home.afterHour", { h: String(v.hour).padStart(2, "0") })}`;
+  return `${y}.${m}.${d}`;
 }
 
 /** Per-class sold-out detection. Korail's per-class codes observed in the
@@ -586,88 +766,95 @@ function TrainCard({
   const wholeBlocked = standardSoldOut && (firstSoldOut || firstUnavailable);
   // Dimmed-card states for text/logo when the whole train is unbookable.
   const dim = wholeBlocked;
-  const muted = (cls: string) => (dim ? "text-slate-400" : cls);
+  const muted = (cls: string) => (dim ? "text-ink-faint" : cls);
   return (
     <button
       type="button"
       onClick={wholeBlocked ? undefined : onPick}
       disabled={wholeBlocked}
+      style={{ borderLeft: "3px solid #1D4ED8" }}
       className={`block w-full text-left rounded-xl border transition ${
         wholeBlocked
-          ? "bg-slate-100 border-slate-200 cursor-not-allowed"
-          : "bg-white border-slate-200 hover:border-slate-400"
+          ? "bg-parchment border-hairline cursor-not-allowed"
+          : "bg-white border-hairline hover:border-action active:scale-[0.98]"
       }`}
     >
-      {/* Header: logo + train number */}
-      <div className="flex items-baseline gap-1 px-5 pt-4">
-        <TrainLogo name={train.trainGradeName} dim={dim} />
-        <span className={`text-sm font-semibold ${muted("text-slate-500")}`}>
-          {Number(train.trainNo) || train.trainNo}
-        </span>
-      </div>
+      {/* Desktop: single balanced horizontal row. Mobile: stacked. */}
+      <div className="lg:flex lg:items-stretch">
+        {/* Train identity + times + duration */}
+        <div className="lg:flex-1 lg:min-w-0">
+          {/* Header: logo + train number */}
+          <div className="flex items-baseline gap-1 px-5 pt-4">
+            <TrainLogo name={train.trainGradeName} dim={dim} />
+            <span className={`text-sm font-semibold ${muted("text-ink-soft")}`}>
+              {Number(train.trainNo) || train.trainNo}
+            </span>
+          </div>
 
-      {/* Times + duration row (time on top, station name below) */}
-      <div className="flex items-center gap-3 px-5 pt-4 pb-4">
-        <div className="flex flex-col items-start min-w-0">
-          <span
-            className={`text-base font-bold tabular-nums leading-none whitespace-nowrap ${muted(
-              "text-slate-900",
-            )}`}
-          >
-            {fmtTime(train.depPlandTime)}
-          </span>
-          <span
-            className={`text-sm mt-1 whitespace-nowrap ${muted("text-slate-600")}`}
-          >
-            {stationLabel(train.depPlaceName, lang)}
-          </span>
+          {/* Times + duration row (time on top, station name below) */}
+          <div className="flex items-center gap-3 px-5 pt-4 pb-4">
+            <div className="flex flex-col items-start min-w-0">
+              <span
+                className={`text-base font-semibold tabular-nums leading-none whitespace-nowrap ${muted(
+                  "text-ink",
+                )}`}
+              >
+                {fmtTime(train.depPlandTime)}
+              </span>
+              <span
+                className={`text-sm mt-1 whitespace-nowrap ${muted("text-ink-soft")}`}
+              >
+                {stationLabel(train.depPlaceName, lang)}
+              </span>
+            </div>
+            <span className="h-px flex-1 bg-hairline self-start mt-2.5" aria-hidden />
+            <span
+              className={`text-xs whitespace-nowrap self-start mt-1 ${muted(
+                "text-ink-faint",
+              )}`}
+            >
+              {durationL(mins, lang)}
+            </span>
+            <span className="h-px flex-1 bg-hairline self-start mt-2.5" aria-hidden />
+            <div className="flex flex-col items-end min-w-0">
+              <span
+                className={`text-base font-semibold tabular-nums leading-none whitespace-nowrap ${muted(
+                  "text-ink",
+                )}`}
+              >
+                {fmtTime(train.arrPlandTime)}
+              </span>
+              <span
+                className={`text-sm mt-1 whitespace-nowrap ${muted("text-ink-soft")}`}
+              >
+                {stationLabel(train.arrPlaceName, lang)}
+              </span>
+            </div>
+          </div>
         </div>
-        <span className="h-px flex-1 bg-slate-200 self-start mt-2.5" aria-hidden />
-        <span
-          className={`text-xs whitespace-nowrap self-start mt-1 ${muted(
-            "text-slate-400",
-          )}`}
-        >
-          {durationL(mins, lang)}
-        </span>
-        <span className="h-px flex-1 bg-slate-200 self-start mt-2.5" aria-hidden />
-        <div className="flex flex-col items-end min-w-0">
-          <span
-            className={`text-base font-bold tabular-nums leading-none whitespace-nowrap ${muted(
-              "text-slate-900",
-            )}`}
-          >
-            {fmtTime(train.arrPlandTime)}
-          </span>
-          <span
-            className={`text-sm mt-1 whitespace-nowrap ${muted("text-slate-600")}`}
-          >
-            {stationLabel(train.arrPlaceName, lang)}
-          </span>
-        </div>
-      </div>
 
-      {/* Divider */}
-      <div className="mx-5 border-t border-slate-200" />
+        {/* Divider: horizontal on mobile, vertical on desktop */}
+        <div className="mx-5 border-t border-divider lg:mx-0 lg:my-4 lg:border-t-0 lg:border-l" />
 
-      {/* Per-class prices */}
-      <div className="grid grid-cols-2 px-5 py-1">
-        <SeatColumn
-          label={t("sr.standard")}
-          price={standardPrice}
-          lang={lang}
-          soldOut={standardSoldOut}
-          dim={dim}
-        />
-        <div className="border-l border-slate-200">
+        {/* Per-class prices */}
+        <div className="grid grid-cols-2 px-5 py-1 lg:shrink-0 lg:w-[320px] lg:self-center lg:py-2">
           <SeatColumn
-            label={t("sr.first")}
-            price={firstPrice}
+            label={t("sr.standard")}
+            price={standardPrice}
             lang={lang}
-            soldOut={firstSoldOut}
-            unavailable={firstUnavailable}
+            soldOut={standardSoldOut}
             dim={dim}
           />
+          <div className="border-l border-divider">
+            <SeatColumn
+              label={t("sr.first")}
+              price={firstPrice}
+              lang={lang}
+              soldOut={firstSoldOut}
+              unavailable={firstUnavailable}
+              dim={dim}
+            />
+          </div>
         </div>
       </div>
     </button>
@@ -695,21 +882,21 @@ function SeatColumn({
     <div className="flex flex-col items-center justify-center py-1">
       <span
         className={`text-xs ${
-          labelMuted ? "text-slate-400" : "text-slate-700"
+          labelMuted ? "text-ink-faint" : "text-ink-soft"
         }`}
       >
         {label}
       </span>
       {unavailable ? (
-        <span className="text-base font-bold text-slate-300">—</span>
+        <span className="text-base font-semibold text-ink-faint/60">—</span>
       ) : soldOut ? (
-        <span className="text-base font-bold text-red-500">
+        <span className="text-base font-semibold text-red-500">
           {lang === "ko" ? "매진" : "Sold out"}
         </span>
       ) : (
         <span
-          className={`text-base font-bold tabular-nums whitespace-nowrap ${
-            dim ? "text-slate-400" : "text-slate-900"
+          className={`text-base font-semibold tabular-nums whitespace-nowrap ${
+            dim ? "text-ink-faint" : "text-ink"
           }`}
         >
           {krwL(price, lang)}
@@ -733,7 +920,7 @@ function OutboundRecap({
       <button
         type="button"
         onClick={onChange}
-        className="w-full flex items-center gap-2 px-5 py-3 rounded-xl bg-sky-50 border border-sky-100 text-sm text-sky-800 hover:bg-sky-100 transition text-left"
+        className="w-full flex items-center gap-2 px-5 py-3 rounded-card bg-action/[0.06] border border-action/15 text-sm text-action hover:bg-action/10 active:scale-[0.98] transition text-left"
       >
         <span className="font-semibold shrink-0">{t("sr.outbound")}</span>
         <span className="flex-1 min-w-0 truncate">
