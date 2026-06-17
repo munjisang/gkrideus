@@ -39,3 +39,19 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# generated: prototype static site (materialized from krideus-prototype/ by
+# scripts/sync-prototype.mjs on dev/build — never commit these)
+/public/prototype
+/public/assets
+/public/airport
+/public/css
+/public/event
+/public/includes
+/public/js
+/public/leisure
+/public/local-trip
+/public/shopping
+/public/sports-shuttle
+/public/support
+/public/theme-park

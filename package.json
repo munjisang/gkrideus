@@ -3,8 +3,8 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
-    "build": "next build",
+    "dev": "node scripts/sync-prototype.mjs --link && next dev",
+    "build": "node scripts/sync-prototype.mjs --copy && next build",
     "start": "next start",
     "lint": "eslint"
   },
