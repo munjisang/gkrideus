@@ -66,3 +66,33 @@ export function pushRecentRoute(route: RecentRoute): void {
   cur.unshift(route);
   window.localStorage.setItem(ROUTE_KEY, JSON.stringify(cur.slice(0, ROUTE_MAX)));
 }
+
+/* ─────────────────────────── Recent searched bus routes (city → city) */
+
+const BUS_ROUTE_KEY = "korail.recentBusRoutes";
+
+export function loadRecentBusRoutes(): RecentRoute[] {
+  if (typeof window === "undefined") return [];
+  try {
+    const raw = window.localStorage.getItem(BUS_ROUTE_KEY);
+    if (!raw) return [];
+    const parsed = JSON.parse(raw);
+    if (!Array.isArray(parsed)) return [];
+    return parsed.filter(
+      (x): x is RecentRoute =>
+        x && isStation(x.from) && isStation(x.to) && x.from.id !== x.to.id,
+    );
+  } catch {
+    return [];
+  }
+}
+
+export function pushRecentBusRoute(route: RecentRoute): void {
+  if (typeof window === "undefined") return;
+  if (route.from.id === route.to.id) return;
+  const cur = loadRecentBusRoutes().filter(
+    (r) => !(r.from.id === route.from.id && r.to.id === route.to.id),
+  );
+  cur.unshift(route);
+  window.localStorage.setItem(BUS_ROUTE_KEY, JSON.stringify(cur.slice(0, ROUTE_MAX)));
+}

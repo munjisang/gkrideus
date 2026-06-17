@@ -664,6 +664,7 @@ export default function SearchView() {
         open={paxSheetOpen}
         value={currentPax}
         anchorRef={paxChipRef}
+        align="left"
         onClose={() => setPaxSheetOpen(false)}
         onPick={(v) => {
           const next = new URLSearchParams(sp.toString());

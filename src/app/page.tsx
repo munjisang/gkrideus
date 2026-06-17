@@ -2,11 +2,17 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { pushRecent, pushRecentRoute } from "../lib/recentStations";
+import {
+  pushRecent,
+  pushRecentRoute,
+  pushRecentBusRoute,
+} from "../lib/recentStations";
 import { useI18n, stationLabel } from "../lib/i18n";
 import StationPicker from "../components/StationPicker";
+import BusCityPicker from "../components/BusCityPicker";
 import DatePickerSheet, { type DateHour } from "../components/DatePickerSheet";
 import PassengersSheet, { type Passengers } from "../components/PassengersSheet";
+import { busCityLabel, type BusCity } from "../lib/busCities";
 import type { TripType } from "../lib/types";
 
 type Station = { id: string; name: string };
@@ -121,6 +127,10 @@ export default function HomePage() {
     seniors: 0,
   });
 
+  const [busFrom, setBusFrom] = useState<BusCity | null>(null);
+  const [busTo, setBusTo] = useState<BusCity | null>(null);
+  const [busPicker, setBusPicker] = useState<"dep" | "arr" | null>(null);
+
   const [error, setError] = useState<string | null>(null);
   const [picker, setPicker] = useState<"dep" | "arr" | null>(null);
   const [datePicker, setDatePicker] = useState<"outbound" | "inbound" | null>(null);
@@ -146,8 +156,13 @@ export default function HomePage() {
   }, []);
 
   function swap() {
-    setFrom(to);
-    setTo(from);
+    if (transport === "bus") {
+      setBusFrom(busTo);
+      setBusTo(busFrom);
+    } else {
+      setFrom(to);
+      setTo(from);
+    }
   }
 
   // Resolve popular routes to actual station objects present in the data.
@@ -188,15 +203,46 @@ export default function HomePage() {
   }
 
   const isValid =
-    !!from &&
-    !!to &&
-    from.id !== to.id &&
-    !!outbound &&
-    (tripType === "oneway" || !!inbound) &&
-    totalPassengers(passengers) >= 1;
+    transport === "bus"
+      ? !!busFrom && !!busTo && busFrom.id !== busTo.id && !!outbound
+      : !!from &&
+        !!to &&
+        from.id !== to.id &&
+        !!outbound &&
+        (tripType === "oneway" || !!inbound) &&
+        totalPassengers(passengers) >= 1;
 
   function onSubmit(e: React.FormEvent) {
     e.preventDefault();
+
+    // Intercity bus flow → /bus
+    if (transport === "bus") {
+      if (!busFrom || !busTo) {
+        setError(t("bus.err.noCities"));
+        return;
+      }
+      if (busFrom.id === busTo.id) {
+        setError(t("bus.err.sameCity"));
+        return;
+      }
+      if (!outbound) {
+        setError(t("home.err.noDep"));
+        return;
+      }
+      setError(null);
+      pushRecentBusRoute({
+        from: { id: busFrom.id, name: busFrom.name },
+        to: { id: busTo.id, name: busTo.name },
+      });
+      const params = new URLSearchParams({
+        from: busFrom.id,
+        to: busTo.id,
+        date: outbound.date.replace(/-/g, ""),
+      });
+      router.push(`/bus?${params.toString()}`);
+      return;
+    }
+
     if (!from || !to) {
       setError(t("home.err.noStations"));
       return;
@@ -300,56 +346,70 @@ export default function HomePage() {
             onSubmit={onSubmit}
             className="overflow-hidden rounded-[22px] rounded-tl-none bg-white shadow-2xl ring-1 ring-black/5"
           >
-            {transport !== "train" && (
+            {transport === "ferry" && (
               <div className="px-5 py-3 text-sm text-ink-soft bg-parchment">
                 {t("home.modeSoon")}
               </div>
             )}
 
-            {/* Trip type tabs */}
-            <div className="flex items-center gap-2 px-3 sm:px-4 pt-3">
-              {[
-                { v: "oneway", label: t("home.oneway") },
-                { v: "roundtrip", label: t("home.roundtrip") },
-              ].map((o) => {
-                const active = tripType === o.v;
-                return (
-                  <button
-                    key={o.v}
-                    type="button"
-                    onClick={() => setTripType(o.v as TripType)}
-                    className={`rounded-pill px-4 py-1.5 text-sm font-semibold transition-transform active:scale-95 ${
-                      active
-                        ? "bg-action text-white"
-                        : "bg-parchment text-ink-soft hover:bg-pearl"
-                    }`}
-                  >
-                    {o.label}
-                  </button>
-                );
-              })}
-            </div>
+            {/* Trip type tabs (train only) */}
+            {transport === "train" && (
+              <div className="flex items-center gap-2 px-3 sm:px-4 pt-3">
+                {[
+                  { v: "oneway", label: t("home.oneway") },
+                  { v: "roundtrip", label: t("home.roundtrip") },
+                ].map((o) => {
+                  const active = tripType === o.v;
+                  return (
+                    <button
+                      key={o.v}
+                      type="button"
+                      onClick={() => setTripType(o.v as TripType)}
+                      className={`rounded-pill px-4 py-1.5 text-sm font-semibold transition-transform active:scale-95 ${
+                        active
+                          ? "bg-action text-white"
+                          : "bg-parchment text-ink-soft hover:bg-pearl"
+                      }`}
+                    >
+                      {o.label}
+                    </button>
+                  );
+                })}
+              </div>
+            )}
 
-            <div className="mt-1 h-px bg-divider" />
+            {transport === "train" && <div className="mt-1 h-px bg-divider" />}
 
             {/* Main horizontal row (stacks on mobile) */}
             <div className="flex flex-col lg:flex-row lg:items-stretch divide-y lg:divide-y-0 lg:divide-x divide-divider">
               {/* Stations group */}
               <div className="relative flex flex-[2] min-w-0">
                 <Field
-                  label={t("home.depStation")}
-                  filled={!!from}
-                  onClick={() => setPicker("dep")}
+                  label={transport === "bus" ? t("bus.depCity") : t("home.depStation")}
+                  filled={transport === "bus" ? !!busFrom : !!from}
+                  disabled={transport === "ferry"}
+                  onClick={
+                    transport === "bus"
+                      ? () => setBusPicker("dep")
+                      : () => setPicker("dep")
+                  }
                   className="pr-12"
                 >
-                  {from ? stationLabel(from.name, lang) : t("home.depPlaceholder")}
+                  {transport === "bus"
+                    ? busFrom
+                      ? busCityLabel(busFrom, lang)
+                      : t("bus.depCityPh")
+                    : from
+                      ? stationLabel(from.name, lang)
+                      : t("home.depPlaceholder")}
                 </Field>
 
                 <button
                   type="button"
                   onClick={swap}
+                  disabled={transport === "ferry"}
                   aria-label={t("home.swap")}
-                  className="absolute z-10 top-1/2 right-4 -translate-y-1/2 lg:right-auto lg:left-1/2 lg:-translate-x-1/2 grid h-10 w-10 place-items-center rounded-full border border-hairline bg-white text-action transition active:scale-95"
+                  className="absolute z-10 top-1/2 right-4 -translate-y-1/2 lg:right-auto lg:left-1/2 lg:-translate-x-1/2 grid h-10 w-10 place-items-center rounded-full border border-hairline bg-white text-action transition active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
                     <path d="M3 8h18" />
@@ -360,12 +420,23 @@ export default function HomePage() {
                 </button>
 
                 <Field
-                  label={t("home.arrStation")}
-                  filled={!!to}
-                  onClick={() => setPicker("arr")}
+                  label={transport === "bus" ? t("bus.arrCity") : t("home.arrStation")}
+                  filled={transport === "bus" ? !!busTo : !!to}
+                  disabled={transport === "ferry"}
+                  onClick={
+                    transport === "bus"
+                      ? () => setBusPicker("arr")
+                      : () => setPicker("arr")
+                  }
                   className="pr-12 lg:pr-5 lg:pl-12"
                 >
-                  {to ? stationLabel(to.name, lang) : t("home.arrPlaceholder")}
+                  {transport === "bus"
+                    ? busTo
+                      ? busCityLabel(busTo, lang)
+                      : t("bus.arrCityPh")
+                    : to
+                      ? stationLabel(to.name, lang)
+                      : t("home.arrPlaceholder")}
                 </Field>
               </div>
 
@@ -379,12 +450,13 @@ export default function HomePage() {
                   ref={outDateRef}
                   label={t("home.depDate")}
                   filled={!!outbound}
+                  disabled={transport === "ferry"}
                   onClick={() => setDatePicker("outbound")}
                 >
                   {outbound ? fmtDateLabel(outbound) : t("home.pickDate")}
                 </Field>
 
-                {tripType === "roundtrip" && (
+                {transport === "train" && tripType === "roundtrip" && (
                   <Field
                     ref={inDateRef}
                     label={t("home.retDate")}
@@ -396,25 +468,27 @@ export default function HomePage() {
                 )}
               </div>
 
-              {/* Passengers */}
-              <button
-                ref={paxRef}
-                type="button"
-                onClick={() => setPassengerSheet(true)}
-                aria-label={passengersLabel(passengers, t)}
-                className="text-left px-4 sm:px-5 py-3.5 transition hover:bg-parchment active:scale-[0.99] lg:flex-[0.7] lg:min-w-0"
-              >
-                <div className="text-[12px] text-ink-faint mb-0.5">{t("home.pax")}</div>
-                <div className="truncate text-[19px] font-semibold text-ink leading-tight">
-                  {passengersLabel(passengers, t)}
-                </div>
-              </button>
+              {/* Passengers (train only) */}
+              {transport === "train" && (
+                <button
+                  ref={paxRef}
+                  type="button"
+                  onClick={() => setPassengerSheet(true)}
+                  aria-label={passengersLabel(passengers, t)}
+                  className="text-left px-4 sm:px-5 py-3.5 transition hover:bg-parchment active:scale-[0.99] lg:flex-[0.7] lg:min-w-0"
+                >
+                  <div className="text-[12px] text-ink-faint mb-0.5">{t("home.pax")}</div>
+                  <div className="truncate text-[19px] font-semibold text-ink leading-tight">
+                    {passengersLabel(passengers, t)}
+                  </div>
+                </button>
+              )}
 
               {/* Submit */}
               <div className="flex items-center p-3">
                 <button
                   type="submit"
-                  disabled={!isValid || transport !== "train"}
+                  disabled={!isValid || transport === "ferry"}
                   className="btn-action h-12 w-full lg:w-auto px-6 text-[16px]"
                 >
                   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
@@ -684,6 +758,22 @@ export default function HomePage() {
         }}
       />
 
+      <BusCityPicker
+        open={busPicker !== null}
+        anchorRef={formRef}
+        onClose={() => setBusPicker(null)}
+        onPick={(c) => {
+          if (busPicker === "dep") setBusFrom(c);
+          else if (busPicker === "arr") setBusTo(c);
+          setBusPicker(null);
+        }}
+        onPickRoute={(f, tt) => {
+          setBusFrom(f);
+          setBusTo(tt);
+          setBusPicker(null);
+        }}
+      />
+
       <DatePickerSheet
         open={datePicker === "outbound"}
         title={t("dp.titleDep")}
@@ -735,6 +825,7 @@ function Field({
   filled,
   onClick,
   className = "",
+  disabled = false,
   children,
   ref,
 }: {
@@ -742,6 +833,7 @@ function Field({
   filled: boolean;
   onClick: () => void;
   className?: string;
+  disabled?: boolean;
   children: React.ReactNode;
   ref?: React.Ref<HTMLButtonElement>;
 }) {
@@ -750,7 +842,12 @@ function Field({
       ref={ref}
       type="button"
       onClick={onClick}
-      className={`flex-1 min-w-0 text-left px-4 sm:px-5 py-3.5 transition hover:bg-parchment active:scale-[0.99] ${className}`}
+      disabled={disabled}
+      className={`flex-1 min-w-0 text-left px-4 sm:px-5 py-3.5 transition ${
+        disabled
+          ? "opacity-50 cursor-not-allowed"
+          : "hover:bg-parchment active:scale-[0.99]"
+      } ${className}`}
     >
       <div className="text-[12px] text-ink-faint mb-0.5">{label}</div>
       <div

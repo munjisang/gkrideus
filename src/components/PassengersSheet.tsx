@@ -17,6 +17,8 @@ type Props = {
   onPick: (v: Passengers) => void;
   onClose: () => void;
   anchorRef?: React.RefObject<HTMLElement | null>;
+  /** Desktop popover alignment relative to the anchor. Default "right". */
+  align?: "left" | "right";
 };
 
 const MIN_TOTAL = 1;
@@ -28,6 +30,7 @@ export default function PassengersSheet({
   onPick,
   onClose,
   anchorRef,
+  align = "right",
 }: Props) {
   const { t } = useI18n();
   const [draft, setDraft] = useState<Passengers>(value);
@@ -54,7 +57,7 @@ export default function PassengersSheet({
       title={t("pax.selectTitle")}
       anchorRef={anchorRef}
       desktopWidth={400}
-      align="right"
+      align={align}
       footer={
         <div className="flex gap-2">
           <button

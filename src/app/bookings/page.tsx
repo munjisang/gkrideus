@@ -1,17 +1,79 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { loadOrders, updateOrder } from "../../lib/storage";
 import { useI18n } from "../../lib/i18n";
-import BookingCard from "../../components/bookings/BookingCard";
+import BookingCard, { rsvStatus } from "../../components/bookings/BookingCard";
 import type { Order, Reservation } from "../../lib/types";
+
+type StatusGroup = "reserved" | "waiting" | "canceled";
+type TransportKind = "ktx" | "srt" | "intercity" | "express" | "ferry";
+
+/** Map an order's outbound train/bus grade to a transport-filter key. */
+function transportOf(order: Order): TransportKind | null {
+  const g = order.outbound.trainGradeName || "";
+  if (g.startsWith("KTX")) return "ktx";
+  if (g === "SRT") return "srt";
+  if (g.includes("고속버스")) return "express";
+  if (g.includes("시외버스")) return "intercity";
+  if (g.includes("페리") || g.includes("Ferry")) return "ferry";
+  return null;
+}
+
+/** Collapse the per-leg reservation status into one of three filter groups. */
+function statusGroupOf(order: Order): StatusGroup {
+  const out = rsvStatus(order.reservation);
+  const inb =
+    order.tripType === "roundtrip"
+      ? rsvStatus(order.inboundReservation)
+      : null;
+  const cancelled =
+    out === "cancelled" && (inb === null || inb === "cancelled");
+  if (cancelled) return "canceled";
+  if (out === "ticketed" || out === "confirmed") return "reserved";
+  return "waiting";
+}
+
+const STATUS_OPTS: { key: StatusGroup; tkey: string }[] = [
+  { key: "reserved", tkey: "bk.status.reserved" },
+  { key: "waiting", tkey: "bk.status.waiting" },
+  { key: "canceled", tkey: "bk.status.canceled" },
+];
+const TRANSPORT_OPTS: { key: TransportKind; tkey: string }[] = [
+  { key: "ktx", tkey: "bk.transport.ktx" },
+  { key: "srt", tkey: "bk.transport.srt" },
+  { key: "intercity", tkey: "bk.transport.intercity" },
+  { key: "express", tkey: "bk.transport.express" },
+  { key: "ferry", tkey: "bk.transport.ferry" },
+];
 
 export default function BookingsListPage() {
   const { t, lang } = useI18n();
   const [orders, setOrders] = useState<Order[] | null>(null);
   const [syncing, setSyncing] = useState(false);
   const initialSyncRef = useRef(false);
+  const [statusSel, setStatusSel] = useState<Set<StatusGroup>>(new Set());
+  const [transportSel, setTransportSel] = useState<Set<TransportKind>>(new Set());
+
+  const filteredOrders = useMemo(() => {
+    if (!orders) return null;
+    return orders.filter((o) => {
+      if (statusSel.size > 0 && !statusSel.has(statusGroupOf(o))) return false;
+      if (transportSel.size > 0) {
+        const tk = transportOf(o);
+        if (!tk || !transportSel.has(tk)) return false;
+      }
+      return true;
+    });
+  }, [orders, statusSel, transportSel]);
+
+  function toggle<T>(set: Set<T>, key: T): Set<T> {
+    const next = new Set(set);
+    if (next.has(key)) next.delete(key);
+    else next.add(key);
+    return next;
+  }
 
   /** Pull orders from storage and re-sort newest-first. */
   async function refresh() {
@@ -196,24 +258,105 @@ export default function BookingsListPage() {
         </div>
       </div>
 
-      <div className="mx-auto max-w-[1280px] px-4 sm:px-8 lg:px-12 py-6 pb-10">
-        {syncing && (
-          <div className="mb-3 text-[12px] text-ink-faint">{t("common.loading")}</div>
-        )}
+      <div className="mx-auto max-w-[1280px] px-4 sm:px-8 lg:px-12 pt-8 pb-10 lg:grid lg:grid-cols-[240px_1fr] lg:gap-6 lg:items-start">
+        {/* Left filter panel */}
+        <aside className="lg:sticky lg:top-[90px] space-y-4 mb-4 lg:mb-0">
+          <div className="card-apple overflow-hidden">
+            <div className="flex items-center justify-between border-b border-divider px-4 py-3">
+              <div className="flex items-center gap-1.5">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-action" aria-hidden>
+                  <path d="M4 6h16M7 12h10M10 18h4" />
+                </svg>
+                <h3 className="text-sm font-bold tracking-tight text-ink">
+                  {t("sr.searchFilter")}
+                </h3>
+              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  setStatusSel(new Set());
+                  setTransportSel(new Set());
+                }}
+                className="text-xs font-semibold text-ink-faint transition-colors hover:text-action"
+              >
+                {t("sr.reset")}
+              </button>
+            </div>
 
-        <div className="lg:grid lg:grid-cols-2 lg:gap-4 space-y-3 lg:space-y-0">
+            {/* Status */}
+            <div className="border-b border-divider px-4 py-3">
+              <h4 className="mb-2 text-xs font-bold text-ink-soft">
+                {t("bk.statusFilter")}
+              </h4>
+              <div className="space-y-1.5">
+                {STATUS_OPTS.map((opt) => (
+                  <label
+                    key={opt.key}
+                    className="flex cursor-pointer select-none items-center gap-2.5"
+                  >
+                    <input
+                      type="checkbox"
+                      checked={statusSel.has(opt.key)}
+                      onChange={() => setStatusSel((s) => toggle(s, opt.key))}
+                      className="h-4 w-4 rounded accent-action"
+                    />
+                    <span className="text-sm font-medium text-ink">
+                      {t(opt.tkey)}
+                    </span>
+                  </label>
+                ))}
+              </div>
+            </div>
+
+            {/* Transport */}
+            <div className="px-4 py-3">
+              <h4 className="mb-2 text-xs font-bold text-ink-soft">
+                {t("bk.transportFilter")}
+              </h4>
+              <div className="space-y-1.5">
+                {TRANSPORT_OPTS.map((opt) => (
+                  <label
+                    key={opt.key}
+                    className="flex cursor-pointer select-none items-center gap-2.5"
+                  >
+                    <input
+                      type="checkbox"
+                      checked={transportSel.has(opt.key)}
+                      onChange={() => setTransportSel((s) => toggle(s, opt.key))}
+                      className="h-4 w-4 rounded accent-action"
+                    />
+                    <span className="text-sm font-medium text-ink">
+                      {t(opt.tkey)}
+                    </span>
+                  </label>
+                ))}
+              </div>
+            </div>
+          </div>
+        </aside>
+
+        {/* Right column: booking list */}
+        <div className="min-w-0">
+          {syncing && (
+            <div className="mb-3 text-[12px] text-ink-faint">{t("common.loading")}</div>
+          )}
+
           {orders == null ? (
-            <div className="lg:col-span-2 py-16 text-center text-sm text-ink-faint">
+            <div className="py-16 text-center text-sm text-ink-faint">
               {t("common.loading")}
             </div>
           ) : orders.length === 0 ? (
-            <div className="lg:col-span-2">
-              <EmptyState t={t} />
+            <EmptyState t={t} />
+          ) : filteredOrders && filteredOrders.length === 0 ? (
+            <div className="py-16 text-center text-sm text-ink-soft">
+              {t("sr.none")}
             </div>
           ) : (
-            orders.map((o) => (
-              <BookingCard key={o.id} order={o} lang={lang} t={t} />
-            ))
+            <div className="space-y-3">
+              {filteredOrders?.map((o) => (
+                <BookingCard key={o.id} order={o} lang={lang} t={t} />
+              ))}
+            </div>
           )}
         </div>
       </div>

@@ -14,8 +14,8 @@ export default function AppFrame({ children }: { children: React.ReactNode }) {
   // Routes with their own page-level sub-header — hide the global one.
   const hideHeader =
     pathname === "/search" ||
-    pathname === "/order" ||
-    pathname === "/order/complete" ||
+    pathname.startsWith("/order") ||
+    pathname === "/bus" ||
     pathname.startsWith("/bookings");
   // Home overlays a transparent nav on top of its full-bleed hero.
   const isHome = pathname === "/";
