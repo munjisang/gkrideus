@@ -7,6 +7,7 @@ import { fmtTime, durationMinutes } from "../../lib/format";
 import SearchLoading from "../../components/SearchLoading";
 import DatePickerSheet, { type DateHour } from "../../components/DatePickerSheet";
 import PassengersSheet, { type Passengers } from "../../components/PassengersSheet";
+import BottomSheet from "../../components/BottomSheet";
 import { TrainLogo } from "../../components/TrainLogo";
 import { firstClassMult } from "../../lib/fare";
 import { useI18n, stationLabel, type Lang } from "../../lib/i18n";
@@ -94,6 +95,7 @@ export default function SearchView() {
   const [data, setData] = useState<ApiResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<FilterKey>("all");
+  const [mobileFilterOpen, setMobileFilterOpen] = useState(false);
   const [hideSoldOut, setHideSoldOut] = useState(false);
   const [seatClass, setSeatClass] = useState<"all" | "standard" | "first">("all");
   const [depPeriod, setDepPeriod] = useState<
@@ -353,37 +355,7 @@ export default function SearchView() {
     );
   }
 
-  return (
-    <div className="bg-white min-h-full">
-      {/* Sticky top header (within main, below the global header) */}
-      <div className="sticky top-0 z-10 bg-white/90 backdrop-blur-xl backdrop-saturate-150 border-b border-hairline">
-        <div className="mx-auto max-w-[1280px] px-4 sm:px-8 lg:px-12 flex items-center py-3">
-          <Link
-            href="/city"
-            className="h-10 w-10 grid place-items-center text-ink -ml-1 active:scale-95 transition"
-            aria-label={t("back")}
-          >
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M15 18l-6-6 6-6" />
-            </svg>
-          </Link>
-          <h1 className="flex-1 text-center text-base font-bold tracking-tight text-ink">
-            {fromLabel}
-            {t("sp.stationSuffix")}
-            <span className="mx-0.5 text-ink-faint">→</span>
-            {toLabel}
-            {t("sp.stationSuffix")}
-          </h1>
-          <span className="w-10" />
-        </div>
-        {/* Filter tabs (home-style pill chips) */}
-      </div>
-
-      {/* Filter sidebar (desktop) + results — two columns on lg */}
-      <div className="mx-auto max-w-[1280px] px-4 sm:px-8 lg:px-12 pt-8 pb-3 lg:grid lg:grid-cols-[240px_1fr] lg:gap-6 lg:items-start">
-        {/* Left filter panel (desktop only; mobile uses the top pill tabs) */}
-        <aside className="lg:sticky lg:top-[90px] space-y-4">
-          {/* Unified filter card */}
+  const filterCard = (
           <div className="card-apple overflow-hidden">
             {/* Header: title + reset */}
             <div className="flex items-center justify-between border-b border-divider px-4 py-3">
@@ -425,7 +397,10 @@ export default function SearchView() {
               <button
                 ref={dateChipRef}
                 type="button"
-                onClick={() => setDateSheetOpen(true)}
+                onClick={() => {
+                  setMobileFilterOpen(false);
+                  setDateSheetOpen(true);
+                }}
                 className="w-full inline-flex items-center justify-between gap-1.5 h-10 px-3.5 rounded-lg border border-hairline bg-white text-sm font-semibold text-ink-soft hover:border-action active:scale-[0.99] transition"
               >
                 <span className="tabular-nums truncate">
@@ -438,7 +413,10 @@ export default function SearchView() {
               <button
                 ref={paxChipRef}
                 type="button"
-                onClick={() => setPaxSheetOpen(true)}
+                onClick={() => {
+                  setMobileFilterOpen(false);
+                  setPaxSheetOpen(true);
+                }}
                 className="w-full inline-flex items-center justify-between gap-1.5 h-10 px-3.5 rounded-lg border border-hairline bg-white text-sm font-semibold text-ink-soft hover:border-action active:scale-[0.99] transition"
               >
                 <span className="tabular-nums truncate">
@@ -543,6 +521,39 @@ export default function SearchView() {
               </div>
             </div>
           </div>
+  );
+
+  return (
+    <div className="bg-white min-h-full">
+      {/* Sticky top header (within main, below the global header) */}
+      <div className="sticky top-0 z-10 bg-white/90 backdrop-blur-xl backdrop-saturate-150 border-b border-hairline">
+        <div className="mx-auto max-w-[1280px] px-4 sm:px-8 lg:px-12 flex items-center py-3">
+          <Link
+            href="/city"
+            className="h-10 w-10 grid place-items-center text-ink -ml-1 active:scale-95 transition"
+            aria-label={t("back")}
+          >
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M15 18l-6-6 6-6" />
+            </svg>
+          </Link>
+          <h1 className="flex-1 text-center text-base font-bold tracking-tight text-ink">
+            {fromLabel}
+            {t("sp.stationSuffix")}
+            <span className="mx-0.5 text-ink-faint">→</span>
+            {toLabel}
+            {t("sp.stationSuffix")}
+          </h1>
+          <span className="w-10" />
+        </div>
+        {/* Filter tabs (home-style pill chips) */}
+      </div>
+
+      {/* Filter sidebar (desktop) + results — two columns on lg */}
+      <div className="mx-auto max-w-[1280px] px-4 sm:px-8 lg:px-12 pt-8 pb-3 lg:grid lg:grid-cols-[240px_1fr] lg:gap-6 lg:items-start">
+        {/* Left filter panel — desktop sidebar / mobile bottom sheet (동일 필터 카드 공유) */}
+        <aside className="hidden lg:block lg:sticky lg:top-[90px] space-y-4">
+          {filterCard}
         </aside>
 
         {/* Right column: leg title + recap + results */}
@@ -562,10 +573,22 @@ export default function SearchView() {
             </div>
           )}
 
-          {/* Leg heading (가는편 / 오는편) */}
-          <h2 className="text-2xl font-bold tracking-tight text-ink">
-            {leg === "inbound" ? t("sr.legInbound") : t("sr.legOutbound")}
-          </h2>
+          {/* Leg heading (가는편 / 오는편) — 모바일은 우측 필터 아이콘으로 바텀시트 오픈 */}
+          <div className="flex items-center justify-between gap-3">
+            <h2 className="text-2xl font-bold tracking-tight text-ink">
+              {leg === "inbound" ? t("sr.legInbound") : t("sr.legOutbound")}
+            </h2>
+            <button
+              type="button"
+              onClick={() => setMobileFilterOpen(true)}
+              aria-label={t("sr.searchFilter")}
+              className="lg:hidden grid h-10 w-10 shrink-0 place-items-center rounded-full border border-hairline bg-white text-ink-soft transition active:scale-95"
+            >
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+                <path d="M4 6h16M7 12h10M10 18h4" />
+              </svg>
+            </button>
+          </div>
           <div className="mt-3 border-t border-hairline" />
 
           {/* Result count */}
@@ -680,6 +703,11 @@ export default function SearchView() {
           router.replace(`/search?${next.toString()}`);
         }}
       />
+
+      {/* 모바일 검색필터 바텀시트 — 데스크톱 aside 와 동일한 filterCard 공유 */}
+      <BottomSheet open={mobileFilterOpen} onClose={() => setMobileFilterOpen(false)}>
+        <div className="p-4">{filterCard}</div>
+      </BottomSheet>
     </div>
   );
 }

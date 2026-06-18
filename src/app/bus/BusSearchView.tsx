@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import SearchLoading from "../../components/SearchLoading";
+import BottomSheet from "../../components/BottomSheet";
 import { useI18n, type Lang } from "../../lib/i18n";
 import { busCityById, busCityLabel, busGradeLabel } from "../../lib/busCities";
 
@@ -65,6 +66,7 @@ export default function BusSearchView() {
   const [loading, setLoading] = useState(true);
 
   const [busType, setBusType] = useState<BusType>("all");
+  const [mobileFilterOpen, setMobileFilterOpen] = useState(false);
   const [grade, setGrade] = useState<string>("all");
   const [depPeriod, setDepPeriod] = useState<DepPeriod>("all");
   const [hideSoldOut, setHideSoldOut] = useState(false);
@@ -136,33 +138,7 @@ export default function BusSearchView() {
     return <SearchLoading from={fromName} to={toName} />;
   }
 
-  return (
-    <div className="bg-white min-h-full">
-      {/* Sticky header */}
-      <div className="sticky top-0 z-10 bg-white/90 backdrop-blur-xl backdrop-saturate-150 border-b border-hairline">
-        <div className="mx-auto max-w-[1280px] px-4 sm:px-8 lg:px-12 flex items-center py-3">
-          <Link
-            href="/city"
-            className="h-10 w-10 grid place-items-center text-ink -ml-1 active:scale-95 transition"
-            aria-label={t("back")}
-          >
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M15 18l-6-6 6-6" />
-            </svg>
-          </Link>
-          <h1 className="flex-1 text-center text-base font-bold tracking-tight text-ink">
-            {fromName}
-            <span className="mx-1 text-ink-faint">→</span>
-            {toName}
-          </h1>
-          <span className="w-10" />
-        </div>
-      </div>
-
-      {/* Filter sidebar + results */}
-      <div className="mx-auto max-w-[1280px] px-4 sm:px-8 lg:px-12 pt-8 pb-3 lg:grid lg:grid-cols-[240px_1fr] lg:gap-6 lg:items-start">
-        {/* Left filter panel */}
-        <aside className="lg:sticky lg:top-[90px] space-y-4">
+  const filterCard = (
           <div className="card-apple overflow-hidden">
             <div className="flex items-center justify-between border-b border-divider px-4 py-3">
               <div className="flex items-center gap-1.5">
@@ -291,13 +267,56 @@ export default function BusSearchView() {
               </div>
             </div>
           </div>
+  );
+
+  return (
+    <div className="bg-white min-h-full">
+      {/* Sticky header */}
+      <div className="sticky top-0 z-10 bg-white/90 backdrop-blur-xl backdrop-saturate-150 border-b border-hairline">
+        <div className="mx-auto max-w-[1280px] px-4 sm:px-8 lg:px-12 flex items-center py-3">
+          <Link
+            href="/city"
+            className="h-10 w-10 grid place-items-center text-ink -ml-1 active:scale-95 transition"
+            aria-label={t("back")}
+          >
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M15 18l-6-6 6-6" />
+            </svg>
+          </Link>
+          <h1 className="flex-1 text-center text-base font-bold tracking-tight text-ink">
+            {fromName}
+            <span className="mx-1 text-ink-faint">→</span>
+            {toName}
+          </h1>
+          <span className="w-10" />
+        </div>
+      </div>
+
+      {/* Filter sidebar + results */}
+      <div className="mx-auto max-w-[1280px] px-4 sm:px-8 lg:px-12 pt-8 pb-3 lg:grid lg:grid-cols-[240px_1fr] lg:gap-6 lg:items-start">
+        {/* Left filter panel — desktop sidebar / mobile bottom sheet (동일 필터 카드 공유) */}
+        <aside className="hidden lg:block lg:sticky lg:top-[90px] space-y-4">
+          {filterCard}
         </aside>
 
         {/* Right column */}
         <div className="min-w-0">
-          <h2 className="text-2xl font-bold tracking-tight text-ink">
-            {t("sr.legOutbound")}
-          </h2>
+          {/* Leg heading — 모바일은 우측 필터 아이콘으로 바텀시트 오픈 */}
+          <div className="flex items-center justify-between gap-3">
+            <h2 className="text-2xl font-bold tracking-tight text-ink">
+              {t("sr.legOutbound")}
+            </h2>
+            <button
+              type="button"
+              onClick={() => setMobileFilterOpen(true)}
+              aria-label={t("sr.searchFilter")}
+              className="lg:hidden grid h-10 w-10 shrink-0 place-items-center rounded-full border border-hairline bg-white text-ink-soft transition active:scale-95"
+            >
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+                <path d="M4 6h16M7 12h10M10 18h4" />
+              </svg>
+            </button>
+          </div>
           <div className="mt-3 border-t border-hairline" />
 
           {data?.ok && (
@@ -396,6 +415,11 @@ export default function BusSearchView() {
           </div>
         </div>
       </div>
+
+      {/* 모바일 검색필터 바텀시트 — 데스크톱 aside 와 동일한 filterCard 공유 */}
+      <BottomSheet open={mobileFilterOpen} onClose={() => setMobileFilterOpen(false)}>
+        <div className="p-4">{filterCard}</div>
+      </BottomSheet>
     </div>
   );
 }

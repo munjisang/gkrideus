@@ -515,8 +515,8 @@ export default function HomePage() {
 
             {/* Main horizontal row (stacks on mobile) */}
             <div className="flex flex-col lg:flex-row lg:items-stretch divide-y lg:divide-y-0 lg:divide-x divide-divider">
-              {/* Stations group */}
-              <div className="relative flex flex-[2] min-w-0">
+              {/* Stations group — 모바일: 세로 1열(출발 위, 도착 아래) + 사이 구분선 / lg: 가로 */}
+              <div className="relative flex flex-col lg:flex-row flex-[2] min-w-0 divide-y lg:divide-y-0 divide-divider">
                 <Field
                   label={transport === "bus" ? t("bus.depCity") : t("home.depStation")}
                   filled={transport === "bus" ? !!busFrom : !!from}
@@ -544,7 +544,7 @@ export default function HomePage() {
                   aria-label={t("home.swap")}
                   className="absolute z-10 top-1/2 right-4 -translate-y-1/2 lg:right-auto lg:left-1/2 lg:-translate-x-1/2 grid h-10 w-10 place-items-center rounded-full border border-hairline bg-white text-action transition active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                  <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className="rotate-90 lg:rotate-0">
                     <path d="M3 8h18" />
                     <path d="M17 4l4 4-4 4" />
                     <path d="M21 16H3" />
@@ -683,7 +683,7 @@ export default function HomePage() {
           })}
         </div>
 
-        <div className="mt-6 grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           {displayedProducts.map((p) => {
             const fromLabel =
               p.mode === "bus"
@@ -748,13 +748,13 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Train travel information — full-bleed horizontal scroller */}
+      {/* Train travel information — 모바일 가로 스크롤 / sm+ 그리드 */}
       <section className="pb-16 lg:pb-24">
         <div className="mx-auto max-w-[1280px] px-4 sm:px-8 lg:px-12">
           <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-ink">
             {t("home.infoTitle")}
           </h2>
-          <div className="mt-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+          <div className="mt-8 flex gap-4 overflow-x-auto -mx-4 px-4 pb-2 sm:mx-0 sm:px-0 sm:pb-0 sm:grid sm:grid-cols-2 sm:gap-5 sm:overflow-visible lg:grid-cols-3 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
           {[
             {
               img: INFO_IMAGES.journeyPlanner,
@@ -789,7 +789,7 @@ export default function HomePage() {
           ].map((c) => (
             <article
               key={c.title}
-              className="group relative h-[420px] overflow-hidden rounded-card bg-tile"
+              className="group relative h-[420px] w-[80%] shrink-0 overflow-hidden rounded-card bg-tile sm:w-auto sm:shrink"
             >
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
