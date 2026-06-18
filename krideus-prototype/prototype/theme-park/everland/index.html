@@ -426,7 +426,7 @@ select.bk__input{padding-right:38px;cursor:pointer;background-image:url("data:im
 }
 </style>
 </head>
-<body data-base="../../" data-nav-mode="scroll">
+<body data-base="/prototype/" data-nav-mode="scroll">
 
 <div data-include="navbar"></div>
 
@@ -443,7 +443,7 @@ select.bk__input{padding-right:38px;cursor:pointer;background-image:url("data:im
 
   <div class="wrap">
     <nav class="crumb" aria-label="breadcrumb">
-      <a href="../../"><span data-lang="ko">홈</span><span data-lang="en" hidden>Home</span></a><span>/</span><a href="../../travel/"><span data-lang="ko">여행</span><span data-lang="en" hidden>Travel</span></a><span>/</span><a href="../../travel/"><span data-lang="ko">테마파크</span><span data-lang="en" hidden>Theme Park</span></a><span>/</span><b><span data-lang="ko">에버랜드</span><span data-lang="en" hidden>Everland</span></b>
+      <a href="/prototype/index.html"><span data-lang="ko">홈</span><span data-lang="en" hidden>Home</span></a><span>/</span><a href="/prototype/travel/index.html"><span data-lang="ko">여행</span><span data-lang="en" hidden>Travel</span></a><span>/</span><a href="/prototype/travel/index.html"><span data-lang="ko">테마파크</span><span data-lang="en" hidden>Theme Park</span></a><span>/</span><b><span data-lang="ko">에버랜드</span><span data-lang="en" hidden>Everland</span></b>
     </nav>
   </div>
 
@@ -590,7 +590,7 @@ select.bk__input{padding-right:38px;cursor:pointer;background-image:url("data:im
                 <div class="bk__field"><label><span data-lang="ko">탑승 인원</span><span data-lang="en" hidden>Passengers</span></label><div class="bk__stepper"><button type="button" data-c="pax" data-d="-1" aria-label="인원 감소">−</button><b data-v="pax">2</b><button type="button" data-c="pax" data-d="1" aria-label="인원 증가">+</button></div></div>
                 <div class="bk__field"><label><span data-lang="ko">수하물</span><span data-lang="en" hidden>Luggage</span></label><div class="bk__stepper"><button type="button" data-c="bag" data-d="-1" aria-label="수하물 감소">−</button><b data-v="bag">2</b><button type="button" data-c="bag" data-d="1" aria-label="수하물 증가">+</button></div></div>
               </div>
-              <a class="btn btn--primary btn--block bk__submit" href="results/index.html" data-go-results>
+              <a class="btn btn--primary btn--block bk__submit" href="/prototype/theme-park/everland/results/index.html" data-go-results>
                 <span data-lang="ko">차량 검색하기</span><span data-lang="en" hidden>Find a vehicle</span>
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
               </a>
@@ -820,7 +820,7 @@ select.bk__input{padding-right:38px;cursor:pointer;background-image:url("data:im
       </div>
       <div class="ogrid">
         <article class="ocard rv">
-          <a class="ocard__link" href="../gyeongju/">
+          <a class="ocard__link" href="/prototype/theme-park/gyeongju/index.html">
             <div class="ocard__media"><img src="/assets/theme_gyeongju_hero.webp" alt="경주월드" loading="lazy"></div>
             <div class="ocard__body">
               <div class="ocard__partner"><span data-lang="ko">Theme Park · 경북 경주</span><span data-lang="en" hidden>Theme Park · Gyeongju, Gyeongbuk</span></div>
@@ -831,7 +831,7 @@ select.bk__input{padding-right:38px;cursor:pointer;background-image:url("data:im
           </a>
         </article>
         <article class="ocard rv">
-          <a class="ocard__link" href="../lotte-world/">
+          <a class="ocard__link" href="/prototype/theme-park/lotte-world/index.html">
             <div class="ocard__media"><img src="/assets/theme_lotte-world_hero.webp" alt="롯데월드" loading="lazy"></div>
             <div class="ocard__body">
               <div class="ocard__partner"><span data-lang="ko">Theme Park · 서울 잠실</span><span data-lang="en" hidden>Theme Park · Jamsil, Seoul</span></div>
@@ -842,7 +842,7 @@ select.bk__input{padding-right:38px;cursor:pointer;background-image:url("data:im
           </a>
         </article>
         <article class="ocard rv">
-          <a class="ocard__link" href="../ocean-world/">
+          <a class="ocard__link" href="/prototype/theme-park/ocean-world/index.html">
             <div class="ocard__media"><img src="/assets/theme_ocean-world_hero.webp" alt="오션월드" loading="lazy"></div>
             <div class="ocard__body">
               <div class="ocard__partner"><span data-lang="ko">Water Park · 강원 홍천</span><span data-lang="en" hidden>Water Park · Hongcheon, Gangwon</span></div>
@@ -957,7 +957,7 @@ select.bk__input{padding-right:38px;cursor:pointer;background-image:url("data:im
     var mode=on?on.getAttribute('data-mode'):'oneway';
     var de=bk&&bk.querySelector('input[type="date"]'), te=bk&&bk.querySelector('input[type="time"]');
     var px=bk&&bk.querySelector('[data-v="pax"]'), bg=bk&&bk.querySelector('[data-v="bag"]');
-    location.href='results/index.html?mode='+mode+'&date='+(de?de.value:'')+'&time='+(te?te.value:'')+'&pax='+(px?px.textContent:'2')+'&bag='+(bg?bg.textContent:'2');
+    location.href='/prototype/theme-park/everland/results/index.html?mode='+mode+'&date='+(de?de.value:'')+'&time='+(te?te.value:'')+'&pax='+(px?px.textContent:'2')+'&bag='+(bg?bg.textContent:'2');
   });
 
   /* ---- 언어 토글 시 동적 라벨(svc-label / seg-hint) 갱신 ---- */
@@ -1062,6 +1062,6 @@ select.bk__input{padding-right:38px;cursor:pointer;background-image:url("data:im
     window.addEventListener('langchange',load);
   })();
   </script>
-  <script src="../../js/includes.js"></script>
+  <script src="/prototype/js/includes.js"></script>
 </body>
 </html>
