@@ -12,7 +12,12 @@ import StationPicker from "../../components/StationPicker";
 import BusCityPicker from "../../components/BusCityPicker";
 import DatePickerSheet, { type DateHour } from "../../components/DatePickerSheet";
 import PassengersSheet, { type Passengers } from "../../components/PassengersSheet";
-import { busCityLabel, type BusCity } from "../../lib/busCities";
+import {
+  busCityLabel,
+  busCityLabelByName,
+  busCityById,
+  type BusCity,
+} from "../../lib/busCities";
 import type { TripType } from "../../lib/types";
 
 type Station = { id: string; name: string };
@@ -58,7 +63,29 @@ const ROUTE_IMAGES: Record<string, string> = {
   전주: "https://images.unsplash.com/photo-1653230676634-eab0cd6c56b1?auto=format&fit=crop&w=600&q=70",
   경주: "https://images.unsplash.com/photo-1717346486980-1944518800fb?auto=format&fit=crop&w=600&q=70",
   안동: "https://images.unsplash.com/photo-1525546137051-73a7b7ba139c?auto=format&fit=crop&w=600&q=70",
+  // Aliases for bus-city names that differ from KTX station names.
+  대구: "https://images.unsplash.com/photo-1663670889635-0aabebf112ba?auto=format&fit=crop&w=600&q=70",
+  광주: "https://images.unsplash.com/photo-1593419522318-81b7c346a3e8?auto=format&fit=crop&w=600&q=70",
+  여수: "https://images.unsplash.com/photo-1651375562199-65caae096ace?auto=format&fit=crop&w=600&q=70",
 };
+
+// Popular intercity-bus routes by busCity id. [departureId, arrivalId, approx fare KRW]
+// Intentionally different origin/destination pairs from the KTX popular routes
+// above (which all depart 서울/용산) so the bus list reads as its own set.
+const POPULAR_BUS_ROUTES: [string, string, number][] = [
+  ["busan", "gyeongju", 5300],
+  ["daegu", "gangneung", 28000],
+  ["gwangju", "yeosu", 12700],
+  ["daejeon", "jeonju", 9600],
+  ["incheon", "busan", 28900],
+  ["ulsan", "mokpo", 24500],
+  ["cheongju", "pohang", 21000],
+  ["changwon", "masan", 1800],
+  ["daegu", "andong", 11000],
+  ["suwon", "suncheon", 25800],
+  ["daejeon", "gwangju", 13200],
+  ["cheonan", "daegu", 16700],
+];
 
 // Imagery for the "train travel information" cards.
 const INFO_IMAGES = {
@@ -70,7 +97,22 @@ const INFO_IMAGES = {
     "https://images.unsplash.com/photo-1655309185688-893c7bb57eaf?auto=format&fit=crop&w=800&q=70",
   ktxClasses:
     "https://images.unsplash.com/photo-1669303375352-a71d05fa5342?auto=format&fit=crop&w=800&q=70",
+  busExpress:
+    "https://images.unsplash.com/photo-1570125909232-eb263c188f7e?auto=format&fit=crop&w=800&q=70",
+  busIntercity:
+    "https://images.unsplash.com/photo-1494515843206-f3117d3f51b7?auto=format&fit=crop&w=800&q=70",
+  busTerminal:
+    "https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?auto=format&fit=crop&w=800&q=70",
 } as const;
+
+type RouteProduct = {
+  mode: "train" | "bus";
+  id: string;
+  from: Station;
+  to: Station;
+  price: number;
+  img: string;
+};
 
 type T = (k: string, p?: Record<string, string | number>) => string;
 
@@ -136,6 +178,19 @@ export default function HomePage() {
   const [datePicker, setDatePicker] = useState<"outbound" | "inbound" | null>(null);
   const [passengerSheet, setPassengerSheet] = useState(false);
 
+  // Popular-routes section: transport chip + center toast.
+  // (The search animation itself lives on the destination /search and /bus
+  // pages — we navigate straight there to avoid showing it twice.)
+  const [routeFilter, setRouteFilter] = useState<"all" | "train" | "bus">("all");
+  const [toast, setToast] = useState<string | null>(null);
+  const toastTimer = useRef<number | null>(null);
+
+  function showToast(msg: string) {
+    setToast(msg);
+    if (toastTimer.current) window.clearTimeout(toastTimer.current);
+    toastTimer.current = window.setTimeout(() => setToast(null), 1800);
+  }
+
   useEffect(() => {
     fetch("/api/stations", { cache: "force-cache" })
       .then((r) => r.json())
@@ -179,6 +234,65 @@ export default function HomePage() {
     );
   }, [groups]);
 
+  // Train popular routes as unified product cards.
+  const trainProducts = useMemo<RouteProduct[]>(
+    () =>
+      popular.map((r) => ({
+        mode: "train" as const,
+        id: `train-${r.from.id}-${r.to.id}`,
+        from: r.from,
+        to: r.to,
+        price: r.price,
+        img: ROUTE_IMAGES[r.to.name] ?? HERO_IMAGE,
+      })),
+    [popular],
+  );
+
+  // Bus popular routes — static, resolved from busCity ids.
+  const busProducts = useMemo<RouteProduct[]>(
+    () =>
+      POPULAR_BUS_ROUTES.map(([a, b, price]): RouteProduct | null => {
+        const f = busCityById(a);
+        const tt = busCityById(b);
+        if (!f || !tt) return null;
+        return {
+          mode: "bus",
+          id: `bus-${f.id}-${tt.id}`,
+          from: { id: f.id, name: f.name },
+          to: { id: tt.id, name: tt.name },
+          price,
+          img: ROUTE_IMAGES[tt.name] ?? HERO_IMAGE,
+        };
+      }).filter((p): p is RouteProduct => p !== null),
+    [],
+  );
+
+  const allProducts = useMemo(
+    () => [...trainProducts, ...busProducts],
+    [trainProducts, busProducts],
+  );
+
+  // "전체" shows a random 12. Shuffled client-side (in an effect) to avoid an
+  // SSR/hydration mismatch from Math.random during render.
+  const [allShuffled, setAllShuffled] = useState<RouteProduct[]>([]);
+  useEffect(() => {
+    const arr = [...allProducts];
+    for (let i = arr.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [arr[i], arr[j]] = [arr[j], arr[i]];
+    }
+    setAllShuffled(arr.slice(0, 12));
+  }, [allProducts]);
+
+  const displayedProducts =
+    routeFilter === "train"
+      ? trainProducts.slice(0, 12)
+      : routeFilter === "bus"
+        ? busProducts.slice(0, 12)
+        : allShuffled.length
+          ? allShuffled
+          : allProducts.slice(0, 12);
+
   // One-tap search for a popular route (one-way, using current date/passengers).
   function goPopular(f: Station, tt: Station) {
     const o = outbound ?? { date: minBookDate, hour: new Date().getHours() };
@@ -200,6 +314,25 @@ export default function HomePage() {
       tripType: "oneway",
     });
     router.push(`/search?${params.toString()}`);
+  }
+
+  // Bus product card → intercity bus search (/bus). The /bus page shows the
+  // search animation itself while it loads.
+  function goBusProduct(fromId: string, toId: string) {
+    const f = busCityById(fromId);
+    const tt = busCityById(toId);
+    if (!f || !tt) return;
+    const o = outbound ?? { date: minBookDate, hour: 0 };
+    pushRecentBusRoute({
+      from: { id: f.id, name: f.name },
+      to: { id: tt.id, name: tt.name },
+    });
+    const params = new URLSearchParams({
+      from: f.id,
+      to: tt.id,
+      date: o.date.replace(/-/g, ""),
+    });
+    router.push(`/bus?${params.toString()}`);
   }
 
   const isValid =
@@ -513,32 +646,81 @@ export default function HomePage() {
       </section>
 
       {/* Popular routes */}
-      {popular.length > 0 && (
-        <section className="mx-auto max-w-[1280px] px-4 sm:px-8 lg:px-12 pt-6 lg:pt-8 pb-16 lg:pb-24">
-          <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-ink">
-            {t("home.popularTitle")}
-          </h2>
-          <div className="mt-8 grid grid-cols-2 lg:grid-cols-4 gap-4">
-            {popular.map((r) => (
+      <section className="mx-auto max-w-[1280px] px-4 sm:px-8 lg:px-12 pt-6 lg:pt-8 pb-16 lg:pb-24">
+        <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-ink">
+          {t("home.popularTitle")}
+        </h2>
+
+        {/* Transport filter chips */}
+        <div className="mt-5 flex flex-wrap gap-2">
+          {[
+            { key: "all" as const, label: t("home.filterAll") },
+            { key: "train" as const, label: t("nav.trains") },
+            { key: "bus" as const, label: t("nav.bus") },
+            { key: "ferry" as const, label: t("nav.ferry") },
+          ].map((c) => {
+            const active = c.key !== "ferry" && routeFilter === c.key;
+            return (
               <button
-                key={`${r.from.id}-${r.to.id}`}
+                key={c.key}
                 type="button"
-                onClick={() => goPopular(r.from, r.to)}
+                onClick={() => {
+                  if (c.key === "ferry") {
+                    showToast(t("home.ferrySoon"));
+                    return;
+                  }
+                  setRouteFilter(c.key);
+                }}
+                className={`rounded-full px-4 py-2 text-sm font-semibold transition ${
+                  active
+                    ? "bg-ink text-white"
+                    : "bg-parchment text-ink-soft hover:bg-chip/40"
+                }`}
+              >
+                {c.label}
+              </button>
+            );
+          })}
+        </div>
+
+        <div className="mt-6 grid grid-cols-2 lg:grid-cols-4 gap-4">
+          {displayedProducts.map((p) => {
+            const fromLabel =
+              p.mode === "bus"
+                ? busCityLabelByName(p.from.name, lang)
+                : stationLabel(p.from.name, lang);
+            const toLabel =
+              p.mode === "bus"
+                ? busCityLabelByName(p.to.name, lang)
+                : stationLabel(p.to.name, lang);
+            return (
+              <button
+                key={p.id}
+                type="button"
+                onClick={() =>
+                  p.mode === "bus"
+                    ? goBusProduct(p.from.id, p.to.id)
+                    : goPopular(p.from, p.to)
+                }
                 className="group overflow-hidden rounded-xl border border-hairline bg-white text-left transition hover:border-action active:scale-[0.99]"
               >
-                <div className="aspect-[4/3] w-full overflow-hidden bg-parchment">
+                <div className="relative aspect-[4/3] w-full overflow-hidden bg-parchment">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
-                    src={ROUTE_IMAGES[r.to.name] ?? HERO_IMAGE}
+                    src={p.img}
                     alt=""
                     aria-hidden
                     loading="lazy"
                     className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
                   />
+                  {/* Transport badge (text only) */}
+                  <span className="absolute left-2 top-2 inline-flex items-center rounded-full bg-black/55 px-2.5 py-1 text-[11px] font-semibold text-white backdrop-blur-sm">
+                    {p.mode === "bus" ? t("nav.bus") : t("nav.trains")}
+                  </span>
                 </div>
                 <div className="p-4">
                   <div className="flex items-center gap-2 text-lg font-bold tracking-tight text-ink">
-                    <span className="truncate">{stationLabel(r.from.name, lang)}</span>
+                    <span className="truncate">{fromLabel}</span>
                     <svg
                       width="17"
                       height="17"
@@ -554,17 +736,17 @@ export default function HomePage() {
                       <path d="M5 12h14" />
                       <path d="M13 6l6 6-6 6" />
                     </svg>
-                    <span className="truncate">{stationLabel(r.to.name, lang)}</span>
+                    <span className="truncate">{toLabel}</span>
                   </div>
                   <div className="mt-1 text-[15px] font-semibold text-action">
-                    {t("home.fromPrice", { p: r.price.toLocaleString() })}
+                    {t("home.fromPrice", { p: p.price.toLocaleString() })}
                   </div>
                 </div>
               </button>
-            ))}
-          </div>
-        </section>
-      )}
+            );
+          })}
+        </div>
+      </section>
 
       {/* Train travel information — full-bleed horizontal scroller */}
       <section className="pb-16 lg:pb-24">
@@ -589,10 +771,25 @@ export default function HomePage() {
               title: t("home.info4.title"),
               desc: t("home.info4.desc"),
             },
+            {
+              img: INFO_IMAGES.busExpress,
+              title: t("home.infoBus1.title"),
+              desc: t("home.infoBus1.desc"),
+            },
+            {
+              img: INFO_IMAGES.busIntercity,
+              title: t("home.infoBus2.title"),
+              desc: t("home.infoBus2.desc"),
+            },
+            {
+              img: INFO_IMAGES.busTerminal,
+              title: t("home.infoBus3.title"),
+              desc: t("home.infoBus3.desc"),
+            },
           ].map((c) => (
             <article
               key={c.title}
-              className="group relative h-[420px] overflow-hidden rounded-card"
+              className="group relative h-[420px] overflow-hidden rounded-card bg-tile"
             >
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
@@ -681,60 +878,101 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Site footer */}
-      <footer className="bg-ink text-white">
-        <div className="mx-auto max-w-[1280px] px-4 sm:px-8 lg:px-12 py-16">
-          {/* Slogan */}
-          <div className="text-center">
-            <h2 className="text-xl font-bold leading-snug text-white">
-              {t("footer.tagline")}
-              <br />
-              {t("footer.brand")}
-            </h2>
-            <p className="mt-4 text-sm leading-relaxed text-white/55">
-              {t("footer.desc1")}
-              <br />
-              {t("footer.desc2")}
+      {/* Site footer — mirrors /prototype/index.html (RIDEUS) */}
+      <footer className="bg-[#1B2027] pt-16 pb-7 text-white/70">
+        <div className="mx-auto grid max-w-[1216px] grid-cols-2 gap-x-6 gap-y-7 px-6 md:grid-cols-[1.4fr_1fr_1fr_1fr] md:gap-12">
+          {/* Brand */}
+          <div>
+            <div className="mb-3.5 text-2xl font-extrabold tracking-[0.04em] text-white">
+              RIDEUS
+            </div>
+            <p className="whitespace-pre-line text-[13px] leading-[1.7] text-[#A3A5A8]">
+              {t("footer.rdBrandDesc")}
             </p>
           </div>
 
-          <div className="my-10 h-px bg-white/10" />
-
-          <div className="text-base font-bold text-white">
-            {t("footer.company")}
+          {/* Company */}
+          <div>
+            <h3 className="mb-3.5 text-sm font-semibold text-white">
+              {t("footer.colCompany")}
+            </h3>
+            <ul className="grid gap-2">
+              {[t("footer.brandStory"), t("footer.careers"), t("footer.press")].map(
+                (label) => (
+                  <li key={label} className="flex items-center gap-2.5 text-sm">
+                    <a
+                      href="#"
+                      className="text-[#A3A5A8] transition-colors hover:text-white"
+                    >
+                      {label}
+                    </a>
+                    <span className="text-[11px] text-white/35">
+                      {t("footer.soon")}
+                    </span>
+                  </li>
+                ),
+              )}
+            </ul>
           </div>
 
-          {/* Company info */}
-          <div className="mt-4 grid grid-cols-1 gap-x-16 gap-y-6 lg:grid-cols-2">
-            <div className="space-y-2.5">
-              {[
-                [t("footer.ceo"), t("footer.ceoName")],
-                [t("footer.bizNo"), "238-81-00429"],
-                [t("footer.fax"), "+82-70-8275-3540"],
-              ].map(([label, value]) => (
-                <div key={label} className="flex gap-6 text-[13px]">
-                  <span className="w-20 shrink-0 text-white/40">{label}</span>
-                  <span className="text-white/70 lg:whitespace-nowrap">{value}</span>
-                </div>
+          {/* Support */}
+          <div>
+            <h3 className="mb-3.5 text-sm font-semibold text-white">
+              {t("footer.colSupport")}
+            </h3>
+            <ul className="grid gap-2">
+              <li className="flex items-center gap-2.5 text-sm">
+                <a
+                  href="#"
+                  className="text-[#A3A5A8] transition-colors hover:text-white"
+                >
+                  {t("footer.helpCenter")}
+                </a>
+              </li>
+              {[t("footer.terms"), t("footer.privacy")].map((label) => (
+                <li key={label} className="flex items-center gap-2.5 text-sm">
+                  <a
+                    href="#"
+                    className="text-[#A3A5A8] transition-colors hover:text-white"
+                  >
+                    {label}
+                  </a>
+                  <span className="text-[11px] text-white/35">
+                    {t("footer.soon")}
+                  </span>
+                </li>
               ))}
-            </div>
-            <div className="space-y-2.5">
-              {[
-                [t("footer.addr"), t("footer.addrValue")],
-                [t("footer.tel"), "+82-2-863-3540"],
-                [t("footer.email"), "ops@rideus.co.kr"],
-              ].map(([label, value]) => (
-                <div key={label} className="flex gap-6 text-[13px]">
-                  <span className="w-20 shrink-0 text-white/40">{label}</span>
-                  <span className="text-white/70 lg:whitespace-nowrap">{value}</span>
-                </div>
-              ))}
-            </div>
+            </ul>
           </div>
 
-          <div className="mt-12 text-center text-xs text-white/30">
-            Powered by GroundK
+          {/* Partnership */}
+          <div>
+            <h3 className="mb-3.5 text-sm font-semibold text-white">
+              {t("footer.colPartnership")}
+            </h3>
+            <ul className="grid gap-2">
+              <li className="flex items-center gap-2.5 text-sm">
+                <a
+                  href="#"
+                  className="text-[#A3A5A8] transition-colors hover:text-white"
+                >
+                  {t("footer.becomePartner")}
+                </a>
+                <a href="#" className="font-semibold text-[#2C51DB]">
+                  {t("footer.apply")}
+                </a>
+              </li>
+            </ul>
           </div>
+        </div>
+
+        <div className="mx-auto mt-9 max-w-[1216px] px-6">
+          <div className="h-px bg-white/30" />
+        </div>
+
+        <div className="mx-auto mt-[22px] flex max-w-[1216px] justify-between px-6 text-[11px] text-white/40">
+          <span>{t("footer.copyright")}</span>
+          <span className="text-white">{t("footer.location")}</span>
         </div>
       </footer>
 
@@ -815,6 +1053,15 @@ export default function HomePage() {
           setPassengerSheet(false);
         }}
       />
+
+      {/* Center toast (e.g. Ferry coming soon) */}
+      {toast && (
+        <div className="pointer-events-none fixed inset-0 z-50 grid place-items-center">
+          <div className="rounded-2xl bg-ink/90 px-6 py-4 text-center text-[15px] font-semibold text-white shadow-xl backdrop-blur-sm">
+            {toast}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -77,7 +77,7 @@ const DICT: Record<string, Entry> = {
     ko: "운임과 수수료를 미리 명확하게 보여드려요.",
     en: "Fares and fees shown clearly, before you pay.",
   },
-  "home.popularTitle": { ko: "국내 인기 노선", en: "Popular train routes in South Korea" },
+  "home.popularTitle": { ko: "국내 인기 노선", en: "Popular routes in South Korea" },
   "home.popularGo": { ko: "예매하기", en: "Book" },
   "home.fromPrice": { ko: "{p}원~", en: "KRW {p}~" },
   "home.busSoon": {
@@ -87,6 +87,23 @@ const DICT: Record<string, Entry> = {
   "home.modeSoon": {
     ko: "선택하신 교통수단 예매는 준비 중입니다.",
     en: "Booking for this transport is coming soon.",
+  },
+  "home.filterAll": { ko: "전체", en: "All" },
+  "home.ferrySoon": { ko: "준비중입니다.", en: "Coming soon." },
+  "home.infoBus1.title": { ko: "고속버스", en: "Express buses" },
+  "home.infoBus1.desc": {
+    ko: "주요 도시를 고속도로로 빠르게 잇는 고속버스. 우등·프리미엄 좌석으로 넓고 편안하게 이동하고, 실시간 잔여석과 요금을 미리 확인할 수 있어요.",
+    en: "Express buses connect major cities quickly via expressway. Travel in roomy Premium or Excellent-class seats, and check live seat availability and fares in advance.",
+  },
+  "home.infoBus2.title": { ko: "시외버스", en: "Intercity buses" },
+  "home.infoBus2.desc": {
+    ko: "기차가 닿지 않는 중소도시까지 촘촘하게 연결하는 시외버스. 가까운 터미널에서 합리적인 요금으로 전국 구석구석을 편리하게 오갈 수 있어요.",
+    en: "Intercity buses reach the smaller towns trains don't serve. Travel across the country from your nearest terminal at a reasonable fare.",
+  },
+  "home.infoBus3.title": { ko: "버스 터미널 · 예매", en: "Terminals & booking" },
+  "home.infoBus3.desc": {
+    ko: "전국 버스 터미널의 시간표와 노선을 한 곳에서 조회하고, 좌석을 선택해 바로 예매하세요. 출발 직전까지 모바일로 간편하게 예약할 수 있어요.",
+    en: "Browse timetables and routes for bus terminals nationwide, pick your seat, and book right away — conveniently from your phone, right up to departure.",
   },
 
   // intercity bus
@@ -182,9 +199,32 @@ const DICT: Record<string, Entry> = {
   "footer.addr": { ko: "주소", en: "Address" },
   "footer.tel": { ko: "Tel", en: "Tel" },
   "footer.email": { ko: "Email", en: "Email" },
+  // footer — prototype (RIDEUS) layout
+  "footer.rdBrandDesc": {
+    ko: "프리미엄 모빌리티의 기준을 정의합니다.\n공항 의전부터 프라이빗 투어까지,\n완벽한 여정을 설계합니다.",
+    en: "Defining the standard of premium mobility.\nFrom airport chauffeur service to private tours,\nwe design the complete journey.",
+  },
+  "footer.colCompany": { ko: "회사소개", en: "Company" },
+  "footer.brandStory": { ko: "브랜드 스토리", en: "Brand Story" },
+  "footer.careers": { ko: "채용", en: "Careers" },
+  "footer.press": { ko: "보도자료", en: "Press" },
+  "footer.soon": { ko: "준비중", en: "Soon" },
+  "footer.colSupport": { ko: "고객지원", en: "Support" },
+  "footer.helpCenter": { ko: "고객센터", en: "Help Center" },
+  "footer.colPartnership": { ko: "제휴 문의", en: "Partnership" },
+  "footer.becomePartner": { ko: "파트너 등록", en: "Become a partner" },
+  "footer.apply": { ko: "신청하기 →", en: "Apply →" },
+  "footer.copyright": {
+    ko: "© 2026 Rideus Mobility. All rights reserved.",
+    en: "© 2026 Rideus Mobility. All rights reserved.",
+  },
+  "footer.location": {
+    ko: "Seoul, Republic of Korea",
+    en: "Seoul, Republic of Korea",
+  },
   "home.infoTitle": {
     ko: "한국 기차 여행 정보",
-    en: "South Korea train travel information",
+    en: "South Korea travel information",
   },
   "home.infoSub": {
     ko: "최신 기차 정보를 확인하고 다음 여행을 더 편안하게 준비하세요.",

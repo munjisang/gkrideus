@@ -1,11 +1,12 @@
 import { Suspense } from "react";
 import SearchView from "./SearchView";
+import SearchLoading from "../../components/SearchLoading";
 
 export const dynamic = "force-dynamic";
 
 export default function SearchPage() {
   return (
-    <Suspense fallback={<div className="mx-auto max-w-4xl px-4 py-10 text-ink-faint">불러오는 중…</div>}>
+    <Suspense fallback={<SearchLoading />}>
       <SearchView />
     </Suspense>
   );

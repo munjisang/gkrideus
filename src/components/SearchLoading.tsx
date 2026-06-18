@@ -8,7 +8,13 @@ type AnimationData = Record<string, unknown>;
 
 let cached: AnimationData | null = null;
 
-export default function SearchLoading({ from, to }: { from: string; to: string }) {
+export default function SearchLoading({
+  from,
+  to,
+}: {
+  from?: string;
+  to?: string;
+}) {
   const { t } = useI18n();
   const [data, setData] = useState<AnimationData | null>(cached);
 
@@ -37,10 +43,14 @@ export default function SearchLoading({ from, to }: { from: string; to: string }
         )}
       </div>
       <p className="mt-2 text-center text-lg text-ink-soft">
-        <span className="font-semibold text-ink">{from}</span>
-        <span className="mx-1.5 text-ink-faint">→</span>
-        <span className="font-semibold text-ink">{to}</span>
-        <br />
+        {from && to && (
+          <>
+            <span className="font-semibold text-ink">{from}</span>
+            <span className="mx-1.5 text-ink-faint">→</span>
+            <span className="font-semibold text-ink">{to}</span>
+            <br />
+          </>
+        )}
         {t("sr.searching")}
       </p>
     </div>
