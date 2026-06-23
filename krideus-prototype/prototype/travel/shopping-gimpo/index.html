@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<!-- TODO: 김포 실데이터(요금·거리·좌표·예약URL) 추후 업데이트 -->
+<!-- 김포 요금·거리는 컨셉값, 예약은 데모 폼 — 실데이터 추후 업데이트 -->
 <title>현대 프리미엄 아울렛 김포 — K.Rideus</title>
 <meta name="description" content="현대 프리미엄 아울렛 김포점, 쇼퍼와 함께. 픽업부터 귀환까지 도어투도어 프라이빗 이동. K.Rideus 여행.">
 <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
@@ -102,7 +102,7 @@ ul,li{list-style:none}
    상단 2컬럼 — 좌 목적지 / 우 sticky 예약폼
    ============================================================ */
 .pd{padding:clamp(20px,2.4vw,32px) 0 clamp(48px,6vw,80px)}
-.pd-grid{display:grid;grid-template-columns:1fr clamp(360px,32vw,420px);gap:clamp(28px,3.4vw,52px);align-items:start}
+.pd-grid{display:grid;grid-template-columns:1fr;gap:clamp(28px,3.4vw,52px);align-items:start}
 
 /* 좌 — 목적지 */
 
@@ -242,6 +242,15 @@ ul,li{list-style:none}
 .glance-item dt{font-family:var(--fd);font-size:.7rem;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-faint);margin-bottom:7px}
 .glance-item dd{font-family:var(--fd);font-size:1.02rem;font-weight:700;letter-spacing:-.01em;color:var(--ink);line-height:1.4;margin:0}
 .glance-item dd small{display:block;font-family:var(--fb);font-weight:500;color:var(--ink-soft);font-size:.82rem;margin-top:3px;letter-spacing:-.005em}
+
+/* ============================================================
+   예약 밴드 — T-RiseUp 위젯 (풀폭 가로 · hero)
+   ============================================================ */
+.book{padding:clamp(40px,5vw,72px) 0;background:var(--hair-soft)}
+.book .sec-head{text-align:center}
+.book .sec-lead{max-width:52ch;margin-left:auto;margin-right:auto}
+.book-widget{margin-top:clamp(20px,2.4vw,32px)}
+.book-widget t-booking-widget{display:block;width:100%}
 
 /* ============================================================
    Fleet — 차량과 요금 (여주 §5 구성 차용 · 차량 1대 고정 요금)
@@ -445,75 +454,21 @@ ul,li{list-style:none}
           </dl>
         </div>
 
-        <!-- 우: 쇼퍼 예약폼 -->
-        <aside class="bk" id="bk" aria-label="쇼퍼 예약">
-          <div class="bk__head">
-            <h3><span data-lang="ko">쇼퍼 예약</span><span data-lang="en" hidden>Book a chauffeur</span></h3>
-            <span class="bk__mode"><span data-lang="ko">프라이빗 기사</span><span data-lang="en" hidden>Private chauffeur</span></span>
-          </div>
+        <!-- 예약폼은 아래 풀폭 '예약' 밴드(T-RiseUp 위젯)로 이동 -->
 
-          <div class="bk__seg" id="seg" role="tablist" aria-label="서비스 유형">
-            <button data-mode="oneway" role="tab"><span data-lang="ko">편도</span><span data-lang="en" hidden>One-way</span></button>
-            <button data-mode="round" role="tab"><span data-lang="ko">왕복</span><span data-lang="en" hidden>Round trip</span></button>
-            <button class="on" data-mode="fullday" role="tab"><span data-lang="ko">풀데이</span><span data-lang="en" hidden>Full day</span></button>
-          </div>
-          <p class="bk__seg-hint" id="segHint"><span data-lang="ko">기사가 쇼핑 내내 대기 — 최대 8시간, 귀환 시간은 자유</span><span data-lang="en" hidden>Driver waits all day while you shop — up to 8 hours, return anytime</span></p>
+      </div>
+    </div>
+  </section>
 
-          <div class="bk__field">
-            <label for="pickup"><span data-lang="ko">픽업 위치</span><span data-lang="en" hidden>Pickup location</span></label>
-            <input class="bk__input" id="pickup" type="text" placeholder="예) 서울 명동 호텔, 인천공항 T1" value="서울 시내" data-val-ko="서울 시내" data-val-en="Central Seoul" data-ph-ko="예) 서울 명동 호텔, 인천공항 T1" data-ph-en="e.g. Seoul Myeongdong hotel, Incheon Airport T1">
-          </div>
-          <div class="bk__field" id="dropField">
-            <label><span data-lang="ko">도착</span><span data-lang="en" hidden>Drop-off</span></label>
-            <div class="bk__fixed">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C8.1 2 5 5.1 5 9c0 5.2 7 13 7 13s7-7.8 7-13c0-3.9-3.1-7-7-7zm0 9.5a2.5 2.5 0 110-5 2.5 2.5 0 010 5z"/></svg>
-              <span data-lang="ko">현대 프리미엄 아울렛 김포</span><span data-lang="en" hidden>Hyundai Premium Outlet Gimpo</span>
-            </div>
-          </div>
-          <div class="bk__row">
-            <div class="bk__field"><label for="date"><span data-lang="ko">날짜</span><span data-lang="en" hidden>Date</span></label><input class="bk__input" id="date" type="date"></div>
-            <div class="bk__field"><label for="time"><span data-lang="ko">시간</span><span data-lang="en" hidden>Time</span></label><input class="bk__input" id="time" type="time" value="10:00"></div>
-          </div>
-
-          <div class="bk__counters">
-            <div class="bk__counter">
-              <span><span data-lang="ko">탑승 인원</span><span data-lang="en" hidden>Passengers</span></span>
-              <div class="bk__counter-ctrl"><button type="button" data-c="pax" data-d="-1" aria-label="인원 감소">−</button><b id="pax">2</b><button type="button" data-c="pax" data-d="1" aria-label="인원 증가">+</button></div>
-            </div>
-            <div class="bk__counter">
-              <span><span data-lang="ko">수하물</span><span data-lang="en" hidden>Luggage</span></span>
-              <div class="bk__counter-ctrl"><button type="button" data-c="bag" data-d="-1" aria-label="수하물 감소">−</button><b id="bag">2</b><button type="button" data-c="bag" data-d="1" aria-label="수하물 증가">+</button></div>
-            </div>
-          </div>
-
-          <div class="bk__field">
-            <label><span data-lang="ko">선택한 차량</span><span data-lang="en" hidden>Selected vehicle</span></label>
-            <div class="bk__veh-line">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M19 17h2v-6l-3-5H6L3 11v6h2"/><circle cx="7.5" cy="17.5" r="2"/><circle cx="16.5" cy="17.5" r="2"/></svg>
-              <span class="bk__veh-name"><b id="vehName">Staria HiLimo</b><small id="vehMeta"><span data-lang="ko">프리미엄 밴 · 1–7인</span><span data-lang="en" hidden>Premium van · 1–7 pax</span></small></span>
-              <a href="#fleet" class="bk__veh-change"><span data-lang="ko">차량 비교</span><span data-lang="en" hidden>Compare vehicles</span></a>
-            </div>
-            <p class="bk__cap-warn" id="capWarn" hidden><span data-lang="ko">탑승 인원이 차량 정원을 초과했어요 — <a href="#fleet"><span data-lang="ko">차량 비교</span><span data-lang="en" hidden>Compare vehicles</span></a>에서 더 큰 차량을 선택하세요</span><span data-lang="en" hidden>Passengers exceed the vehicle capacity — <a href="#fleet">compare vehicles</a> and pick a larger one</span></p>
-          </div>
-
-          <div class="bk__total">
-            <span id="totalLabel">예상 요금 · 풀데이</span>
-            <b><i class="won">₩</i><span id="total">310,000</span> <small><span data-lang="ko">부터</span><span data-lang="en" hidden>from</span></small></b>
-          </div>
-          <p class="bk__total-note"><span data-lang="ko">차량 1대 기준 고정 요금 — 인원수와 무관합니다</span><span data-lang="en" hidden>Fixed fare per vehicle — regardless of passenger count</span></p>
-
-          <button class="btn btn--primary btn--block" id="bkSubmit" type="button">
-            <span data-lang="ko">예약하기</span><span data-lang="en" hidden>Book now</span>
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
-          </button>
-
-          <ul class="bk__trust">
-            <li><span data-lang="ko">고정 요금</span><span data-lang="en" hidden>Fixed fare</span></li><li><span data-lang="ko">도어투도어</span><span data-lang="en" hidden>Door-to-door</span></li><li><span data-lang="ko">영어 가능 기사</span><span data-lang="en" hidden>English-speaking driver</span></li>
-          </ul>
-
-          <div class="bk__done" id="bkDone"><span data-lang="ko">예약이 접수되었습니다. 곧 확정 안내를 드릴게요. (컨셉 데모 — 실제 예약은 추후 연동)</span><span data-lang="en" hidden>Your booking has been received. We'll send confirmation shortly. (Concept demo — real booking to be integrated later)</span></div>
-        </aside>
-
+  <!-- ============ 예약 — T-RiseUp Connect 위젯 (hero, 목적지=김포 고정) ============ -->
+  <section class="book" id="book">
+    <div class="wrap">
+      <div class="sec-head rv">
+        <h2 class="sec-title"><span data-lang="ko">프라이빗 쇼퍼로 떠나는 김포</span><span data-lang="en" hidden>Private chauffeur to Gimpo</span></h2>
+        <p class="sec-lead"><span data-lang="ko">호텔·공항 앞부터 아울렛 정문까지, 다른 승객 없이 전용 차량으로.</span><span data-lang="en" hidden>From your hotel or airport to the outlet gate — a private vehicle, no other passengers.</span></p>
+      </div>
+      <div class="book-widget rv">
+        <t-booking-widget api-key="pk_live_3qHJej4coumYTMhjwbQlTOc5" preset="wp_nvimqb1z"></t-booking-widget>
       </div>
     </div>
   </section>
@@ -538,7 +493,6 @@ ul,li{list-style:none}
             <li><span><span data-lang="ko">왕복</span><span data-lang="en" hidden>Round trip</span></span><b><i class="won">₩</i>255,000</b></li>
             <li class="is-best"><span><span data-lang="ko">풀데이</span><span data-lang="en" hidden>Full day</span> <i><span data-lang="ko">기사 8시간 대기</span><span data-lang="en" hidden>8-hour driver wait</span></i></span><b><i class="won">₩</i>330,000</b></li>
           </ul>
-          <button class="btn fleet-card__cta" data-veh-cta="g90" data-label="G90으로 예약" data-label-en="Book with G90"><span data-lang="ko">G90으로 예약</span><span data-lang="en" hidden>Book with G90</span></button>
         </article>
 
         <article class="fleet-card is-pop rv" data-veh="hilimo" data-cap="7">
@@ -552,7 +506,6 @@ ul,li{list-style:none}
             <li><span><span data-lang="ko">왕복</span><span data-lang="en" hidden>Round trip</span></span><b><i class="won">₩</i>240,000</b></li>
             <li class="is-best"><span><span data-lang="ko">풀데이</span><span data-lang="en" hidden>Full day</span> <i><span data-lang="ko">기사 8시간 대기</span><span data-lang="en" hidden>8-hour driver wait</span></i></span><b><i class="won">₩</i>310,000</b></li>
           </ul>
-          <button class="btn fleet-card__cta" data-veh-cta="hilimo" data-label="HiLimo로 예약" data-label-en="Book with HiLimo"><span data-lang="ko">HiLimo로 예약</span><span data-lang="en" hidden>Book with HiLimo</span></button>
         </article>
 
         <article class="fleet-card rv" data-veh="solati" data-cap="13">
@@ -566,7 +519,6 @@ ul,li{list-style:none}
             <li><span><span data-lang="ko">왕복</span><span data-lang="en" hidden>Round trip</span></span><b><i class="won">₩</i>440,000</b></li>
             <li class="is-best"><span><span data-lang="ko">풀데이</span><span data-lang="en" hidden>Full day</span> <i><span data-lang="ko">기사 8시간 대기</span><span data-lang="en" hidden>8-hour driver wait</span></i></span><b><i class="won">₩</i>570,000</b></li>
           </ul>
-          <button class="btn fleet-card__cta" data-veh-cta="solati" data-label="Solati로 예약" data-label-en="Book with Solati"><span data-lang="ko">Solati로 예약</span><span data-lang="en" hidden>Book with Solati</span></button>
         </article>
       </div>
 
@@ -584,7 +536,7 @@ ul,li{list-style:none}
 
       <div class="route-grid">
         <!-- 지도 (네이버 지도 — 5173 도메인에서만 로드됨) -->
-        <div class="route-map rv" id="naverMap" data-lat="37.769353" data-lng="126.696575" role="img" aria-label="현대 프리미엄 아울렛 김포 위치 지도"></div>
+        <div class="route-map rv" id="naverMap" data-lat="37.598323" data-lng="126.786241" role="img" aria-label="현대 프리미엄 아울렛 김포 위치 지도"></div>
 
         <!-- 우: 출발지 + 사이드 스톱 (지도 높이와 균형) -->
         <div class="route-side">
@@ -693,48 +645,48 @@ ul,li{list-style:none}
 
       <div class="day-grid">
         <div class="day-photo rv">
-          <img src="/assets/shopping_cate.webp" alt="쇼핑백을 들고 차량으로 향하는 하루" loading="lazy">
+          <img src="/assets/shopping_gimpo_day.jpg" alt="현대프리미엄아울렛 김포점 옥상 정원" loading="lazy">
         </div>
 
         <div class="day-tl">
         <div class="day-step rv">
-          <div class="day-step__time">09:30</div>
+          <div class="day-step__time">10:00</div>
           <div class="day-step__node"><span class="day-step__dot"></span></div>
           <div class="day-step__body">
-            <h3><span data-lang="ko">호텔 픽업</span><span data-lang="en" hidden>Hotel pickup</span></h3>
-            <p><span data-lang="ko">로비에서 기사가 기다립니다. 짐은 트렁크에 싣고 바로 출발.</span><span data-lang="en" hidden>The driver waits in the lobby. Load your bags in the trunk and go.</span></p>
+            <h3><span data-lang="ko">호텔·공항 픽업</span><span data-lang="en" hidden>Hotel · airport pickup</span></h3>
+            <p><span data-lang="ko">호텔 로비나 공항 입국장에서 기사가 기다립니다. 짐은 트렁크에 싣고 바로 출발.</span><span data-lang="en" hidden>The driver waits at your hotel lobby or the airport arrivals hall. Load your bags in the trunk and go.</span></p>
           </div>
         </div>
         <div class="day-step rv">
           <div class="day-step__time">10:30</div>
           <div class="day-step__node"><span class="day-step__dot"></span></div>
           <div class="day-step__body">
-            <h3><span data-lang="ko">아울렛 도착</span><span data-lang="en" hidden>Arrive at the outlet</span></h3>
-            <p><span data-lang="ko">정문 앞 하차. 차는 전용 구역에서 대기하고, 기사는 메시지 한 통 거리에 있습니다.</span><span data-lang="en" hidden>Drop-off at the main gate. The car waits in a dedicated area, the driver one message away.</span></p>
+            <h3><span data-lang="ko">아울렛 도착</span><span data-lang="en" hidden>Arrive as it opens</span></h3>
+            <p><span data-lang="ko">오픈 시간(10:30)에 맞춰 정문 앞 하차. 차는 전용 구역에서 대기하고, 기사는 메시지 한 통 거리에 있습니다.</span><span data-lang="en" hidden>Drop-off at the main gate right at opening (10:30). The car waits in a dedicated area, the driver one message away.</span></p>
           </div>
         </div>
         <div class="day-step rv">
           <div class="day-step__time">11:00</div>
           <div class="day-step__node"><span class="day-step__dot"></span></div>
           <div class="day-step__body">
-            <h3><span data-lang="ko">명품관 쇼핑</span><span data-lang="en" hidden>Luxury shopping</span></h3>
-            <p><span data-lang="ko">다양한 프리미엄 브랜드를 천천히. 무거워진 쇼핑백은 중간중간 차에 보관하세요.</span><span data-lang="en" hidden>Browse premium brands at your pace. Stash heavy bags in the car along the way.</span></p>
+            <h3><span data-lang="ko">명품·해외패션 라운드</span><span data-lang="en" hidden>Luxury &amp; global fashion</span></h3>
+            <p><span data-lang="ko">본관 해외패션관에서 구찌·버버리·페라가모 등 명품을 천천히. 무거워진 쇼핑백은 중간중간 차에 보관하세요.</span><span data-lang="en" hidden>Take your time with Gucci, Burberry, Ferragamo and more on the main-hall global fashion floor. Stash heavy bags in the car along the way.</span></p>
           </div>
         </div>
         <div class="day-step rv">
           <div class="day-step__time">13:00</div>
           <div class="day-step__node"><span class="day-step__dot"></span></div>
           <div class="day-step__body">
-            <h3><span data-lang="ko">점심</span><span data-lang="en" hidden>Lunch</span></h3>
-            <p><span data-lang="ko">아울렛 안 레스토랑·푸드코트, 또는 기사 추천 맛집. 원하는 곳으로.</span><span data-lang="en" hidden>Restaurants and food courts in the outlet, or a driver-recommended spot. Wherever you like.</span></p>
+            <h3><span data-lang="ko">H KITCHEN·식당가 점심</span><span data-lang="en" hidden>Lunch at H KITCHEN</span></h3>
+            <p><span data-lang="ko">식품관 H KITCHEN, 레스토랑(텍사스 로드하우스 등), 푸드코트 중 원하는 곳으로. 반려견 동반석도 있어요.</span><span data-lang="en" hidden>Choose the H KITCHEN food hall, a restaurant (Texas Roadhouse and more), or the food court — pet-friendly seating available too.</span></p>
           </div>
         </div>
         <div class="day-step rv">
-          <div class="day-step__time">15:00</div>
+          <div class="day-step__time">14:30</div>
           <div class="day-step__node"><span class="day-step__dot"></span></div>
           <div class="day-step__body">
-            <h3><span data-lang="ko">라베니체</span><span data-lang="en" hidden>La Venezia</span> <em><span data-lang="ko">선택 경유</span><span data-lang="en" hidden>Optional stop</span></em></h3>
-            <p><span data-lang="ko">차로 5분. 수변 상가와 카페를 둘러보는 오후 — 아라뱃길·김포공항으로 바꿔도 좋습니다.</span><span data-lang="en" hidden>5 min by car. An afternoon at the waterfront shops and cafés — or swap for Arabaetgil or Gimpo Airport.</span></p>
+            <h3><span data-lang="ko">옥상 정원 산책</span><span data-lang="en" hidden>Rooftop garden</span> <em><span data-lang="ko">쉬어가기</span><span data-lang="en" hidden>Breather</span></em></h3>
+            <p><span data-lang="ko">쇼핑 사이 옥상 정원에서 잠시 휴식. 사진 명소에서 한 컷, 아이와 함께면 3층 회전목마도 좋아요.</span><span data-lang="en" hidden>A breather in the rooftop garden between shopping — a photo spot, with a 3F carousel for younger travelers.</span></p>
           </div>
         </div>
         <div class="day-step rv">
@@ -742,7 +694,7 @@ ul,li{list-style:none}
           <div class="day-step__node"><span class="day-step__dot"></span></div>
           <div class="day-step__body">
             <h3><span data-lang="ko">서울 복귀</span><span data-lang="en" hidden>Return to Seoul</span></h3>
-            <p><span data-lang="ko">하루의 쇼핑백은 트렁크에 정리된 채, 호텔 로비 앞까지. 짐 한 번 들지 않은 하루.</span><span data-lang="en" hidden>The day's bags stay tidy in the trunk, all the way to the hotel lobby. A day without lifting a bag.</span></p>
+            <p><span data-lang="ko">타워존 골프·레저관까지 둘러본 뒤, 쇼핑백은 트렁크에 정리된 채 호텔 앞까지. 짐 한 번 들지 않은 하루.</span><span data-lang="en" hidden>After a look through the Tower-Zone golf &amp; leisure halls, the day's bags ride tidy in the trunk all the way to your hotel — a day without lifting a bag.</span></p>
           </div>
         </div>
         </div>
@@ -843,7 +795,7 @@ ul,li{list-style:none}
     <div class="wrap cta-in">
       <h2 class="cta-title"><span data-lang="ko">김포 쇼핑 하루, 준비되셨나요?</span><span data-lang="en" hidden>Ready for a day of shopping in Gimpo?</span></h2>
       <p class="cta-sub"><span data-lang="ko">예약은 60초면 충분합니다. 운영시간(매일 06:00–22:00) 내 15분 안에 답해드려요.</span><span data-lang="en" hidden>Booking takes just 60 seconds. We reply within 15 minutes during business hours (daily 06:00–22:00).</span></p>
-      <a href="#bk" class="btn btn--primary cta-btn"><span data-lang="ko">지금 예약하기</span><span data-lang="en" hidden>Book now</span>
+      <a href="#book" class="btn btn--primary cta-btn"><span data-lang="ko">지금 예약하기</span><span data-lang="en" hidden>Book now</span>
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
       </a>
       <div class="cta-channels">
@@ -858,95 +810,11 @@ ul,li{list-style:none}
 
 <div data-include="footer"></div>
 
+<!-- T-RiseUp Connect 예약 위젯 -->
+<script src="https://connect.triseup.com/widget.js"></script>
 <script>
 (function(){
-  /* ---- 예약폼 상태 — 차량 1대 고정 요금(인원 무관), 차량 선택은 Fleet 카드에서 ---- */
-  var VEH={
-    g90:{name:'Genesis G90',meta:'퍼스트클래스 세단 · 1–3인',meta_en:'First-class sedan · 1–3 pax',price:150000,cap:3},
-    hilimo:{name:'Staria HiLimo',meta:'프리미엄 밴 · 1–7인',meta_en:'Premium van · 1–7 pax',price:140000,cap:7},
-    solati:{name:'Hyundai Solati',meta:'그룹 코치 · 8–13인',meta_en:'Group coach · 8–13 pax',price:260000,cap:13}
-  };
-  var state={mode:'fullday',pax:2,bag:2,veh:'hilimo'};
-  var MODE_MUL={oneway:1,round:1.7,fullday:2.2};
-  var MODE_LABEL={oneway:'편도',round:'왕복',fullday:'풀데이'};
-  var MODE_LABEL_EN={oneway:'One-way',round:'Round trip',fullday:'Full day'};
-  var MODE_HINT={
-    oneway:'아울렛까지 편도 이동 — 하차 후 종료',
-    round:'왕복 — 정한 시간에 같은 기사가 픽업',
-    fullday:'기사가 쇼핑 내내 대기 — 최대 8시간, 귀환 시간은 자유'
-  };
-  var MODE_HINT_EN={
-    oneway:'One-way to the outlet — service ends after drop-off',
-    round:'Round trip — same driver picks you up at the set time',
-    fullday:'Driver waits all day while you shop — up to 8 hours, return anytime'
-  };
-
-  function fmt(n){return n.toLocaleString('ko-KR');}
-  function render(){
-    var v=VEH[state.veh];
-    var total=Math.round(v.price*MODE_MUL[state.mode]/5000)*5000;
-    document.getElementById('total').textContent=fmt(total);
-    var _en=document.documentElement.lang==='en';
-    document.getElementById('totalLabel').textContent=(_en?'Est. fare · ':'예상 요금 · ')+(_en?MODE_LABEL_EN:MODE_LABEL)[state.mode];
-    document.getElementById('segHint').textContent=(_en?MODE_HINT_EN:MODE_HINT)[state.mode];
-    document.getElementById('vehName').textContent=v.name;
-    document.getElementById('vehMeta').textContent=_en?v.meta_en:v.meta;
-    document.getElementById('capWarn').hidden=state.pax<=v.cap;
-    // Fleet 카드 ↔ 예약폼 선택 싱크 (블루 보더 = 선택됨, 인기 표시는 태그만)
-    document.querySelectorAll('.fleet-card').forEach(function(c){
-      var sel=c.getAttribute('data-veh')===state.veh;
-      c.classList.toggle('is-sel',sel);
-      var cta=c.querySelector('.fleet-card__cta');
-      if(cta)cta.innerHTML=sel?'<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;margin-right:7px"><path d="M20 6 9 17l-5-5"/></svg>'+(_en?'Selected':'선택된 차량')+'':cta.getAttribute(_en?'data-label-en':'data-label');
-    });
-  }
-
-  /* 서비스 유형 세그먼트 */
-  var seg=document.getElementById('seg');
-  seg.addEventListener('click',function(e){
-    var b=e.target.closest('button');if(!b)return;
-    [].forEach.call(seg.children,function(x){x.classList.toggle('on',x===b);});
-    state.mode=b.getAttribute('data-mode');
-    render();
-  });
-
-  /* 카운터 — 인원은 차량 정원 가이드일 뿐, 요금에 영향 없음 */
-  function updateCapState(){
-    document.querySelectorAll('.fleet-card').forEach(function(c){
-      c.classList.toggle('is-over',state.pax>parseInt(c.getAttribute('data-cap'),10));
-    });
-    document.getElementById('capWarn').hidden=state.pax<=VEH[state.veh].cap;
-  }
-  document.querySelectorAll('.bk__counter-ctrl button').forEach(function(btn){
-    btn.addEventListener('click',function(){
-      var key=btn.getAttribute('data-c'),d=parseInt(btn.getAttribute('data-d'),10);
-      state[key]=Math.max(1,Math.min(13,state[key]+d));
-      document.getElementById(key).textContent=state[key];
-      if(key==='pax')updateCapState();
-    });
-  });
-
-  /* Fleet 카드 → 차량 선택 + 예약폼 진입 */
-  document.querySelectorAll('[data-veh-cta]').forEach(function(btn){
-    btn.addEventListener('click',function(){
-      state.veh=btn.getAttribute('data-veh-cta');
-      render();
-      document.getElementById('bk').scrollIntoView({behavior:'smooth',block:'start'});
-    });
-  });
-
-  /* 제출 데모 */
-  document.getElementById('bkSubmit').addEventListener('click',function(){
-    document.getElementById('bk').classList.add('is-done');
-    document.getElementById('bkDone').scrollIntoView({block:'nearest',behavior:'smooth'});
-  });
-
-  /* 날짜 기본값(내일) — Date 사용 가능(브라우저 런타임) */
-  try{var d=new Date();d.setDate(d.getDate()+1);document.getElementById('date').value=d.toISOString().slice(0,10);}catch(e){}
-
-  render();
-
-  /* ---- 모바일 nav 토글 + 이미지 히어로 스크롤 전환 ---- */
+  /* ---- 모바일 nav 토글 ---- */
   var _nav=document.getElementById('nav'),_burger=document.getElementById('navBurger');
   if(_nav&&_burger){
     _burger.addEventListener('click',function(){var o=_nav.classList.toggle('is-open');_burger.setAttribute('aria-expanded',o?'true':'false');_burger.setAttribute('aria-label',o?'메뉴 닫기':'메뉴 열기');});
@@ -958,9 +826,6 @@ ul,li{list-style:none}
     var io=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target);}});},{threshold:.14,rootMargin:'0px 0px -8% 0px'});
     document.querySelectorAll('.rv').forEach(function(el){io.observe(el);});
   } else {document.querySelectorAll('.rv').forEach(function(el){el.classList.add('in');});}
-
-  /* 언어 토글 시 동적 요금 라벨 재렌더 */
-  window.addEventListener('langchange',render);
 })();
 </script>
 <script src="/js/naver-map.js" defer></script>
