@@ -111,10 +111,16 @@ Next.js API 라우트는 Node.js로 돌기 때문에 `child_process.spawn`으로
 
 ```
 /api/
-  booking_reserve.py    Vercel Python 서버리스 (예매)
-  booking_cancel.py     Vercel Python 서버리스 (취소)
+  booking/
+    reserve.py          Vercel Python 서버리스 (검색 + 예매)
+    cancel.py           Vercel Python 서버리스 (취소)
+    availability.py     좌석 조회
+    sync.py             티켓팅/취소 상태 동기화
+  _lib/
+    creds.py            Supabase 자격증명 로딩 (사업자별, 우선순위순)
 /scripts/
-  ktx_booking.py        PatchedKorail 헬퍼 (공유 코드)
+  ktx_booking.py        PatchedKorail 헬퍼 (코레일 공유 코드)
+  korail_tls.py         레거시 TLS 시밍
 requirements.txt        Python 의존성 (Vercel 빌드 시 자동 설치)
 ```
 
