@@ -255,7 +255,7 @@ ul,li{list-style:none}
 /* ============================================================
    Fleet — 차량과 요금 (여주 §5 구성 차용 · 차량 1대 고정 요금)
    ============================================================ */
-.fleet{padding:0 0 clamp(52px,6vw,84px);scroll-margin-top:88px}
+.fleet{padding:clamp(52px,6vw,84px) 0;scroll-margin-top:88px}
 .fleet-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:clamp(14px,1.6vw,22px);align-items:stretch}
 .fleet-card{--fc-pad:clamp(20px,1.8vw,24px);display:flex;flex-direction:column;background:var(--card);border-radius:20px;padding:var(--fc-pad)}
 .fleet-card.is-sel{box-shadow:inset 0 0 0 2px var(--accent)}
